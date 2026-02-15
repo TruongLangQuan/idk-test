@@ -112,6 +112,51 @@ std::array<Move, 2> g_castle_moves{};
 int g_castle_count = 0;
 int g_castle_index = 0;
 
+void drawWifi();
+void startGame();
+
+struct KnownWifi {
+  const char* ssid;
+  const char* pass;
+};
+
+constexpr KnownWifi kKnownWifis[] = {
+    {"Quan Le", "15032011"},
+    {"NTD-THCS", "GIAOVIEN2425@"},
+};
+
+bool tryKnownWifiAutoConnect() {
+  WiFi.mode(WIFI_STA);
+  for (const auto& known : kKnownWifis) {
+    int found = -1;
+    for (int i = 0; i < g_wifi_count; ++i) {
+      if (g_ssids[i] == known.ssid) {
+        found = i;
+        break;
+      }
+    }
+    if (found < 0) continue;
+
+    g_wifi_status = String("Auto connect: ") + known.ssid;
+    g_wifi_index = found;
+    drawWifi();
+    WiFi.disconnect(true, true);
+    delay(120);
+    WiFi.begin(known.ssid, known.pass);
+    uint32_t start = millis();
+    while (millis() - start < 9000) {
+      if (WiFi.status() == WL_CONNECTED) {
+        g_wifi_status = String("Connected: ") + known.ssid;
+        drawWifi();
+        return true;
+      }
+      delay(120);
+    }
+  }
+  WiFi.disconnect(true, true);
+  return false;
+}
+
 uint32_t uiSignature() {
   uint32_t h = 2166136261u;
   auto mix = [&h](uint32_t v) {
@@ -829,6 +874,10 @@ void scanWifi() {
     g_secured[i] = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
   }
   g_wifi_index = 0;
+  if (g_wifi_count > 0 && tryKnownWifiAutoConnect()) {
+    startGame();
+    return;
+  }
   g_wifi_status = g_wifi_count > 0 ? "Select WiFi" : "No WiFi";
   drawWifi();
 }

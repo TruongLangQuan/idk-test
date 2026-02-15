@@ -50,6 +50,19 @@ static const IrCommand IR_FILE_1_CMDS[] PROGMEM = {
   {"Hdmi", "parsed", "SIRC", 0x00000001u, 0x00000025u, 38000u, 0.330000f, nullptr, 0},
 };
 
+static const IrCommand IR_FILE_2_CMDS[] PROGMEM = {
+  {"POWER", "parsed", "NECext", 0x0000FF01u, 0x0000ED12u, 38000u, 0.330000f, nullptr, 0},
+  {"TEMP+", "parsed", "NECext", 0x0000FF01u, 0x0000E51Au, 38000u, 0.330000f, nullptr, 0},
+  {"TEMP-", "parsed", "NECext", 0x0000FF01u, 0x0000EC13u, 38000u, 0.330000f, nullptr, 0},
+  {"Fan_up", "parsed", "NECext", 0x0000FF01u, 0x0000D12Eu, 38000u, 0.330000f, nullptr, 0},
+  {"Fan_down", "parsed", "NECext", 0x0000FF01u, 0x000051AEu, 38000u, 0.330000f, nullptr, 0},
+  {"Eco", "parsed", "NECext", 0x0000FF01u, 0x0000B04Fu, 38000u, 0.330000f, nullptr, 0},
+  {"Auto", "parsed", "NECext", 0x0000FF01u, 0x0000916Eu, 38000u, 0.330000f, nullptr, 0},
+  {"Sleep", "parsed", "NECext", 0x0000FF01u, 0x0000F50Au, 38000u, 0.330000f, nullptr, 0},
+  {"Led", "parsed", "NECext", 0x0000FF01u, 0x00009966u, 38000u, 0.330000f, nullptr, 0},
+  {"Timer", "parsed", "NECext", 0x0000FF01u, 0x0000E41Bu, 38000u, 0.330000f, nullptr, 0},
+};
+
 static const uint16_t IR_RAW_REMOTE_IR_0_POWER[] PROGMEM = {
   2762, 793, 534, 358, 530, 358, 530, 794, 534, 794, 981, 379, 533, 354,
   532, 356, 530, 357, 505, 383, 505, 382, 506, 382, 506, 383, 505, 383,
@@ -118,7 +131,7 @@ static const uint16_t IR_RAW_REMOTE_IR_15_BLUE[] PROGMEM = {
   634
 };
 
-static const IrCommand IR_FILE_2_CMDS[] PROGMEM = {
+static const IrCommand IR_FILE_3_CMDS[] PROGMEM = {
   {"POWER", "raw", "", 0x00000000u, 0x00000000u, 38000u, 0.330000f, IR_RAW_REMOTE_IR_0_POWER, 99},
   {"VOL+", "raw", "", 0x00000000u, 0x00000000u, 38000u, 0.330000f, IR_RAW_REMOTE_IR_1_VOL_, 99},
   {"VOL-", "raw", "", 0x00000000u, 0x00000000u, 38000u, 0.330000f, IR_RAW_REMOTE_IR_2_VOL_, 95},
@@ -137,9 +150,69 @@ static const IrCommand IR_FILE_2_CMDS[] PROGMEM = {
   {"BLUE", "raw", "", 0x00000000u, 0x00000000u, 38000u, 0.330000f, IR_RAW_REMOTE_IR_15_BLUE, 71},
 };
 
+static const uint16_t IR_RAW_UNIVERSALOFF_IR_8_PANASONIC[] PROGMEM = {
+  3481, 1715, 457, 442, 428, 1284, 457, 442, 428, 443, 427, 443, 427, 443,
+  427, 442, 428, 442, 428, 442, 453, 417, 453, 417, 453, 417, 452, 418,
+  451, 1289, 451, 422, 448, 447, 422, 424, 447, 447, 423, 448, 422, 424,
+  446, 448, 422, 448, 422, 448, 422, 1319, 422, 448, 422, 448, 422, 448,
+  422, 448, 422, 448, 423, 448, 422, 448, 422, 448, 422, 1319, 422, 448,
+  422, 1319, 422, 1319, 422, 1319, 422, 1319, 422, 448, 422, 449, 421, 1319,
+  422, 448, 422, 1320, 421, 1319, 422, 1320, 421, 1319, 422, 449, 422, 1319,
+  422, 65535, 3475, 1750, 422, 448, 422, 1319, 422, 448, 422, 448, 422, 448,
+  422, 448, 422, 448, 422, 448, 422, 448, 422, 448, 422, 448, 422, 448,
+  422, 449, 422, 1319, 422, 449, 421, 449, 421, 448, 422, 449, 421, 449,
+  421, 449, 421, 449, 421, 449, 421, 449, 421, 1320, 421, 449, 421, 449,
+  421, 449, 421, 449, 421, 449, 422, 449, 421, 449, 422, 449, 421, 1320,
+  421, 449, 421, 1320, 421, 1320, 421, 1320, 421, 1320, 421, 449, 421, 449,
+  421, 1320, 421, 449, 421, 1320, 421, 1320, 421, 1320, 421, 1320, 421, 450,
+  420, 1321, 420, 65535, 3475, 1750, 422, 448, 422, 1319, 422, 448, 422, 448,
+  423, 448, 422, 448, 422, 448, 422, 448, 422, 448, 422, 448, 422, 448,
+  422, 448, 422, 448, 422, 1319, 422, 448, 422, 448, 422, 448, 422, 448,
+  422, 448, 422, 449, 421, 449, 421, 449, 421, 448, 422, 1320, 421, 449,
+  421, 449, 421, 449, 422, 449, 421, 449, 421, 449, 422, 449, 421, 449,
+  421, 1320, 421, 449, 421, 1320, 421, 1320, 421, 1320, 421, 1320, 421, 449,
+  421, 449, 421, 1320, 421, 449, 421, 1320, 421, 1320, 421, 1320, 421, 1320,
+  421, 449, 421, 1320, 421
+};
+
+static const uint16_t IR_RAW_UNIVERSALOFF_IR_12_EHP_WAAGEN[] PROGMEM = {
+  528, 1870, 433, 380, 432, 386, 426, 392, 431, 780, 428, 390, 433, 386,
+  426, 392, 431, 387, 425, 392, 431, 65535, 536, 1862, 430, 382, 431, 389,
+  423, 421, 402, 783, 425, 394, 429, 389, 434, 386, 426, 418, 405, 387,
+  425, 65535, 531, 1868, 424, 389, 434, 386, 426, 392, 431, 781, 427, 392,
+  431, 388, 424, 395, 428, 416, 407, 411, 402, 65535, 532, 1867, 425, 388,
+  424, 395, 428, 391, 432, 779, 430, 390, 433, 412, 400, 418, 405, 389,
+  423, 419, 404, 65535, 533, 1866, 426, 387, 425, 394, 429, 415, 408, 804,
+  404, 390, 423, 421, 402, 392, 431, 388, 424, 419, 404, 65535, 534, 1864,
+  428, 385, 427, 392, 431, 388, 424, 787, 432, 388, 424, 395, 428, 392,
+  431, 388, 424, 394, 429
+};
+
+static const IrCommand IR_FILE_4_CMDS[] PROGMEM = {
+  {"SAMSUNG", "parsed", "Samsung32", 0x00000007u, 0x00000002u, 38000u, 0.330000f, nullptr, 0},
+  {"GRUNDIG", "parsed", "RC5", 0x00000000u, 0x0000000Cu, 38000u, 0.330000f, nullptr, 0},
+  {"LG", "parsed", "RC5", 0x00000000u, 0x0000000Cu, 38000u, 0.330000f, nullptr, 0},
+  {"SONY", "parsed", "SIRC", 0x00000001u, 0x00000015u, 38000u, 0.330000f, nullptr, 0},
+  {"TELEFUNKEN", "parsed", "RC5", 0x00000001u, 0x0000000Cu, 38000u, 0.330000f, nullptr, 0},
+  {"VIZIO", "parsed", "NEC", 0x00000004u, 0x00000008u, 38000u, 0.330000f, nullptr, 0},
+  {"PHILLIPS", "parsed", "RC6", 0x00000000u, 0x0000000Cu, 38000u, 0.330000f, nullptr, 0},
+  {"MEDION", "parsed", "NEC", 0x00000019u, 0x00000018u, 38000u, 0.330000f, nullptr, 0},
+  {"PANASONIC", "raw", "", 0x00000000u, 0x00000000u, 38000u, 0.330000f, IR_RAW_UNIVERSALOFF_IR_8_PANASONIC, 299},
+  {"OPPO", "parsed", "NEC", 0x00000049u, 0x0000001Au, 38000u, 0.330000f, nullptr, 0},
+  {"FETCH", "parsed", "NECext", 0x00004664u, 0x0000A25Du, 38000u, 0.330000f, nullptr, 0},
+  {"DENVER", "parsed", "NECext", 0x00007F00u, 0x0000F50Au, 38000u, 0.330000f, nullptr, 0},
+  {"EHP WAAGEN", "raw", "", 0x00000000u, 0x00000000u, 38000u, 0.330000f, IR_RAW_UNIVERSALOFF_IR_12_EHP_WAAGEN, 131},
+  {"XBOX", "parsed", "NECext", 0x0000D880u, 0x0000D02Fu, 38000u, 0.330000f, nullptr, 0},
+  {"PLATINUM", "parsed", "NECext", 0x00007F00u, 0x0000EA15u, 38000u, 0.330000f, nullptr, 0},
+  {"HISENSE", "parsed", "NECext", 0x0000BF00u, 0x0000F20Du, 38000u, 0.330000f, nullptr, 0},
+  {"ELITELUX", "parsed", "NECext", 0x00007F00u, 0x0000EA15u, 38000u, 0.330000f, nullptr, 0},
+};
+
 static const IrFile IR_FILES[] = {
   {"Optoma.ir", IR_FILE_0_CMDS, sizeof(IR_FILE_0_CMDS) / sizeof(IR_FILE_0_CMDS[0])},
   {"SonyTV.ir", IR_FILE_1_CMDS, sizeof(IR_FILE_1_CMDS) / sizeof(IR_FILE_1_CMDS[0])},
-  {"remote.ir", IR_FILE_2_CMDS, sizeof(IR_FILE_2_CMDS) / sizeof(IR_FILE_2_CMDS[0])}
+  {"Toshiba.ir", IR_FILE_2_CMDS, sizeof(IR_FILE_2_CMDS) / sizeof(IR_FILE_2_CMDS[0])},
+  {"remote.ir", IR_FILE_3_CMDS, sizeof(IR_FILE_3_CMDS) / sizeof(IR_FILE_3_CMDS[0])},
+  {"universaloff.ir", IR_FILE_4_CMDS, sizeof(IR_FILE_4_CMDS) / sizeof(IR_FILE_4_CMDS[0])}
 };
 static constexpr size_t IR_FILE_COUNT = sizeof(IR_FILES) / sizeof(IR_FILES[0]);

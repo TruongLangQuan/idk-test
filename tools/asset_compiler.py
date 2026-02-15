@@ -555,6 +555,83 @@ static constexpr size_t IR_FILE_COUNT = sizeof(IR_FILES) / sizeof(IR_FILES[0]);
     return len(parsed), cmd_count
 
 
+def _portal_html_is_safe(html: str) -> bool:
+    # Heuristic safety gate: refuse obvious credential capture pages.
+    # This keeps idk-portal templates limited to non-sensitive forms.
+    lowered = html.lower()
+    if 'type="password"' in lowered or "type='password'" in lowered:
+        return False
+    for bad in ("name=\"password\"", "name='password'", "name=\"email\"", "name='email'", "gmail"):
+        if bad in lowered:
+            return False
+    return True
+
+
+def compile_portal_html(src_dir: Path, output_header: Path) -> int:
+    files = list_files(src_dir, [".html", ".htm"])
+    if not files:
+        empty = """#pragma once
+#include <stddef.h>
+#include <stdint.h>
+
+#ifndef PROGMEM
+#define PROGMEM
+#endif
+
+struct PortalPage {
+  const char* name;
+  const char* html;
+  size_t bytes;
+};
+
+static constexpr PortalPage PORTAL_PAGES[] = {};
+static constexpr size_t PORTAL_PAGE_COUNT = 0;
+"""
+        write_text(output_header, empty)
+        return 0
+
+    blocks: List[str] = []
+    entries: List[str] = []
+    kept = 0
+
+    for p in files:
+        html = p.read_text(encoding="utf-8", errors="replace")
+        if not _portal_html_is_safe(html):
+            # Skip unsafe templates rather than embedding them.
+            continue
+
+        kept += 1
+        ident = sanitize_identifier(p.stem)
+        var_name = f"PORTAL_HTML_{ident}"
+        # Raw literal keeps HTML readable and avoids escaping.
+        blocks.append(f'static const char {var_name}[] PROGMEM = R\"rawliteral({html})rawliteral\";\n')
+        entries.append(f'  {{"{p.name}", {var_name}, sizeof({var_name}) - 1}}')
+
+    header = f"""#pragma once
+#include <stddef.h>
+#include <stdint.h>
+
+#ifndef PROGMEM
+#define PROGMEM
+#endif
+
+struct PortalPage {{
+  const char* name;
+  const char* html;
+  size_t bytes;
+}};
+
+{chr(10).join(blocks)}
+static constexpr PortalPage PORTAL_PAGES[] = {{
+{",\n".join(entries)}
+}};
+static constexpr size_t PORTAL_PAGE_COUNT = sizeof(PORTAL_PAGES) / sizeof(PORTAL_PAGES[0]);
+"""
+
+    write_text(output_header, header)
+    return kept
+
+
 def resolve_paths(script_path: Path) -> Paths:
     idk_test_root = script_path.resolve().parent.parent
     repo_root = idk_test_root.parent
@@ -572,7 +649,7 @@ def parse_color(s: str) -> Tuple[int, int, int]:
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Compile data assets into built-in C++ headers")
-    p.add_argument("command", choices=["all", "img", "gif", "txt", "ir"], help="task to run")
+    p.add_argument("command", choices=["all", "img", "gif", "txt", "ir", "portalhtml"], help="task to run")
     p.add_argument("--fit", choices=["contain", "cover", "stretch"], default="contain")
     p.add_argument("--rotate-left", action="store_true", default=False)
     p.add_argument("--bg", default="0,0,0", help="background color for contain mode, e.g. 0,0,0")
@@ -586,6 +663,7 @@ def main() -> int:
     bg = parse_color(args.bg)
 
     img_count = gif_frames = txt_lines = ir_files = ir_cmds = -1
+    portal_pages = -1
 
     if args.command in ("all", "img"):
         img_count = compile_images(
@@ -625,6 +703,12 @@ def main() -> int:
             output_header=paths.idk_test_root / "idk-ir/include/generated/ir_assets.h",
         )
 
+    if args.command in ("all", "portalhtml"):
+        portal_pages = compile_portal_html(
+            src_dir=paths.data_root / "portal_html",
+            output_header=paths.idk_test_root / "idk-portal/include/generated/portal_pages.h",
+        )
+
     print("Asset compilation done")
     if img_count >= 0:
         print(f"- Images compiled: {img_count}")
@@ -636,6 +720,8 @@ def main() -> int:
     if ir_files >= 0:
         print(f"- IR files compiled: {ir_files}")
         print(f"- IR commands compiled: {ir_cmds}")
+    if portal_pages >= 0:
+        print(f"- Portal HTML templates compiled: {portal_pages}")
 
     return 0
 
