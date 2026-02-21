@@ -123,7 +123,7 @@ def parse_hex_bytes(value: str) -> int:
     return out
 
 
-def parse_ir_file(path: Path) -> IrFileData:
+def parse_ir_file(path: Path, display_name: str | None = None) -> IrFileData:
     commands: List[IrCommandData] = []
     cur: IrCommandData | None = None
 
@@ -185,7 +185,51 @@ def parse_ir_file(path: Path) -> IrFileData:
             cur.raw_data = nums
 
     flush()
-    return IrFileData(name=path.name, commands=commands)
+    return IrFileData(name=display_name or path.name, commands=commands)
+
+
+def parse_ir_tree_manifest(manifest: Path, src_dir: Path) -> List[Path]:
+    """Parse `tree`-style text and return ordered `.ir` files under src_dir.
+
+    Supports lines like:
+      │   ├── A/B/C.ir
+      │   └── Folder
+    """
+    if not manifest.exists():
+        return []
+
+    lines = manifest.read_text(encoding="utf-8", errors="replace").splitlines()
+    stack: List[str] = []
+    ordered: List[Path] = []
+    seen: set[Path] = set()
+
+    entry_re = re.compile(r"^(?P<prefix>[│ ]*)(?:├──|└──)\s(?P<name>.+)$")
+
+    for raw in lines:
+        m = entry_re.match(raw)
+        if not m:
+            continue
+        prefix = m.group("prefix")
+        name = m.group("name").strip()
+        if not name:
+            continue
+
+        depth = len(prefix.replace("│", " ").expandtabs(4)) // 4
+        if len(stack) <= depth:
+            stack.extend([""] * (depth - len(stack) + 1))
+
+        if name.lower().endswith(".ir"):
+            rel_parts = [p for p in stack[:depth] if p] + [name]
+            rel = Path(*rel_parts)
+            full = (src_dir / rel).resolve()
+            if full.exists() and full.is_file() and full.suffix.lower() == ".ir" and full not in seen:
+                seen.add(full)
+                ordered.append(full)
+        else:
+            stack[depth] = name
+            del stack[depth + 1 :]
+
+    return ordered
 
 
 def compile_images(
@@ -449,7 +493,11 @@ static constexpr size_t TXT_LINE_COUNT = sizeof(TXT_LINES) / sizeof(TXT_LINES[0]
 
 
 def compile_ir(src_dir: Path, output_header: Path) -> Tuple[int, int]:
-    files = list_files(src_dir, [".ir"])
+    # Prefer the user-provided tree manifest order, fallback to recursive scan.
+    manifest = src_dir.parent.parent / "ir.txt"
+    files = parse_ir_tree_manifest(manifest, src_dir)
+    if not files:
+        files = sorted([p for p in src_dir.rglob("*") if p.is_file() and p.suffix.lower() == ".ir"])
     if not files:
         empty = """#pragma once
 #include <stddef.h>
@@ -479,7 +527,41 @@ static constexpr size_t IR_FILE_COUNT = 0;
         write_text(output_header, empty)
         return 0, 0
 
-    parsed = [parse_ir_file(p) for p in files]
+    # Keep output within practical firmware size.
+    max_files = 120
+    max_cmds = 2500
+    max_raw_items = 220_000
+
+    parsed: List[IrFileData] = []
+    cmd_budget = 0
+    raw_budget = 0
+    for p in files:
+        if len(parsed) >= max_files:
+            break
+        rel_name = str(p.relative_to(src_dir)).replace("\\", "/")
+        pf = parse_ir_file(p, display_name=rel_name)
+        if not pf.commands:
+            continue
+        next_cmds = len(pf.commands)
+        next_raw = sum(len(c.raw_data) for c in pf.commands if c.raw_data)
+        if cmd_budget + next_cmds > max_cmds:
+            break
+        if raw_budget + next_raw > max_raw_items:
+            break
+        parsed.append(pf)
+        cmd_budget += next_cmds
+        raw_budget += next_raw
+
+    if not parsed:
+        write_text(
+            output_header,
+            "#pragma once\n#include <stddef.h>\n#include <stdint.h>\n"
+            "struct IrCommand{const char* name;const char* type;const char* protocol;uint32_t address;"
+            "uint32_t command;uint32_t frequency;float duty_cycle;const uint16_t* raw_data;size_t raw_len;};\n"
+            "struct IrFile{const char* name;const IrCommand* commands;size_t command_count;};\n"
+            "static constexpr IrFile IR_FILES[] = {};\nstatic constexpr size_t IR_FILE_COUNT = 0;\n",
+        )
+        return 0, 0
     file_blocks: List[str] = []
     file_entries: List[str] = []
     cmd_count = 0

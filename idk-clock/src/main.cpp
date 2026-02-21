@@ -264,53 +264,30 @@ void handleConnectingState() {
 void drawClockUI() {
   M5.Display.fillScreen(TFT_BLACK);
 
-  // Minimal stars
-  M5.Display.drawPixel(40, 30, M5.Display.color565(180, 180, 180));
-  M5.Display.drawPixel(41, 30, M5.Display.color565(180, 180, 180));
-  M5.Display.drawPixel(200, 90, M5.Display.color565(170, 170, 170));
-  M5.Display.drawPixel(120, 60, M5.Display.color565(175, 175, 175));
-
-  // Static accretion ring
-  M5.Display.drawEllipse(120, 67, 80, 18, M5.Display.color565(150, 150, 150));
-  M5.Display.drawEllipse(120, 67, 79, 17, M5.Display.color565(70, 70, 70));
-
-  // Black-hole core with monochrome gradient layers
-  const uint16_t shades[] = {
-      M5.Display.color565(0, 0, 0),
-      M5.Display.color565(5, 5, 5),
-      M5.Display.color565(10, 10, 10),
-      M5.Display.color565(17, 17, 17),
-      M5.Display.color565(8, 8, 8),
-      M5.Display.color565(0, 0, 0),
-  };
-  const int radii[] = {55, 48, 40, 31, 22, 12};
-  for (int i = 0; i < 6; ++i) {
-    M5.Display.fillCircle(120, 67, radii[i], shades[i]);
-  }
-  M5.Display.drawCircle(120, 67, 55, M5.Display.color565(50, 50, 50));
-
   struct tm tm_now;
   bool hasTime = getLocalTime(&tm_now, 20);
 
-  char time_buf[8] = "--:--";
-  char date_buf[6] = "--/--";
+  char time_buf[16] = "--:--:--";
+  char date_buf[24] = "--- 0000-00-00";
   if (hasTime) {
-    snprintf(time_buf, sizeof(time_buf), "%02d:%02d", tm_now.tm_hour, tm_now.tm_min);
-    snprintf(date_buf, sizeof(date_buf), "%02d/%02d", tm_now.tm_mday, tm_now.tm_mon + 1);
+    static const char* kDays[] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+    const char* day = kDays[(tm_now.tm_wday >= 0 && tm_now.tm_wday < 7) ? tm_now.tm_wday : 0];
+    snprintf(time_buf, sizeof(time_buf), "%02d:%02d:%02d", tm_now.tm_hour, tm_now.tm_min, tm_now.tm_sec);
+    snprintf(date_buf, sizeof(date_buf), "%s %04d-%02d-%02d", day, tm_now.tm_year + 1900,
+             tm_now.tm_mon + 1, tm_now.tm_mday);
   }
 
-  // Larger time
+  // Minimal clock: big time centered on black background.
   M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
   M5.Display.setTextFont(4);
   int tw = M5.Display.textWidth(time_buf);
-  M5.Display.setCursor(120 - tw / 2, 48);
+  M5.Display.setCursor(120 - tw / 2, 46);
   M5.Display.print(time_buf);
 
-  // Larger date
-  M5.Display.setTextColor(M5.Display.color565(200, 200, 200), TFT_BLACK);
-  M5.Display.setTextFont(2);
+  M5.Display.setTextColor(M5.Display.color565(210, 210, 210), TFT_BLACK);
+  M5.Display.setTextFont(1);
   int dw = M5.Display.textWidth(date_buf);
-  M5.Display.setCursor(120 - dw / 2, 86);
+  M5.Display.setCursor(120 - dw / 2, 96);
   M5.Display.print(date_buf);
 }
 
