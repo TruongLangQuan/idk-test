@@ -1,0 +1,33 @@
+# Build output
+build/
+sdkconfig
+sdkconfig.old
+*.bin
+*.elf
+*.map
+*.o
+*.a
+*.d
+
+# ESP-IDF
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# NVS partition
+nvs.bin

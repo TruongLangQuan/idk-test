@@ -1,0 +1,100 @@
+# ===========================================================================
+# idk-nagger-4 : Flash Report
+# ---------------------------------------------------------------------------
+# SPDX-License-Identifier: MIT
+#
+# Flash memory layout and programming commands for ESP32-WROOM-32U
+# ===========================================================================
+
+## Flash Layout
+
+| Partition    | Type | Offset     | Size       | Notes                    |
+|------------- |------|------------|------------|--------------------------|
+| bootloader   | boot | 0x1000     | ~24 KB     | ESP-IDF 2nd stage boot   |
+| partition_tbl| data | 0x8000     | 4 KB       | Partition table          |
+| nvs          | data | 0x9000     | 24 KB      | Non-volatile storage     |
+| phy_init     | data | 0xF000     | 4 KB       | WiFi PHY calibration     |
+| factory      | app  | 0x10000    | 1792 KB    | Main firmware image      |
+| ota_0        | app  | 0x1D0000   | 1024 KB    | OTA slot 0 (future)      |
+| ota_1        | app  | 0x2D0000   | 1024 KB    | OTA slot 1 (future)      |
+
+Total flash: 4 MB (ESP32-WROOM-32U)
+
+
+## Build Artifacts
+
+After `idf.py build`, the following files are produced in `build/`:
+
+| File                                      | Description              |
+|-------------------------------------------|--------------------------|
+| build/idk-nagger-4.bin                    | Main application binary  |
+| build/bootloader/bootloader.bin           | Bootloader binary        |
+| build/partition_table/partition-table.bin  | Partition table binary   |
+
+
+## Flash Commands
+
+### Using idf.py (recommended):
+
+```bash
+# Build + flash in one step:
+idf.py -p /dev/ttyUSB0 -b 115200 flash
+
+# Build + flash + monitor:
+idf.py -p /dev/ttyUSB0 -b 115200 flash monitor
+```
+
+### Using esptool.py (manual):
+
+```bash
+esptool.py --chip esp32 \
+    --port /dev/ttyUSB0 \
+    --baud 115200 \
+    --before default_reset \
+    --after hard_reset \
+    write_flash \
+    0x1000  build/bootloader/bootloader.bin \
+    0x8000  build/partition_table/partition-table.bin \
+    0x10000 build/idk-nagger-4.bin
+```
+
+### Using higher baud rate (faster flash):
+
+```bash
+esptool.py --chip esp32 \
+    --port /dev/ttyUSB0 \
+    --baud 921600 \
+    --before default_reset \
+    --after hard_reset \
+    write_flash \
+    0x1000  build/bootloader/bootloader.bin \
+    0x8000  build/partition_table/partition-table.bin \
+    0x10000 build/idk-nagger-4.bin
+```
+
+
+## Verification
+
+After flashing, verify with:
+
+```bash
+esptool.py --chip esp32 --port /dev/ttyUSB0 flash_id
+```
+
+Expected output:
+```
+Chip is ESP32-D0WD-V3 (revision v3.1)
+Crystal is 40MHz
+Flash size: 4MB
+```
+
+
+## Serial Monitor
+
+```bash
+idf.py -p /dev/ttyUSB0 monitor
+# or
+screen /dev/ttyUSB0 115200
+# or
+minicom -D /dev/ttyUSB0 -b 115200
+```
