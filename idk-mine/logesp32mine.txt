@@ -1,0 +1,125 @@
+
+Please build project in debug configuration to get more details about an exception.
+See https://docs.platformio.org/page/projectconf/build_configurations.html
+
+
+--- Terminal on /dev/ttyUSB0 | 115200 8-N-1
+--- Available filters and text transformations: debug, default, direct, esp32_exception_decoder, hexlify, log2file, nocontrol, printable, send_on_enter, time
+--- More details at https://bit.ly/pio-monitor-filters
+--- Quit: Ctrl+C | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+coin=BTC wifi=0 pool=0 hash_total=16937984 best_diff=19004280.000000 pool_job=- pool_target=- target32=0 blocks=19 hashrate=8379478.50H/s accepted=0 rejected=0 status=wifi:disconnected
+coin=BTC wifi=0 pool=0 hash_total=25294848 best_diff=34636832.000000 pool_job=- pool_target=- target32=0 blocks=28 hashrate=8290539.50H/s accepted=0 rejected=0 status=wifi:disconnected
+coin=BTC wifi=0 pool=0 hash_total=33680384 best_diff=34636832.000000 pool_job=- pool_target=- target32=0 blocks=41 hashrate=8294298.50H/s accepted=0 rejected=0 status=wifi:disconnected
+E (10914) task_wdt: Task watchdog got triggered. The following tasks did not reset the watchdog in time:
+E (10914) task_wdt:  - IDLE0 (CPU 0)
+E (10914) task_wdt: Tasks currently running:
+E (10914) task_wdt: CPU 0: mine-w0
+E (10914) task_wdt: CPU 1: mine-w1
+E (10914) task_wdt: Aborting.
+
+abort() was called at PC 0x400de611 on core 0
+
+
+Backtrace: 0x40083695:0x3ffbebec |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 4a20058852620222
+
+E (5624) esp_core_dump_flash: Core dump flash config is corrupted! CRC=0x7bd5c66f instead of 0x0
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1184
+load:0x40078000,len:13232
+load:0x40080400,len:3028
+entry 0x400805e4
+E (419) esp_core_dump_flash: No core d�f partition found!
+E (419) esp_core_dump_flash: No core dump partition found!
+E (273) esp_littlefs: partition "spiffs" could not be found
+E (274) esp_littlefs: Failed to initialize LittleFS
+[   279][E][LittleFS.cpp:98] begin(): Mounting LittleFS failed! Error: 261
+[config] LittleFS mount failed; using defaults
+=== idk-mine headless telemetry ===
+project=idk-esp32-mine miner=idk-nagger-4 worker=esp32 default_coin=BTC
+coin=BTC wifi=0 pool=0 hash_total=121856 best_diff=570229.312500 pool_job=- pool_target=- target32=0 blocks=0 hashrate=0.00H/s accepted=0 rejected=0 status=wifi:disconnected
+coin=BTC wifi=0 pool=0 hash_total=8543232 best_diff=31580642.000000 pool_job=- pool_target=- target32=0 blocks=12 hashrate=8400425.00H/s accepted=0 rejected=0 status=wifi:disconnected
+coin=BTC wifi=0 pool=0 hash_total=16995328 best_diff=31580642.000000 pool_job=- pool_target=- target32=0 blocks=22 hashrate=8294500.50H/s accepted=0 rejected=0 status=wifi:disconnected
+coin=BTC wifi=0 pool=0 hash_total=16995328 best_diff=31580642.000000 pool_job=- pool_target=- target32=0 blocks=22 hashrate=8294500.50H/s accepted=0 rejected=0 status=wifi:disconnected
+coin=BTC wifi=0 pool=0 hash_total=33794048 best_diff=31580642.000000 pool_job=- pool_target=- target32=0 blocks=40 hashrate=8295619.00H/s accepted=0 rejected=0 status=wifi:disconnected
+E (10914) task_wdt: Task watchdog got triggered. The following tasks did not reset the watchdog in time:
+E (10914) task_wdt:  - IDLE0 (CPU 0)
+E (10914) task_wdt: Tasks currently running:
+E (10914) task_wdt: CPU 0: mine-w0
+E (10914) task_wdt: CPU 1: mine-w1
+E (10914) task_wdt: Aborting.
+
+abort() was called at PC 0x400de611 on core 0
+
+
+Backtrace: 0x40083695:0x3ffbebec |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 4a20058852620222
+
+E (5624) esp_core_dump_flash: Core dump flash config is corrupted! CRC=0x7bd5c66f instead of 0x0
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1184
+load:0x40078000,len:13232
+load:0x40080400,len:3028
+entry 0x400805e4
+E (419) esp_core_dump_flash: No core d�f partition found!
+E (419) esp_core_dump_flash: No core dump partition found!
+E (273) esp_littlefs: partition "spiffs" could not be found
+E (274) esp_littlefs: Failed to initialize LittleFS
+[   279][E][LittleFS.cpp:98] begin(): Mounting LittleFS failed! Error: 261
+[config] LittleFS mount failed; using defaults
+=== idk-mine headless telemetry ===
+project=idk-esp32-mine miner=idk-nagger-4 worker=esp32 default_coin=BTC
+coin=BTC wifi=0 pool=0 hash_total=0 best_diff=0.000000 pool_job=- pool_target=- target32=0 blocks=0 hashrate=0.00H/s accepted=0 rejected=0 status=booting
+coin=BTC wifi=0 pool=0 hash_total=102400 best_diff=68298.757812 pool_job=- pool_target=- target32=0 blocks=0 hashrate=0.00H/s accepted=0 rejected=0 status=wifi:disconnected
+coin=BTC wifi=0 pool=0 hash_total=17036288 best_diff=12449181.000000 pool_job=- pool_target=- target32=0 blocks=19 hashrate=8314839.50H/s accepted=0 rejected=0 status=wifi:disconnected
+coin=BTC wifi=0 pool=0 hash_total=25337856 best_diff=12449181.000000 pool_job=- pool_target=- target32=0 blocks=22 hashrate=8293274.50H/s accepted=0 rejected=0 status=wifi:disconnected
+coin=BTC wifi=0 pool=0 hash_total=33681408 best_diff=12449181.000000 pool_job=- pool_target=- target32=0 blocks=27 hashrate=8293789.50H/s accepted=0 rejected=0 status=wifi:disconnected
+E (10916) task_wdt: Task watchdog got triggered. The following tasks did not reset the watchdog in time:
+E (10916) task_wdt:  - IDLE0 (CPU 0)
+E (10916) task_wdt: Tasks currently running:
+E (10916) task_wdt: CPU 0: mine-w0
+E (10916) task_wdt: CPU 1: mine-w1
+E (10916) task_wdt: Aborting.
+
+abort() was called at PC 0x400de611 on core 0
+
+
+Backtrace: 0x40083695:0x3ffbebec |<-CORRUPTED
+
+
+
+
+ELF file SHA256: 4a20058852620222
+
+E (5625) esp_core_dump_flash: Core dump flash config is corrupted! CRC=0x7bd5c66f instead of 0x0
+Rebooting...
+ets Jul 29 2019 12:21:46
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1184
+load:0x40078000,len:13232
+load:0x40080400,len:3028
+entry 0x400805e4

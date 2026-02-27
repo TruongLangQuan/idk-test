@@ -1,0 +1,7 @@
+{
+  "name": "idk-mine-core",
+  "version": "0.1.0",
+  "description": "Shared mining firmware core for CYD and ESP32-WROOM-32U variants",
+  "frameworks": "arduino",
+  "platforms": "espressif32"
+}
