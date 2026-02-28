@@ -1,0 +1,12 @@
+1.stock
+2.change
+3.buzz
+4.decline
+5.multipy
+6.useless
+7.robust
+8.august
+9.rifle
+10.lesson
+11.basic
+12.code

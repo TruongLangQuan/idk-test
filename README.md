@@ -2,7 +2,7 @@
 
 Bộ firmware gồm 6 project độc lập:
 
-1. `idk-gif` (M5StickC Plus2, 240x135)
+1. `idk-gif` (M5StickC Plus2, 240x135)                                                                                                
 2. `idk-txt` (M5StickC Plus2, 240x135)
 3. `idk-img` (M5StickC Plus2, 240x135)
 4. `idk-chess` (M5StickC Plus2, 240x135)
