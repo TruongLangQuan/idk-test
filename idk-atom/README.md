@@ -1,17 +1,24 @@
 # idk-atom
+Hiệu ứng đám mây orbital nguyên tử chạy trên M5StickC.
+## Tính năng
+- 3 kiểu orbital (1s/2p/3d) với chuyển động mượt
+- Tối ưu cho màn 240x135
 
-M5StickC Plus2 orbital cloud visualization inspired by kavan010/Atoms.
+## Điều khiển
+- BtnA: orbital kế tiếp
+- BtnB: orbital trước đó
 
-## Controls
-- `BtnA` next orbital
-- `BtnB` previous orbital
-
-## Build & Upload
+## Build
 ```bash
-pio run
-pio run -t upload
+cd /home/truonglangquan/idk-code/idk-test/idk-atom
+pio run -e firmware
 ```
 
-## Notes
-- Display rotation is set to left landscape (`setRotation(3)`). Change to `1` if your orientation is flipped.
-- The visualization is a compact 2D interpretation designed for the M5StickC Plus2.
+## Flash
+```bash
+pio run -e firmware -t upload
+```
+
+## Ghi chú
+- Màn hình xoay trái `setRotation(3)`
+- Dựa trên ý tưởng kavan010/Atoms

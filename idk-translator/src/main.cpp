@@ -15,6 +15,7 @@ namespace {
 
 constexpr int kMaxInputBytes = 512;
 constexpr int kMaxOutputBytes = 768;
+constexpr int kMaxDictBytes = 220;
 constexpr uint32_t kHttpTimeoutMs = 12000;
 constexpr uint32_t kLongPressMs = 700;
 
@@ -57,6 +58,59 @@ const VowelGroup kVowelsUpper[] = {
     {"U", {u8"\u00DA", u8"\u00D9", u8"\u1EE6", u8"\u0168", u8"\u1EE4"}},
     {u8"\u01AF", {u8"\u1EE8", u8"\u1EEA", u8"\u1EEC", u8"\u1EEE", u8"\u1EF0"}},
     {"Y", {u8"\u00DD", u8"\u1EF2", u8"\u1EF6", u8"\u1EF8", u8"\u1EF4"}},
+};
+
+constexpr int kKeyboardRows = 4;
+constexpr int kKeyboardCols = 12;
+const char kQwertyKeys[kKeyboardRows][kKeyboardCols][2] = {
+    {{'1', '!'},
+     {'2', '@'},
+     {'3', '#'},
+     {'4', '$'},
+     {'5', '%'},
+     {'6', '^'},
+     {'7', '&'},
+     {'8', '*'},
+     {'9', '('},
+     {'0', ')'},
+     {'-', '_'},
+     {'=', '+'}},
+    {{'q', 'Q'},
+     {'w', 'W'},
+     {'e', 'E'},
+     {'r', 'R'},
+     {'t', 'T'},
+     {'y', 'Y'},
+     {'u', 'U'},
+     {'i', 'I'},
+     {'o', 'O'},
+     {'p', 'P'},
+     {'[', '{'},
+     {']', '}'}},
+    {{'a', 'A'},
+     {'s', 'S'},
+     {'d', 'D'},
+     {'f', 'F'},
+     {'g', 'G'},
+     {'h', 'H'},
+     {'j', 'J'},
+     {'k', 'K'},
+     {'l', 'L'},
+     {';', ':'},
+     {'\"', '\''},
+     {'|', '\\'}},
+    {{'\\', '|'},
+     {'z', 'Z'},
+     {'x', 'X'},
+     {'c', 'C'},
+     {'v', 'V'},
+     {'b', 'B'},
+     {'n', 'N'},
+     {'m', 'M'},
+     {',', '<'},
+     {'.', '>'},
+     {'?', '/'},
+     {'/', '/'}},
 };
 
 class MemoryFontWrapper : public lgfx::v1::DataWrapper {
@@ -116,8 +170,9 @@ String g_endpoint;
 String g_api_key;
 String g_input_text = "";
 String g_output_text = "";
+String g_dict_summary = "";
 String g_status = "Ready";
-String g_src_lang = "auto";
+String g_src_lang = "en";
 String g_tgt_lang = "vi";
 String g_alt_tgt_lang = "en";
 
@@ -289,6 +344,66 @@ String truncateUtf8(const String& s, size_t maxBytes) {
   return out;
 }
 
+String urlEncode(const String& s) {
+  const char* hex = "0123456789ABCDEF";
+  String out;
+  out.reserve(s.length() * 3);
+  for (size_t i = 0; i < s.length(); ++i) {
+    uint8_t c = static_cast<uint8_t>(s[i]);
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
+        c == '-' || c == '_' || c == '.' || c == '~') {
+      out += static_cast<char>(c);
+    } else {
+      out += '%';
+      out += hex[(c >> 4) & 0x0F];
+      out += hex[c & 0x0F];
+    }
+  }
+  return out;
+}
+
+bool isPunctTrim(char c) {
+  return c == '.' || c == ',' || c == '!' || c == '?' || c == ';' || c == ':' || c == '"' || c == '\'' ||
+         c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}';
+}
+
+String cleanEnglishWord(const String& text) {
+  String t = text;
+  t.trim();
+  while (t.length() > 0 && isPunctTrim(t[0])) t.remove(0, 1);
+  while (t.length() > 0 && isPunctTrim(t[t.length() - 1])) t.remove(t.length() - 1, 1);
+  if (t.isEmpty()) return String("");
+  if (t.indexOf(' ') >= 0 || t.indexOf('\n') >= 0 || t.indexOf('\t') >= 0) return String("");
+  for (size_t i = 0; i < t.length(); ++i) {
+    char c = t[i];
+    bool ok = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '-' || c == '\'';
+    if (!ok) return String("");
+  }
+  return t;
+}
+
+String posAbbrev(const String& pos) {
+  String p = pos;
+  p.toLowerCase();
+  if (p == "noun") return "n";
+  if (p == "verb") return "v";
+  if (p == "adjective") return "adj";
+  if (p == "adverb") return "adv";
+  if (p == "pronoun") return "pron";
+  if (p == "preposition") return "prep";
+  if (p == "conjunction") return "conj";
+  if (p == "interjection") return "interj";
+  return pos;
+}
+
+bool shouldUseDictionary(const String& word) {
+  if (word.isEmpty()) return false;
+  if (word.length() > 32) return false;
+  if (g_src_lang == "en") return true;
+  if (g_src_lang == "auto" && g_tgt_lang == "vi") return true;
+  return false;
+}
+
 void saveSettings() {
   g_prefs.putString("endpoint", g_endpoint);
   g_prefs.putString("apikey", g_api_key);
@@ -300,7 +415,7 @@ void saveSettings() {
 void loadSettings() {
   g_endpoint = g_prefs.getString("endpoint", kDefaultEndpoint);
   g_api_key = g_prefs.getString("apikey", "");
-  g_src_lang = g_prefs.getString("src", "auto");
+  g_src_lang = g_prefs.getString("src", "en");
   g_tgt_lang = g_prefs.getString("tgt", "vi");
   g_alt_tgt_lang = g_prefs.getString("alt", "en");
 }
@@ -442,92 +557,174 @@ void scanWifi() {
   drawWifi();
 }
 
-bool inputPassword(String& out) {
-  String value = "";
-  const char* top[] = {"OK", "DEL", "SP", "ESC"};
-  const char* row1 = "1234567890";
-  const char* row2 = "qwertyuiop";
-  const char* row3 = "asdfghjkl";
-  const char* row4 = "zxcvbnm-_.@";
+bool keyboardInput(String& out, const String& title, bool mask_input, bool allow_telex) {
+  const char* buttons_telex[] = {"OK", "CAP", "DEL", "SPACE", "BACK", "VI"};
+  const char* buttons_basic[] = {"OK", "CAP", "DEL", "SPACE", "BACK"};
+  const char** buttons = allow_telex ? buttons_telex : buttons_basic;
+  const int btnCount = allow_telex ? 6 : 5;
+  constexpr int gap = 2;
+  constexpr int btnH = 16;
 
-  int row = 0;
-  int col = 0;
+  const int screenW = M5.Display.width();
+  const int screenH = M5.Display.height();
+  const int btnW = (screenW - gap * (btnCount + 1)) / btnCount;
+  const int btnY = 2;
+  const int titleY = btnY + btnH + 2;
+  const int boxY = titleY + 10;
+  const int boxH = 18;
+  const int gridY = boxY + boxH + 4;
+  const int keyW = screenW / kKeyboardCols;
+  const int keyH = (screenH - gridY) / kKeyboardRows;
 
-  auto rowLen = [&](int r) {
-    if (r == 0) return 4;
-    if (r == 1) return static_cast<int>(strlen(row1));
-    if (r == 2) return static_cast<int>(strlen(row2));
-    if (r == 3) return static_cast<int>(strlen(row3));
-    return static_cast<int>(strlen(row4));
-  };
+  bool caps = false;
+  int x = 0;
+  int y = -1;  // -1 = top buttons row
+  String value = out;
 
   auto draw = [&]() {
     M5.Display.fillScreen(TFT_BLACK);
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-    M5.Display.setCursor(2, 2);
-    M5.Display.println("Password");
-    M5.Display.setCursor(2, 14);
-    M5.Display.print("Len: ");
-    M5.Display.print(value.length());
+    M5.Display.setTextWrap(false, false);
+    M5.Display.setTextSize(1);
 
-    M5.Display.drawRect(2, 24, 236, 12, TFT_DARKGREY);
-    M5.Display.setCursor(4, 26);
-    for (size_t i = 0; i < value.length() && i < 42; ++i) M5.Display.print('*');
+    // Top buttons
+    for (int i = 0; i < btnCount; ++i) {
+      const int bx = gap + i * (btnW + gap);
+      const bool selected = (y == -1 && x == i);
+      bool active = false;
+      if (i == 1 && caps) active = true;
+      if (allow_telex && i == 5 && g_telex_mode) active = true;
 
-    int y = 42;
-    for (int i = 0; i < 4; ++i) {
-      M5.Display.setTextColor((row == 0 && col == i) ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
-      M5.Display.setCursor(4 + i * 58, y);
-      M5.Display.print(top[i]);
+      uint16_t bg = selected ? TFT_WHITE : (active ? TFT_DARKGREY : TFT_BLACK);
+      uint16_t fg = selected ? TFT_BLACK : TFT_WHITE;
+
+      M5.Display.fillRect(bx, btnY, btnW, btnH, bg);
+      M5.Display.drawRect(bx, btnY, btnW, btnH, TFT_WHITE);
+      const int tw = M5.Display.textWidth(buttons[i]);
+      const int th = M5.Display.fontHeight();
+      const int tx = bx + (btnW - tw) / 2;
+      const int ty = btnY + (btnH - th) / 2;
+      M5.Display.setTextColor(fg, bg);
+      M5.Display.setCursor(tx, ty);
+      M5.Display.print(buttons[i]);
     }
 
-    auto drawRow = [&](int rr, const char* text, int yy) {
-      int n = strlen(text);
-      for (int i = 0; i < n && i < 28; ++i) {
-        M5.Display.setTextColor((row == rr && col == i) ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
-        M5.Display.setCursor(4 + (i % 14) * 16, yy + (i / 14) * 10);
-        M5.Display.print(text[i]);
+    // Title + counter
+    M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+    M5.Display.setCursor(2, titleY);
+    M5.Display.print(title);
+    if (allow_telex) {
+      M5.Display.print(" (");
+      M5.Display.print(g_telex_mode ? "VI" : "EN");
+      M5.Display.print(")");
+    }
+
+    String counter = String(value.length()) + "/" + String(kMaxInputBytes);
+    int cw = M5.Display.textWidth(counter.c_str());
+    M5.Display.setCursor(screenW - cw - 2, titleY);
+    M5.Display.print(counter);
+
+    // Input box
+    M5.Display.drawRect(2, boxY, screenW - 4, boxH, TFT_DARKGREY);
+    M5.Display.setCursor(4, boxY + 2);
+    M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+    String displayValue = value;
+    if (mask_input) {
+      displayValue = "";
+      displayValue.reserve(value.length());
+      for (size_t i = 0; i < value.length(); ++i) displayValue += '*';
+    }
+    M5.Display.print(truncateUtf8(displayValue, 48));
+
+    // Keyboard grid
+    for (int row = 0; row < kKeyboardRows; ++row) {
+      for (int col = 0; col < kKeyboardCols; ++col) {
+        const int kx = col * keyW;
+        const int ky = gridY + row * keyH;
+        const bool selected = (y == row && x == col);
+        uint16_t bg = selected ? TFT_WHITE : TFT_BLACK;
+        uint16_t fg = selected ? TFT_BLACK : TFT_WHITE;
+        M5.Display.fillRect(kx, ky, keyW, keyH, bg);
+        M5.Display.drawRect(kx, ky, keyW, keyH, TFT_DARKGREY);
+
+        char ch = kQwertyKeys[row][col][caps ? 1 : 0];
+        String label(ch);
+        const int tw = M5.Display.textWidth(label.c_str());
+        const int th = M5.Display.fontHeight();
+        const int tx = kx + (keyW - tw) / 2;
+        const int ty = ky + (keyH - th) / 2;
+        M5.Display.setTextColor(fg, bg);
+        M5.Display.setCursor(tx, ty);
+        M5.Display.print(label);
       }
-    };
-    drawRow(1, row1, 56);
-    drawRow(2, row2, 68);
-    drawRow(3, row3, 88);
-    drawRow(4, row4, 108);
+    }
   };
 
   draw();
+  bool longBHandled = false;
+  bool longPwrHandled = false;
   while (true) {
     M5.update();
-    if (M5.BtnPWR.wasPressed()) {
-      row = (row + 1) % 5;
-      int mx = rowLen(row);
-      if (col >= mx) col = mx - 1;
-      if (col < 0) col = 0;
+
+    if (M5.BtnB.pressedFor(kLongPressMs) && !longBHandled) {
+      longBHandled = true;
+      int maxX = (y == -1) ? btnCount : kKeyboardCols;
+      x = (x - 1 + maxX) % maxX;
       draw();
     }
-    if (M5.BtnB.wasPressed()) {
-      int mx = rowLen(row);
-      col = (col + 1) % mx;
+    if (M5.BtnB.wasReleased()) {
+      longBHandled = false;
+    }
+    if (M5.BtnB.wasPressed() && !longBHandled) {
+      int maxX = (y == -1) ? btnCount : kKeyboardCols;
+      x = (x + 1) % maxX;
       draw();
     }
+
+    if (M5.BtnPWR.pressedFor(kLongPressMs) && !longPwrHandled) {
+      longPwrHandled = true;
+      y--;
+      if (y < -1) y = kKeyboardRows - 1;
+      if (y == -1 && x >= btnCount) x = btnCount - 1;
+      draw();
+    }
+    if (M5.BtnPWR.wasReleased()) {
+      longPwrHandled = false;
+    }
+    if (M5.BtnPWR.wasPressed() && !longPwrHandled) {
+      y++;
+      if (y >= kKeyboardRows) y = -1;
+      if (y == -1 && x >= btnCount) x = btnCount - 1;
+      draw();
+    }
+
     if (M5.BtnA.wasPressed()) {
-      if (row == 0) {
-        if (col == 0) { out = value; return true; }
-        if (col == 1) { if (!value.isEmpty()) value.remove(value.length() - 1); }
-        if (col == 2) { if (value.length() < 63) value += ' '; }
-        if (col == 3) { return false; }
+      if (y == -1) {
+        if (x == 0) { out = value; return true; }
+        if (x == 1) { caps = !caps; }
+        if (x == 2) { if (!value.isEmpty()) removeLastCodepoint(value); }
+        if (x == 3) { if (value.length() + 1 <= kMaxInputBytes) value += ' '; }
+        if (x == 4) { return false; }
+        if (allow_telex && x == 5) { g_telex_mode = !g_telex_mode; }
       } else {
-        char ch = 0;
-        if (row == 1) ch = row1[col];
-        if (row == 2) ch = row2[col];
-        if (row == 3) ch = row3[col];
-        if (row == 4) ch = row4[col];
-        if (ch && value.length() < 63) value += ch;
+        char ch = kQwertyKeys[y][x][caps ? 1 : 0];
+        if (allow_telex && g_telex_mode) {
+          if (!applyTelexInput(value, ch)) {
+            if (value.length() + 1 <= kMaxInputBytes) value += ch;
+          }
+        } else {
+          if (value.length() + 1 <= kMaxInputBytes) value += ch;
+        }
       }
       draw();
     }
+
     delay(8);
   }
+}
+
+bool inputPassword(String& out) {
+  return keyboardInput(out, "Password", true, false);
 }
 
 bool connectSelectedWifi() {
@@ -604,116 +801,138 @@ void handleWifiScreen() {
 }
 
 bool inputText(String& out) {
-  const char* row1 = "1234567890";
-  const char* row2 = "qwertyuiop";
-  const char* row3 = "asdfghjkl";
-  const char* row4 = "zxcvbnm-_.@";
-  const char* top[] = {"OK", "DEL", "SP", "NL", "ESC"};
-  constexpr int topCount = 5;
+  return keyboardInput(out, "Input Text", false, true);
+}
 
-  int row = 0;
-  int col = 0;
-  String value = out;
+bool translateText(const String& text, String& out, String& err);
 
-  auto rowLen = [&](int r) -> int {
-    if (r == 0) return topCount;
-    if (r == 1) return static_cast<int>(strlen(row1));
-    if (r == 2) return static_cast<int>(strlen(row2));
-    if (r == 3) return static_cast<int>(strlen(row3));
-    return static_cast<int>(strlen(row4));
-  };
-
-  auto draw = [&]() {
-    M5.Display.fillScreen(TFT_BLACK);
-    M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-    M5.Display.setCursor(2, 2);
-    M5.Display.print("Input Text (");
-    M5.Display.print(g_telex_mode ? "VI" : "EN");
-    M5.Display.print(")");
-    M5.Display.setCursor(2, 14);
-    M5.Display.print("Len: ");
-    M5.Display.print(value.length());
-
-    M5.Display.drawRect(2, 24, 236, 12, TFT_DARKGREY);
-    M5.Display.setCursor(4, 26);
-    M5.Display.print(truncateUtf8(value, 38));
-
-    int y = 42;
-    for (int i = 0; i < topCount; ++i) {
-      M5.Display.setTextColor((row == 0 && col == i) ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
-      M5.Display.setCursor(4 + i * 46, y);
-      M5.Display.print(top[i]);
-    }
-
-    auto drawRow = [&](int rr, const char* text, int yy) {
-      int n = strlen(text);
-      for (int i = 0; i < n && i < 28; ++i) {
-        M5.Display.setTextColor((row == rr && col == i) ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
-        M5.Display.setCursor(4 + (i % 14) * 16, yy + (i / 14) * 10);
-        M5.Display.print(text[i]);
-      }
-    };
-    drawRow(1, row1, 56);
-    drawRow(2, row2, 68);
-    drawRow(3, row3, 88);
-    drawRow(4, row4, 108);
-
-    M5.Display.setTextColor(TFT_DARKGREY, TFT_BLACK);
-    M5.Display.setCursor(2, 122);
-    M5.Display.print("Hold PWR: toggle TELEX");
-  };
-
-  draw();
-  bool longHandled = false;
-  while (true) {
-    M5.update();
-    if (M5.BtnPWR.pressedFor(kLongPressMs) && !longHandled) {
-      longHandled = true;
-      g_telex_mode = !g_telex_mode;
-      draw();
-    }
-    if (M5.BtnPWR.wasReleased()) {
-      longHandled = false;
-    }
-    if (M5.BtnPWR.wasPressed() && !longHandled) {
-      row = (row + 1) % 5;
-      int mx = rowLen(row);
-      if (col >= mx) col = mx - 1;
-      if (col < 0) col = 0;
-      draw();
-    }
-    if (M5.BtnB.wasPressed()) {
-      int mx = rowLen(row);
-      col = (col + 1) % mx;
-      draw();
-    }
-    if (M5.BtnA.wasPressed()) {
-      if (row == 0) {
-        if (col == 0) { out = value; return true; }
-        if (col == 1) { if (!value.isEmpty()) removeLastCodepoint(value); }
-        if (col == 2) { if (value.length() + 1 <= kMaxInputBytes) value += ' '; }
-        if (col == 3) { if (value.length() + 1 <= kMaxInputBytes) value += '\n'; }
-        if (col == 4) { return false; }
-      } else {
-        char ch = 0;
-        if (row == 1) ch = row1[col];
-        if (row == 2) ch = row2[col];
-        if (row == 3) ch = row3[col];
-        if (row == 4) ch = row4[col];
-        if (ch) {
-          if (g_telex_mode) {
-            if (!applyTelexInput(value, ch)) {
-              if (value.length() + 1 <= kMaxInputBytes) value += ch;
-            }
-          } else {
-            if (value.length() + 1 <= kMaxInputBytes) value += ch;
-          }
-        }
-      }
-      draw();
-    }
-    delay(8);
+bool fetchDictionary(const String& word, String& summary, String& err) {
+  summary = "";
+  err = "";
+  if (word.isEmpty()) {
+    err = "Dict empty";
+    return false;
   }
+  if (WiFi.status() != WL_CONNECTED) {
+    err = "Dict offline";
+    return false;
+  }
+
+  String url = String("https://api.dictionaryapi.dev/api/v2/entries/en/") + urlEncode(word);
+  WiFiClientSecure client;
+  client.setInsecure();
+
+  HTTPClient http;
+  http.setTimeout(kHttpTimeoutMs);
+  if (!http.begin(client, url)) {
+    err = "Dict begin";
+    return false;
+  }
+
+  int httpCode = http.GET();
+  if (httpCode == 404) {
+    http.end();
+    err = "Dict not found";
+    return false;
+  }
+  if (httpCode < 200 || httpCode >= 300) {
+    err = String("Dict ") + httpCode;
+    http.end();
+    return false;
+  }
+
+  String resp = http.getString();
+  http.end();
+  if (resp.isEmpty()) {
+    err = "Dict empty";
+    return false;
+  }
+
+  DynamicJsonDocument doc(16384);
+  if (deserializeJson(doc, resp)) {
+    err = "Dict JSON";
+    return false;
+  }
+  if (!doc.is<JsonArray>() || doc.size() == 0) {
+    err = "Dict data";
+    return false;
+  }
+
+  JsonObject entry = doc[0];
+  String phonetic = entry["phonetic"] | "";
+  JsonArray phonetics = entry["phonetics"].as<JsonArray>();
+  for (JsonVariant v : phonetics) {
+    const char* text = v["text"] | "";
+    if (text && text[0] != '\0') {
+      phonetic = String(text);
+      break;
+    }
+  }
+
+  String result = "";
+  if (!phonetic.isEmpty()) {
+    result = String("IPA: ") + phonetic;
+  }
+
+  JsonArray meanings = entry["meanings"].as<JsonArray>();
+  int count = 0;
+  for (JsonVariant v : meanings) {
+    const char* pos = v["partOfSpeech"] | "";
+    JsonArray defs = v["definitions"].as<JsonArray>();
+    if (defs.isNull() || defs.size() == 0) continue;
+    const char* def = defs[0]["definition"] | "";
+    if (!def || def[0] == '\0') continue;
+
+    if (!result.isEmpty()) result += "\n";
+    result += posAbbrev(String(pos));
+    result += ": ";
+    result += def;
+
+    count++;
+    if (count >= 4) break;
+  }
+
+  if (result.isEmpty()) {
+    err = "Dict empty";
+    return false;
+  }
+
+  summary = truncateUtf8(result, kMaxDictBytes);
+  return true;
+}
+
+bool runTranslateFlow(String& statusOut) {
+  String err;
+  String out;
+  String dictErr;
+  g_dict_summary = "";
+
+  if (!translateText(g_input_text, out, err)) {
+    statusOut = err;
+    return false;
+  }
+
+  String word = cleanEnglishWord(g_input_text);
+  if (shouldUseDictionary(word)) {
+    String summary;
+    if (fetchDictionary(word, summary, dictErr)) {
+      g_dict_summary = summary;
+    }
+  }
+
+  String combined = out;
+  if (!g_dict_summary.isEmpty()) {
+    combined += "\n";
+    combined += g_dict_summary;
+  }
+  g_output_text = truncateUtf8(combined, kMaxOutputBytes);
+
+  if (!dictErr.isEmpty() && g_dict_summary.isEmpty()) {
+    statusOut = String("Done (") + dictErr + ")";
+  } else {
+    statusOut = "Done";
+  }
+  return true;
 }
 
 bool translateText(const String& text, String& out, String& err) {
@@ -787,12 +1006,12 @@ bool translateText(const String& text, String& out, String& err) {
 }
 
 void applyDirectionToggle() {
-  if (g_src_lang == "auto" && g_tgt_lang == "vi") {
+  if ((g_src_lang == "auto" || g_src_lang == "en") && g_tgt_lang == "vi") {
     g_src_lang = "vi";
     g_tgt_lang = g_alt_tgt_lang;
   } else {
     if (g_src_lang == "vi") g_alt_tgt_lang = g_tgt_lang;
-    g_src_lang = "auto";
+    g_src_lang = "en";
     g_tgt_lang = "vi";
   }
   saveSettings();
@@ -818,14 +1037,9 @@ void doTranslate() {
   g_status = "Translating...";
   drawMain();
 
-  String err;
-  String out;
-  if (translateText(g_input_text, out, err)) {
-    g_output_text = out;
-    g_status = "Done";
-  } else {
-    g_status = err;
-  }
+  String status;
+  runTranslateFlow(status);
+  g_status = status;
   drawMain();
 }
 
@@ -853,7 +1067,7 @@ String htmlPage() {
 <div class="row">
   <div>
     <label>Source lang</label>
-    <input id="src" placeholder="auto" />
+    <input id="src" placeholder="en" />
   </div>
   <div>
     <label>Target lang</label>
@@ -876,6 +1090,8 @@ String htmlPage() {
 </div>
 <label>Output</label>
 <textarea id="out" rows="6" readonly></textarea>
+<label>Dictionary</label>
+<textarea id="dict" rows="6" readonly></textarea>
 <div class="status" id="status">Ready</div>
 <script>
 async function sendInput() {
@@ -890,6 +1106,7 @@ async function doTranslate() {
   const res = await fetch('/translate');
   const data = await res.json();
   document.getElementById('out').value = data.output || '';
+  document.getElementById('dict').value = data.dict || '';
   document.getElementById('status').innerText = data.status || 'Done';
 }
 async function saveConfig() {
@@ -907,6 +1124,7 @@ async function refreshState() {
   document.getElementById('endpoint').value = data.endpoint || '';
   document.getElementById('status').innerText = data.status || '';
   document.getElementById('out').value = data.output || '';
+  document.getElementById('dict').value = data.dict || '';
 }
 refreshState();
 </script>
@@ -930,6 +1148,7 @@ void handleInput() {
   if (!src.isEmpty()) g_src_lang = src;
   if (!tgt.isEmpty()) g_tgt_lang = tgt;
   if (g_src_lang == "vi") g_alt_tgt_lang = g_tgt_lang;
+  g_dict_summary = "";
   g_status = "Web input updated";
   saveSettings();
   drawMain();
@@ -948,12 +1167,13 @@ void handleConfig() {
 }
 
 void handleState() {
-  DynamicJsonDocument doc(768);
+  DynamicJsonDocument doc(1024 + g_dict_summary.length());
   doc["src"] = g_src_lang;
   doc["tgt"] = g_tgt_lang;
   doc["endpoint"] = g_endpoint;
   doc["status"] = g_status;
   doc["output"] = g_output_text;
+  doc["dict"] = g_dict_summary;
   doc["ip"] = getLocalIpString();
   String payload;
   serializeJson(doc, payload);
@@ -961,18 +1181,14 @@ void handleState() {
 }
 
 void handleTranslate() {
-  String err;
-  String out;
-  if (translateText(g_input_text, out, err)) {
-    g_output_text = out;
-    g_status = "Done";
-  } else {
-    g_status = err;
-  }
+  String status;
+  runTranslateFlow(status);
+  g_status = status;
   drawMain();
-  DynamicJsonDocument doc(768 + g_output_text.length());
+  DynamicJsonDocument doc(768 + g_output_text.length() + g_dict_summary.length());
   doc["status"] = g_status;
   doc["output"] = g_output_text;
+  doc["dict"] = g_dict_summary;
   String payload;
   serializeJson(doc, payload);
   g_server.send(200, "application/json", payload);
@@ -1033,6 +1249,7 @@ void loop() {
     if (M5.BtnA.wasPressed()) {
       if (inputText(g_input_text)) {
         g_status = "Input updated";
+        g_dict_summary = "";
       } else {
         g_status = "Input canceled";
       }

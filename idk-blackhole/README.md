@@ -1,17 +1,24 @@
 # idk-blackhole
+Hiệu ứng hố đen/đĩa bồi tụ thời gian thực.
+## Tính năng
+- Trường sao uốn cong và đĩa bồi tụ động
+- Hiệu ứng glow quanh chân trời sự kiện
 
-M5StickC Plus2 black-hole themed visualization inspired by kavan010/black_hole.
+## Điều khiển
+- BtnA: tạo lại trường sao
+- BtnB: tạm dừng/tiếp tục
 
-## Controls
-- `BtnA` reseeds the starfield
-- `BtnB` toggles pause
-
-## Build & Upload
+## Build
 ```bash
-pio run
-pio run -t upload
+cd /home/truonglangquan/idk-code/idk-test/idk-blackhole
+pio run -e firmware
 ```
 
-## Notes
-- Display rotation is set to left landscape (`setRotation(3)`). Change to `1` if your orientation is flipped.
-- This is a lightweight real-time visual inspired by the original desktop project rather than a direct port.
+## Flash
+```bash
+pio run -e firmware -t upload
+```
+
+## Ghi chú
+- Màn hình xoay trái `setRotation(3)`
+- Dựa trên ý tưởng kavan010/black_hole

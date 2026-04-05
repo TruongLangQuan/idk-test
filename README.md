@@ -1,48 +1,41 @@
 # idk-test
 
-Bộ firmware thử nghiệm cho nhiều board; mỗi thư mục là một project PlatformIO độc lập.
+Bộ firmware thử nghiệm cho nhiều board; mỗi thư mục là một project PlatformIO độc lập. Mỗi project đều có `README.md` riêng để xem chi tiết tính năng và điều khiển.
+
+## Danh sách firmware
+
+| Project | Board/Env | Mô tả ngắn |
+| --- | --- | --- |
+| `idk-atom` | M5StickC / `firmware` | Hiệu ứng orbital nguyên tử |
+| `idk-bat` | Tenstar ESP32-S3 / `tenstar-esp32s3` | Battery monitor qua Serial |
+| `idk-biology` | M5StickC Plus2 / `m5stickc_plus2` | Công cụ sinh học (phiên mã/dịch mã/di truyền) |
+| `idk-blackhole` | M5StickC / `firmware` | Hiệu ứng hố đen |
+| `idk-chemistry` | M5StickC Plus2 / `m5stickc_plus2` | Bảng tuần hoàn + khối lượng mol + cân bằng PTHH |
+| `idk-chess` | M5StickC / `firmware` | Cờ vua offline + bot |
+| `idk-clock` | M5StickC / `firmware` | Đồng hồ NTP GMT+7 |
+| `idk-cyd` | CYD-2432S028 / `firmware` | UI cảm ứng: clock/gif/image |
+| `idk-gif` | M5StickC / `firmware` | Trình phát GIF nhúng |
+| `idk-gif-s3` | ESP32-S3 + ST7789 / `esp32s3_114tft` | Trình phát GIF nhúng |
+| `idk-img` | M5StickC / `firmware` | Trình xem ảnh nhúng |
+| `idk-ir` | M5StickC / `firmware` | IR remote sender + search |
+| `idk-linux` | M5StickC / `firmware` | Fastfetch/CMatrix/Pipe |
+| `idk-math-num` | M5StickC Plus2 / `m5stickc_plus2` | Máy tính khoa học |
+| `idk-miner` | M5StickC Plus2 / `m5stickc_plus2` | Dashboard LTC/BTC |
+| `idk-physics` | M5StickC Plus2 / `m5stickc_plus2` | Công cụ vật lý cơ bản |
+| `idk-portal` | M5StickC / `firmware` | Captive portal AP + DNS |
+| `idk-translator` | M5StickC Plus2 / `m5stickc_plus2` | Dịch EN↔VI + dictionary |
+| `idk-txt` | M5StickC / `firmware` | Trình xem text nhúng |
+| `idk-video` | M5StickC / `firmware` | MJPEG player (SD/LittleFS) |
+| `idk-mine` | Suite nhiều project | Xem `idk-mine/README.md` |
 
 ## Targets
 
-- M5StickC series (board `m5stick-c`, 240x135): `idk-gif`, `idk-txt`, `idk-img`, `idk-chess`, `idk-clock`, `idk-ir`, `idk-blackhole`, `idk-atom`, `idk-video`, `idk-portal`, `idk-linux`, `idk-miner`, `idk-translator`
+- M5StickC series (board `m5stick-c`, 240x135): `idk-gif`, `idk-txt`, `idk-img`, `idk-chess`, `idk-clock`, `idk-ir`, `idk-blackhole`, `idk-atom`, `idk-video`, `idk-portal`, `idk-linux`
+- M5StickC Plus2 (`m5stickc_plus2`): `idk-miner`, `idk-translator`, `idk-math-num`, `idk-chemistry`, `idk-biology`, `idk-physics`
 - CYD-2432S028 (ESP32 + ILI9341 320x240): `idk-cyd`
 - ESP32-S3 devkit + ST7789 135x240: `idk-gif-s3`
-- Tenstar ESP32-S3 4MB + BMP280: `idk-bat`
-- Suite đa project: `idk-mine` (xem `idk-mine/README.md`)
-
-## Ghi chú nhanh theo project
-
-- `idk-blackhole`: dựa trên `kavan010/black_hole`.
-- `idk-atom`: dựa trên `kavan010/Atoms`.
-- `idk-video`: trình phát MJPEG, hỗ trợ nguồn từ SD và LittleFS, cần file `.mjpg/.mjpeg` 240x135.
-- `idk-cyd`: dùng `TFT_eSPI` + `XPT2046_Touchscreen` (ILI9341 + touch).
-- `idk-miner`, `idk-translator`: dùng `ArduinoJson` và phân vùng `huge_app.csv`.
-
-## Cấu trúc tổng quan
-
-```
-idk-test/
-  tools/
-    asset_compiler.py
-    requirements.txt
-  idk-gif/
-  idk-txt/
-  idk-img/
-  idk-chess/
-  idk-clock/
-  idk-ir/
-  idk-blackhole/
-  idk-atom/
-  idk-video/
-  idk-portal/
-  idk-linux/
-  idk-miner/
-  idk-translator/
-  idk-cyd/
-  idk-gif-s3/
-  idk-bat/
-  idk-mine/
-```
+- Tenstar ESP32-S3: `idk-bat`
+- Suite đa project: `idk-mine`
 
 ## Build và flash
 
@@ -55,21 +48,18 @@ pio run -e <env> -t upload
 pio device monitor -b 115200
 ```
 
-Env mặc định theo project:
+Env thường gặp:
 
-- `firmware`: hầu hết project M5StickC series và `idk-cyd`, `idk-video`, `idk-blackhole`, `idk-atom`, `idk-clock`, `idk-chess`
-- `m5stickc_plus2`: `idk-miner`, `idk-translator`
+- `firmware`: hầu hết project M5StickC
+- `m5stickc_plus2`: các project M5StickC Plus2
 - `esp32s3_114tft`: `idk-gif-s3`
 - `tenstar-esp32s3`: `idk-bat`
-- `idk-mine`: dùng script trong `idk-mine/scripts` (xem README riêng)
 
 Filesystem (nếu có):
 
 ```bash
-pio run -e firmware -t uploadfs
+pio run -e <env> -t uploadfs
 ```
-
-Gợi ý: `idk-video` dùng LittleFS và phân vùng `partitions.csv`.
 
 ## Asset pipeline
 
