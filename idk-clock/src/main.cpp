@@ -18,6 +18,8 @@ struct KnownWifi {
 };
 
 constexpr KnownWifi kKnownWifis[] = {
+    {"THCS NTD 02", "thcsnguyenthidinh"},
+    {"THCS Nguyen Thi Dinh", "thcsnguyenthidinh"},
     {"Quan Le", "15032011"},
     {"NTD-THCS", "GIAOVIEN2425@"},
 };
@@ -38,22 +40,32 @@ void drawWifi() {
   M5.Display.setTextFont(1);
   M5.Display.setTextSize(1);
   M5.Display.setCursor(2, 2);
-  M5.Display.println("idk-clock WiFi");
-  M5.Display.println("Next/Prev:scroll M5:connect");
-  M5.Display.println("M5+Prev:offline");
-  M5.Display.println(g_wifi_status);
+  M5.Display.print("idk-clock WiFi");
+  M5.Display.setCursor(2, 14);
+  M5.Display.print("A:connect  B:next  PWR:prev");
+  M5.Display.setCursor(2, 24);
+  M5.Display.print("A+PWR:offline");
 
   if (g_wifi_count <= 0) {
-    M5.Display.println("No AP found");
+    M5.Display.setCursor(2, 42);
+    M5.Display.print("No AP found");
+    M5.Display.setCursor(2, 126);
+    M5.Display.print(g_wifi_status);
     return;
   }
 
   int start = std::max(0, g_wifi_index - 2);
-  int end = std::min(g_wifi_count, start + 4);
+  int end = std::min(g_wifi_count, start + 6);
+  int y = 42;
   for (int i = start; i < end; ++i) {
     M5.Display.setTextColor(i == g_wifi_index ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
-    M5.Display.printf("%c %s (%d)\n", i == g_wifi_index ? '>' : ' ', g_ssids[i].c_str(), g_rssi[i]);
+    M5.Display.setCursor(4, y);
+    M5.Display.printf("%c %s (%d)", i == g_wifi_index ? '>' : ' ', g_ssids[i].c_str(), g_rssi[i]);
+    y += 12;
   }
+  M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+  M5.Display.setCursor(2, 126);
+  M5.Display.print(g_wifi_status);
 }
 
 void syncTimeVN() {
@@ -277,18 +289,26 @@ void drawClockUI() {
              tm_now.tm_mon + 1, tm_now.tm_mday);
   }
 
-  // Minimal clock: big time centered on black background.
   M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
   M5.Display.setTextFont(4);
   int tw = M5.Display.textWidth(time_buf);
-  M5.Display.setCursor(120 - tw / 2, 46);
+  M5.Display.setCursor(120 - tw / 2, 40);
   M5.Display.print(time_buf);
 
   M5.Display.setTextColor(M5.Display.color565(210, 210, 210), TFT_BLACK);
   M5.Display.setTextFont(1);
   int dw = M5.Display.textWidth(date_buf);
-  M5.Display.setCursor(120 - dw / 2, 96);
+  M5.Display.setCursor(120 - dw / 2, 86);
   M5.Display.print(date_buf);
+
+  M5.Display.setTextColor(TFT_DARKGREY, TFT_BLACK);
+  M5.Display.setCursor(2, 126);
+  if (WiFi.status() == WL_CONNECTED) {
+    M5.Display.print("WiFi: ");
+    M5.Display.print(WiFi.SSID());
+  } else {
+    M5.Display.print("WiFi: offline");
+  }
 }
 
 }  // namespace

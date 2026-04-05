@@ -121,6 +121,8 @@ struct KnownWifi {
 };
 
 constexpr KnownWifi kKnownWifis[] = {
+    {"THCS NTD 02", "thcsnguyenthidinh"},
+    {"THCS Nguyen Thi Dinh", "thcsnguyenthidinh"},
     {"Quan Le", "15032011"},
     {"NTD-THCS", "GIAOVIEN2425@"},
 };
