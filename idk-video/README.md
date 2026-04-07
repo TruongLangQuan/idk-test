@@ -1,12 +1,11 @@
 # idk-video
-Trình phát MJPEG từ SD hoặc LittleFS.
+Trình phát MJPEG từ SD.
 ## Tính năng
-- Chọn nguồn SD/LittleFS
-- Duyệt file `.mjpg/.mjpeg` và phát khung hình
+- Duyệt thư mục trên SD (hiện folder + file video)
+- Phát file `.mjpg/.mjpeg`
 
 ## Điều khiển
-- Source menu: BtnA chọn, BtnB xuống, BtnPWR lên
-- File menu: BtnA phát, BtnB xuống, BtnPWR lên, giữ PWR để back
+- File menu: BtnA mở folder/phát, BtnB xuống, BtnPWR lên, giữ PWR để lên thư mục cha
 - Playback: BtnA restart, BtnB pause/resume, BtnPWR quay lại
 
 ## Build
@@ -22,4 +21,3 @@ pio run -e firmware -t upload
 
 ## Ghi chú
 - Khuyến nghị 240x135 @ 10fps
-- Upload LittleFS: `pio run -t uploadfs`

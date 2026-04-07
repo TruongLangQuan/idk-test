@@ -25,7 +25,7 @@ Bộ firmware thử nghiệm cho nhiều board; mỗi thư mục là một proje
 | `idk-portal` | M5StickC / `firmware` | Captive portal AP + DNS |
 | `idk-translator` | M5StickC Plus2 / `m5stickc_plus2` | Dịch EN↔VI + dictionary |
 | `idk-txt` | M5StickC / `firmware` | Trình xem text nhúng |
-| `idk-video` | M5StickC / `firmware` | MJPEG player (SD/LittleFS) |
+| `idk-video` | M5StickC / `firmware` | MJPEG player (SD, folder browser) |
 | `idk-mine` | Suite nhiều project | Xem `idk-mine/README.md` |
 
 ## Targets

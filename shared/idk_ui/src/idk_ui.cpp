@@ -1,4 +1,5 @@
 #include "idk_ui.h"
+#include <cstring>
 
 namespace {
 
@@ -89,6 +90,13 @@ const char kQwertyKeys[kKeyboardRows][kKeyboardCols][2] = {
      {'.', '>'},
      {'?', '/'},
      {'/', '/'}},
+};
+
+const char* kMathKeys[kKeyboardRows][kKeyboardCols] = {
+    {"7", "8", "9", "/", "sin(", "cos(", "tan(", "log(", "ln(", "sqrt(", "pi", "e"},
+    {"4", "5", "6", "*", "asin(", "acos(", "atan(", "abs(", "^", "(", ")", ","},
+    {"1", "2", "3", "-", "x", "y", "t", "=", "<=", ">=", "min(", "max("},
+    {"0", ".", "+", "%", "deg", "rad", "exp(", "pow(", "floor(", "ceil(", "", ""},
 };
 
 int utf8PrevStart(const String& s, int from) {
@@ -250,11 +258,16 @@ String formatFloat(double value, int decimals) {
 }
 
 bool keyboardInput(String& out, const String& title, bool mask_input, bool allow_telex, bool& telexMode,
-                   size_t maxLen) {
-  const char* buttons_telex[] = {"OK", "CAP", "DEL", "SPACE", "BACK", "VI"};
-  const char* buttons_basic[] = {"OK", "CAP", "DEL", "SPACE", "BACK"};
-  const char** buttons = allow_telex ? buttons_telex : buttons_basic;
-  const int btnCount = allow_telex ? 6 : 5;
+                   size_t maxLen, bool allow_math) {
+  const char* buttons_all[7];
+  int btnCount = 0;
+  buttons_all[btnCount++] = "OK";
+  buttons_all[btnCount++] = "CAP";
+  buttons_all[btnCount++] = "DEL";
+  buttons_all[btnCount++] = "SPACE";
+  buttons_all[btnCount++] = "BACK";
+  if (allow_telex) buttons_all[btnCount++] = "VI";
+  if (allow_math) buttons_all[btnCount++] = "MATH";
   constexpr int gap = 2;
   constexpr int btnH = 16;
 
@@ -270,6 +283,7 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
   const int keyH = (screenH - gridY) / kKeyboardRows;
 
   bool caps = false;
+  bool mathMode = false;
   int x = 0;
   int y = -1;  // -1 = top buttons row
   String value = out;
@@ -286,20 +300,28 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
       const bool selected = (y == -1 && x == i);
       bool active = false;
       if (i == 1 && caps) active = true;
-      if (allow_telex && i == 5 && telexMode) active = true;
+      if (allow_telex) {
+        int viIndex = 5;
+        if (allow_math) viIndex = 5;
+        if (allow_telex && i == viIndex && telexMode) active = true;
+      }
+      if (allow_math) {
+        int mathIndex = allow_telex ? 6 : 5;
+        if (i == mathIndex && mathMode) active = true;
+      }
 
       uint16_t bg = selected ? TFT_WHITE : (active ? TFT_DARKGREY : TFT_BLACK);
       uint16_t fg = selected ? TFT_BLACK : TFT_WHITE;
 
       M5.Display.fillRect(bx, btnY, btnW, btnH, bg);
       M5.Display.drawRect(bx, btnY, btnW, btnH, TFT_WHITE);
-      const int tw = M5.Display.textWidth(buttons[i]);
+      const int tw = M5.Display.textWidth(buttons_all[i]);
       const int th = M5.Display.fontHeight();
       const int tx = bx + (btnW - tw) / 2;
       const int ty = btnY + (btnH - th) / 2;
       M5.Display.setTextColor(fg, bg);
       M5.Display.setCursor(tx, ty);
-      M5.Display.print(buttons[i]);
+      M5.Display.print(buttons_all[i]);
     }
 
     // Title + counter
@@ -340,8 +362,14 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
         M5.Display.fillRect(kx, ky, keyW, keyH, bg);
         M5.Display.drawRect(kx, ky, keyW, keyH, TFT_DARKGREY);
 
-        char ch = kQwertyKeys[row][col][caps ? 1 : 0];
-        String label(ch);
+        String label = "";
+        if (mathMode && allow_math) {
+          label = kMathKeys[row][col];
+        } else {
+          char ch = kQwertyKeys[row][col][caps ? 1 : 0];
+          label = String(ch);
+        }
+        if (label.isEmpty()) continue;
         const int tw = M5.Display.textWidth(label.c_str());
         const int th = M5.Display.fontHeight();
         const int tx = kx + (keyW - tw) / 2;
@@ -398,15 +426,30 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
         if (x == 2) { if (!value.isEmpty()) removeLastCodepoint(value); }
         if (x == 3) { if (value.length() + 1 <= maxLen) value += ' '; }
         if (x == 4) { return false; }
-        if (allow_telex && x == 5) { telexMode = !telexMode; }
+        if (allow_telex) {
+          int viIndex = 5;
+          if (x == viIndex) { telexMode = !telexMode; }
+        }
+        if (allow_math) {
+          int mathIndex = allow_telex ? 6 : 5;
+          if (x == mathIndex) { mathMode = !mathMode; }
+        }
       } else {
-        char ch = kQwertyKeys[y][x][caps ? 1 : 0];
-        if (allow_telex && telexMode) {
-          if (!applyTelexInput(value, ch)) {
-            if (value.length() + 1 <= maxLen) value += ch;
+        if (mathMode && allow_math) {
+          const char* token = kMathKeys[y][x];
+          if (token && token[0] != '\0') {
+            size_t len = strlen(token);
+            if (value.length() + len <= maxLen) value += token;
           }
         } else {
-          if (value.length() + 1 <= maxLen) value += ch;
+          char ch = kQwertyKeys[y][x][caps ? 1 : 0];
+          if (allow_telex && telexMode) {
+            if (!applyTelexInput(value, ch)) {
+              if (value.length() + 1 <= maxLen) value += ch;
+            }
+          } else {
+            if (value.length() + 1 <= maxLen) value += ch;
+          }
         }
       }
       draw();

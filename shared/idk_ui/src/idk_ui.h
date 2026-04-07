@@ -58,7 +58,7 @@ String truncateUtf8(const String& s, size_t maxBytes);
 String formatFloat(double value, int decimals = 4);
 
 bool keyboardInput(String& out, const String& title, bool mask_input, bool allow_telex, bool& telexMode,
-                   size_t maxLen = 64);
+                   size_t maxLen = 64, bool allow_math = false);
 
 bool inputNumber(double& out, const String& title, bool& telexMode, bool allowNegative = true);
 
