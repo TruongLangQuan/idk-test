@@ -3,7 +3,6 @@
 #include <vector>
 
 #include <idk_ui.h>
-#include "generated/vi12_font.h"
 
 namespace {
 
@@ -22,7 +21,6 @@ struct CodonMap {
 bool g_telex_mode = false;
 String g_status = "Ready";
 
-MemoryFontWrapper g_font_wrap(vi12_font, vi12_font_len);
 
 constexpr KnownWifi kKnownWifis[] = {
     {"THCS NTD 02", "thcsnguyenthidinh"},
@@ -191,7 +189,6 @@ void setup() {
   M5.Display.setRotation(3);
   M5.Display.setBrightness(180);
 
-  (void)loadFontFromMemory(vi12_font, vi12_font_len, g_font_wrap);
   autoConnectKnownWifi(kKnownWifis, sizeof(kKnownWifis) / sizeof(kKnownWifis[0]), g_status);
   drawMenu();
 }
