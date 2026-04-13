@@ -14,27 +14,32 @@ Bộ firmware thử nghiệm cho nhiều board; mỗi thư mục là một proje
 | `idk-chess` | M5StickC / `firmware` | Cờ vua offline + bot |
 | `idk-clock` | M5StickC / `firmware` | Đồng hồ NTP GMT+7 |
 | `idk-cyd` | CYD-2432S028 / `firmware` | UI cảm ứng: clock/gif/image |
+| `idk-dice` | M5StickC Plus2 / `m5stickc_plus2` | Lắc để tung 3 xúc xắc |
+| `idk-english-wordform` | M5StickC Plus2 / `m5stickc_plus2` | Tra wordform (offline + online POS) |
 | `idk-gif` | M5StickC / `firmware` | Trình phát GIF nhúng |
 | `idk-gif-s3` | ESP32-S3 + ST7789 / `esp32s3_114tft` | Trình phát GIF nhúng |
 | `idk-img` | M5StickC / `firmware` | Trình xem ảnh nhúng |
 | `idk-ir` | M5StickC / `firmware` | IR remote sender + search |
 | `idk-linux` | M5StickC / `firmware` | Fastfetch/CMatrix/Pipe |
+| `idk-maze` | M5StickC Plus2 / `m5stickc_plus2` | Mê cung 2D/3D điều khiển nghiêng |
 | `idk-math-num` | M5StickC Plus2 / `m5stickc_plus2` | Máy tính khoa học |
 | `idk-miner` | M5StickC Plus2 / `m5stickc_plus2` | Dashboard LTC/BTC |
 | `idk-physics` | M5StickC Plus2 / `m5stickc_plus2` | Công cụ vật lý cơ bản |
 | `idk-portal` | M5StickC / `firmware` | Captive portal AP + DNS |
+| `idk-subtitle` | ESP32-S3 + ST7789 / `esp32s3_114tft` | Màn hình phụ đề nhận UDP |
 | `idk-translator` | M5StickC Plus2 / `m5stickc_plus2` | Dịch EN↔VI + dictionary |
 | `idk-txt` | M5StickC / `firmware` | Trình xem text nhúng |
-| `idk-video` | M5StickC / `firmware` | MJPEG player (SD, folder browser) |
+| `idk-video` | M5StickC / `firmware` | MJPEG player + subtitle UDP |
+| `idk-audio` | M5StickC Plus2 / `m5stickc_plus2` | Phát WAV PCM qua buzzer/speaker |
 | `idk-mine` | Suite nhiều project | Xem `idk-mine/README.md` |
 
 ## Targets
 
 - M5StickC series (board `m5stick-c`, 240x135): `idk-gif`, `idk-txt`, `idk-img`, `idk-chess`, `idk-clock`, `idk-ir`, `idk-blackhole`, `idk-atom`, `idk-video`, `idk-portal`, `idk-linux`
-- M5StickC Plus2 (`m5stickc_plus2`): `idk-miner`, `idk-translator`, `idk-math-num`, `idk-chemistry`, `idk-biology`, `idk-physics`
+- M5StickC Plus2 (`m5stickc_plus2`): `idk-miner`, `idk-translator`, `idk-math-num`, `idk-chemistry`, `idk-biology`, `idk-physics`, `idk-english-wordform`, `idk-dice`, `idk-audio`, `idk-maze`
 - CYD-2432S028 (ESP32 + ILI9341 320x240): `idk-cyd`
-- ESP32-S3 devkit + ST7789 135x240: `idk-gif-s3`
-- Tenstar ESP32-S3: `idk-bat`
+- ESP32-S3 devkit + ST7789 135x240: `idk-gif-s3`, `idk-subtitle`
+- Tenstar ESP32-S3: `idk-bat` (pinout tương tự `idk-subtitle`)
 - Suite đa project: `idk-mine`
 
 ## Build và flash

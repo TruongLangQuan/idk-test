@@ -3,10 +3,23 @@
 #include <SD.h>
 #include <SPI.h>
 #include <TJpg_Decoder.h>
+#include <WiFi.h>
+#include <WiFiUdp.h>
 
 static const uint32_t kFrameDelayMs = 100; // 10 fps default
 static const size_t kFrameBufSize = 80 * 1024;
-static const int kMaxFiles = 16;
+static const int kMaxFiles = 128;
+static const int kSkipSeconds = 10;
+static const int kMaxSubtitles = 600;
+static const uint16_t kSubtitlePort = 4210;
+static const char *kApSsid = "Diddy heil Epstein";
+static const char *kApPass = "TruongLangQuan";
+static const uint32_t kTenstarTimeoutMs = 3000;
+static const uint16_t kFgColor = 0x07E0;    // Launcher-like green
+static const uint16_t kAccentColor = 0xF800; // Launcher-like red
+static const uint16_t kBgColor = 0x0000;    // black
+static const int kHeaderH = 20;
+static const int kFooterH = 16;
 
 // SD pins aligned with /home/truonglangquan/idk-code/idk-firmware-idk/boards/m5stack-cplus2/m5stack-cplus2.ini
 static const int kSdCsPin = 14;
@@ -25,10 +38,19 @@ struct FileEntry {
   bool isDir = false;
 };
 
+struct SubtitleCue {
+  uint32_t start_ms = 0;
+  uint32_t end_ms = 0;
+  String text;
+};
+
 static uint8_t *g_frame_buf = nullptr;
 static size_t g_frame_len = 0;
 static File g_file;
 static bool g_paused = false;
+static float g_avg_frame_ms = kFrameDelayMs;
+static uint32_t g_last_frame_ms = 0;
+static uint32_t g_play_time_ms = 0;
 
 static AppState g_state = AppState::FILE_SELECT;
 static FileEntry g_entries[kMaxFiles];
@@ -39,6 +61,30 @@ static String g_current_path = "";
 static String g_dir = "/";
 static fs::FS *g_fs = nullptr;
 static bool g_sd_ready = false;
+static SubtitleCue g_subs[kMaxSubtitles];
+static int g_sub_count = 0;
+static int g_sub_index = 0;
+static bool g_has_subs = false;
+static String g_last_sub_sent = "";
+static String g_current_sub_text = "";
+static uint32_t g_last_tenstar_ms = 0;
+static bool g_tenstar_connected = false;
+static WiFiUDP g_udp;
+
+static bool loadSubtitlesForVideo(const String &videoPath);
+static void updateSubtitleForTime(uint32_t ms);
+
+static String trimText(const String &text, int maxLen) {
+  if (text.length() <= maxLen) return text;
+  if (maxLen <= 3) return text.substring(0, maxLen);
+  return text.substring(0, maxLen - 3) + "...";
+}
+
+static int clampInt(int v, int lo, int hi) {
+  if (v < lo) return lo;
+  if (v > hi) return hi;
+  return v;
+}
 
 static bool isVideoFile(const String &name) {
   String lower = name;
@@ -67,44 +113,113 @@ static String parentPath(const String &path) {
   return path.substring(0, slash);
 }
 
+static void drawBattery() {
+  int w = M5.Display.width();
+  int x = w - 42;
+  int y = 6;
+  int bw = 32;
+  int bh = 10;
+  M5.Display.drawRoundRect(x, y, bw, bh, 2, kFgColor);
+  int level = M5.Power.getBatteryLevel();
+  level = clampInt(level, 0, 100);
+  int fill = (bw - 4) * level / 100;
+  if (fill > 0) {
+    M5.Display.fillRoundRect(x + 2, y + 2, fill, bh - 4, 2, kFgColor);
+  }
+}
+
+static void drawFrame() {
+  int w = M5.Display.width();
+  int h = M5.Display.height();
+  M5.Display.fillScreen(kBgColor);
+  M5.Display.drawRoundRect(3, 3, w - 6, h - 6, 5, kFgColor);
+  M5.Display.drawLine(5, kHeaderH, w - 6, kHeaderH, kFgColor);
+  M5.Display.drawLine(5, h - kFooterH - 2, w - 6, h - kFooterH - 2, kFgColor);
+  drawBattery();
+}
+
+static void drawFooter(const char *left, const char *center, const char *right) {
+  int w = M5.Display.width();
+  int h = M5.Display.height();
+  int y = h - kFooterH;
+  M5.Display.drawRoundRect(5, y - 1, w - 10, kFooterH - 2, 3, kFgColor);
+  M5.Display.setTextSize(1);
+  M5.Display.setTextColor(kFgColor, kBgColor);
+  M5.Display.setCursor(10, y + 2);
+  M5.Display.print(left);
+  M5.Display.setCursor(w / 2 - 18, y + 2);
+  M5.Display.print(center);
+  M5.Display.setCursor(w - 70, y + 2);
+  M5.Display.print(right);
+}
+
 static void drawFileMenu() {
-  M5.Display.fillScreen(TFT_BLACK);
-  M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+  drawFrame();
   M5.Display.setTextFont(1);
   M5.Display.setTextSize(1);
-  M5.Display.setCursor(2, 2);
-  M5.Display.printf("SD:%s", g_dir.c_str());
-  M5.Display.setCursor(2, 14);
-  M5.Display.print("A:open  B:next  PWR:prev");
-  M5.Display.setCursor(2, 24);
-  M5.Display.print("PWR hold:up");
+  M5.Display.setTextColor(kFgColor, kBgColor);
+  M5.Display.setCursor(8, 6);
+  M5.Display.print("IDK-VIDEO");
+
+  String pathLabel = trimText(g_dir, 26);
+  M5.Display.setTextColor(kAccentColor, kBgColor);
+  M5.Display.setCursor(8, kHeaderH + 4);
+  M5.Display.printf("SD:%s", pathLabel.c_str());
 
   if (g_entry_count <= 0) {
-    M5.Display.setCursor(2, 46);
+    M5.Display.setTextColor(kFgColor, kBgColor);
+    M5.Display.setCursor(10, 40);
     M5.Display.print("No entries");
   } else {
-    int start = g_entry_index - 3;
+    const int visible = 6;
+    int start = g_entry_index - visible / 2;
     if (start < 0) start = 0;
-    int end = start + 7;
-    if (end > g_entry_count) end = g_entry_count;
-    int y = 44;
+    int end = start + visible;
+    if (end > g_entry_count) {
+      end = g_entry_count;
+      start = end - visible;
+      if (start < 0) start = 0;
+    }
+    int y = 36;
     for (int i = start; i < end; ++i) {
-      M5.Display.setTextColor(i == g_entry_index ? TFT_YELLOW : TFT_WHITE, TFT_BLACK);
-      M5.Display.setCursor(6, y);
-      const char *tag = g_entries[i].isDir ? "[D]" : "   ";
-      M5.Display.printf("%c %s %s", i == g_entry_index ? '>' : ' ', tag, g_entries[i].name.c_str());
+      bool selected = (i == g_entry_index);
+      uint16_t fg = g_entries[i].isDir ? kAccentColor : kFgColor;
+      if (selected) {
+        M5.Display.fillRoundRect(8, y - 1, M5.Display.width() - 16, 11, 3, kFgColor);
+        M5.Display.setTextColor(kBgColor, kFgColor);
+      } else {
+        M5.Display.setTextColor(fg, kBgColor);
+      }
+      String label = g_entries[i].isDir ? "[D] " : "    ";
+      label += trimText(g_entries[i].name, 24);
+      M5.Display.setCursor(10, y);
+      M5.Display.printf("%c %s", selected ? '>' : ' ', label.c_str());
       y += 12;
     }
   }
 
-  M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-  M5.Display.setCursor(2, 126);
-  M5.Display.print(g_status);
+  M5.Display.setTextColor(kAccentColor, kBgColor);
+  M5.Display.setCursor(8, M5.Display.height() - kFooterH - 12);
+  M5.Display.print(trimText(g_status, 28));
+  drawFooter("PWR:UP", "A:OPEN", "B:NEXT");
+}
+
+static void drawPlaybackOverlay() {
+  if (!g_paused) return;
+  int w = M5.Display.width();
+  int h = M5.Display.height();
+  M5.Display.fillRoundRect(40, h / 2 - 12, w - 80, 24, 4, kBgColor);
+  M5.Display.drawRoundRect(40, h / 2 - 12, w - 80, 24, 4, kAccentColor);
+  M5.Display.setTextColor(kAccentColor, kBgColor);
+  M5.Display.setTextSize(1);
+  M5.Display.setCursor(w / 2 - 18, h / 2 - 4);
+  M5.Display.print("PAUSED");
 }
 
 static bool scanDir(const String &dirPath) {
   g_entry_count = 0;
   g_entry_index = 0;
+  bool truncated = false;
 
   if (!ensureSdReady()) {
     g_status = "SD mount failed";
@@ -135,15 +250,23 @@ static bool scanDir(const String &dirPath) {
       continue;
     }
     if (f.isDirectory()) {
-      g_entries[g_entry_count].name = name;
-      g_entries[g_entry_count].path = joinPath(dirPath, name);
-      g_entries[g_entry_count].isDir = true;
-      g_entry_count++;
+      if (g_entry_count < kMaxFiles) {
+        g_entries[g_entry_count].name = name;
+        g_entries[g_entry_count].path = joinPath(dirPath, name);
+        g_entries[g_entry_count].isDir = true;
+        g_entry_count++;
+      } else {
+        truncated = true;
+      }
     } else if (isVideoFile(name)) {
-      g_entries[g_entry_count].name = name;
-      g_entries[g_entry_count].path = joinPath(dirPath, name);
-      g_entries[g_entry_count].isDir = false;
-      g_entry_count++;
+      if (g_entry_count < kMaxFiles) {
+        g_entries[g_entry_count].name = name;
+        g_entries[g_entry_count].path = joinPath(dirPath, name);
+        g_entries[g_entry_count].isDir = false;
+        g_entry_count++;
+      } else {
+        truncated = true;
+      }
     }
     f = root.openNextFile();
   }
@@ -151,6 +274,8 @@ static bool scanDir(const String &dirPath) {
 
   if (g_entry_count == 0) {
     g_status = "No entries";
+  } else if (truncated) {
+    g_status = String("List truncated (") + kMaxFiles + ")";
   } else {
     g_status = String("Found ") + g_entry_count;
   }
@@ -167,6 +292,13 @@ static bool openCurrentVideo() {
     g_status = "Open failed";
     return false;
   }
+  g_play_time_ms = 0;
+  g_last_frame_ms = 0;
+  g_avg_frame_ms = kFrameDelayMs;
+  g_paused = false;
+  g_last_sub_sent = "";
+  loadSubtitlesForVideo(g_current_path);
+  updateSubtitleForTime(0);
   return true;
 }
 
@@ -208,11 +340,213 @@ static bool readNextFrame(File &f, uint8_t *buf, size_t bufSize, size_t &outLen)
   return false;
 }
 
+static bool skipFrames(File &f, uint8_t *buf, size_t bufSize, int frameCount) {
+  size_t len = 0;
+  for (int i = 0; i < frameCount; ++i) {
+    if (!readNextFrame(f, buf, bufSize, len)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static int framesForSeconds(float seconds) {
+  if (g_avg_frame_ms <= 1.0f) return int(seconds * 1000.0f / kFrameDelayMs);
+  return int(seconds * 1000.0f / g_avg_frame_ms);
+}
+
+static uint32_t parseTimeMs(const String &s) {
+  int p1 = s.indexOf(':');
+  int p2 = s.indexOf(':', p1 + 1);
+  if (p1 < 0 || p2 < 0) return 0;
+  int p3 = s.indexOf(',', p2 + 1);
+  if (p3 < 0) p3 = s.indexOf('.', p2 + 1);
+  int h = s.substring(0, p1).toInt();
+  int m = s.substring(p1 + 1, p2).toInt();
+  int sec = 0;
+  int ms = 0;
+  if (p3 >= 0) {
+    sec = s.substring(p2 + 1, p3).toInt();
+    ms = s.substring(p3 + 1).toInt();
+  } else {
+    sec = s.substring(p2 + 1).toInt();
+  }
+  return ((h * 3600UL + m * 60UL + sec) * 1000UL) + ms;
+}
+
+static bool parseSubtitleTimeLine(const String &line, uint32_t &start_ms, uint32_t &end_ms) {
+  int arrow = line.indexOf("-->");
+  if (arrow < 0) return false;
+  String left = line.substring(0, arrow);
+  String right = line.substring(arrow + 3);
+  left.trim();
+  right.trim();
+  start_ms = parseTimeMs(left);
+  end_ms = parseTimeMs(right);
+  return end_ms >= start_ms;
+}
+
+static String subtitlePathForVideo(const String &videoPath) {
+  int dot = videoPath.lastIndexOf('.');
+  if (dot <= 0) return videoPath + ".srt";
+  return videoPath.substring(0, dot) + ".srt";
+}
+
+static bool loadSubtitlesForVideo(const String &videoPath) {
+  g_sub_count = 0;
+  g_sub_index = 0;
+  g_has_subs = false;
+  String subPath = subtitlePathForVideo(videoPath);
+  if (!g_fs) return false;
+  File sf = g_fs->open(subPath.c_str(), FILE_READ);
+  if (!sf) return false;
+
+  String line;
+  String text = "";
+  uint32_t start_ms = 0;
+  uint32_t end_ms = 0;
+  bool inCue = false;
+  while (sf.available()) {
+    line = sf.readStringUntil('\n');
+    line.trim();
+    if (line.length() == 0) {
+      if (inCue && g_sub_count < kMaxSubtitles) {
+        g_subs[g_sub_count].start_ms = start_ms;
+        g_subs[g_sub_count].end_ms = end_ms;
+        g_subs[g_sub_count].text = text;
+        g_sub_count++;
+      }
+      inCue = false;
+      text = "";
+      continue;
+    }
+    if (!inCue) {
+      if (parseSubtitleTimeLine(line, start_ms, end_ms)) {
+        inCue = true;
+        text = "";
+      }
+      continue;
+    }
+    if (text.length() > 0) text += " ";
+    text += line;
+  }
+  if (inCue && g_sub_count < kMaxSubtitles) {
+    g_subs[g_sub_count].start_ms = start_ms;
+    g_subs[g_sub_count].end_ms = end_ms;
+    g_subs[g_sub_count].text = text;
+    g_sub_count++;
+  }
+  sf.close();
+  g_has_subs = g_sub_count > 0;
+  return g_has_subs;
+}
+
+static void sendSubtitleIfChanged(const String &text) {
+  if (text == g_last_sub_sent) return;
+  g_last_sub_sent = text;
+  g_current_sub_text = text;
+  IPAddress broadcastIp(192, 168, 4, 255);
+  g_udp.beginPacket(broadcastIp, kSubtitlePort);
+  g_udp.print(text);
+  g_udp.endPacket();
+}
+
+static void updateTenstarStatus() {
+  int packet = g_udp.parsePacket();
+  if (packet > 0) {
+    String msg = "";
+    while (g_udp.available()) {
+      char c = static_cast<char>(g_udp.read());
+      msg += c;
+      if (msg.length() > 32) break;
+    }
+    if (msg.startsWith("HELLO")) {
+      g_last_tenstar_ms = millis();
+    }
+  }
+  uint32_t now = millis();
+  g_tenstar_connected = (g_last_tenstar_ms > 0) && (now - g_last_tenstar_ms < kTenstarTimeoutMs);
+}
+
+static void drawSubtitleLocal(const String &text) {
+  if (text.isEmpty()) return;
+  int w = M5.Display.width();
+  int h = M5.Display.height();
+  int box_h = 26;
+  int y = h - box_h;
+  M5.Display.fillRect(0, y, w, box_h, kBgColor);
+  M5.Display.drawRect(0, y, w, box_h, kFgColor);
+  M5.Display.setTextColor(kFgColor, kBgColor);
+  M5.Display.setTextSize(1);
+
+  String line = "";
+  int cx = 4;
+  int cy = y + 4;
+  for (size_t i = 0; i <= text.length(); ++i) {
+    char ch = (i < text.length()) ? text[i] : ' ';
+    if (ch == '\n') ch = ' ';
+    if (ch != ' ' && i < text.length()) {
+      line += ch;
+      continue;
+    }
+    if (!line.isEmpty()) {
+      String word = line + " ";
+      int wpx = M5.Display.textWidth(word.c_str());
+      if (cx + wpx > w - 4) {
+        cx = 4;
+        cy += 10;
+        if (cy > y + box_h - 10) break;
+      }
+      M5.Display.setCursor(cx, cy);
+      M5.Display.print(word);
+      cx += wpx;
+      line = "";
+    }
+  }
+}
+
+static void updateSubtitleForTime(uint32_t ms) {
+  if (!g_has_subs) {
+    if (g_last_sub_sent.length()) sendSubtitleIfChanged("");
+    return;
+  }
+  if (g_sub_index >= g_sub_count) {
+    if (g_last_sub_sent.length()) sendSubtitleIfChanged("");
+    return;
+  }
+  if (ms < g_subs[g_sub_index].start_ms) {
+    g_sub_index = 0;
+  }
+  while (g_sub_index < g_sub_count && ms > g_subs[g_sub_index].end_ms) {
+    g_sub_index++;
+  }
+  String text = "";
+  if (g_sub_index < g_sub_count) {
+    const auto &cue = g_subs[g_sub_index];
+    if (ms >= cue.start_ms && ms <= cue.end_ms) {
+      text = cue.text;
+    }
+  }
+  sendSubtitleIfChanged(text);
+}
+
+static void clearSubtitleState() {
+  g_has_subs = false;
+  g_sub_count = 0;
+  g_sub_index = 0;
+  g_current_sub_text = "";
+  sendSubtitleIfChanged("");
+}
+
 void setup() {
   auto cfg = M5.config();
   M5.begin(cfg);
   M5.Display.setRotation(3); // Left landscape
   M5.Display.setBrightness(180);
+
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(kApSsid, kApPass);
+  g_udp.begin(kSubtitlePort);
 
   g_frame_buf = static_cast<uint8_t *>(ps_malloc(kFrameBufSize));
   if (!g_frame_buf) {
@@ -238,6 +572,7 @@ void setup() {
 
 void loop() {
   M5.update();
+  updateTenstarStatus();
 
   if (g_state == AppState::FILE_SELECT) {
     if (M5.BtnPWR.pressedFor(700)) {
@@ -269,7 +604,6 @@ void loop() {
         return;
       }
       if (openCurrentVideo()) {
-        g_paused = false;
         g_state = AppState::PLAYING;
       } else {
         drawFileMenu();
@@ -280,18 +614,33 @@ void loop() {
   }
 
   if (g_state == AppState::PLAYING) {
-    if (M5.BtnPWR.wasPressed()) {
+    if (M5.BtnPWR.pressedFor(700)) {
       if (g_file) g_file.close();
+      g_paused = false;
+      clearSubtitleState();
       g_state = AppState::FILE_SELECT;
       drawFileMenu();
       delay(10);
       return;
     }
     if (M5.BtnA.wasPressed()) {
-      if (g_file) g_file.seek(0);
+      g_paused = !g_paused;
+      drawPlaybackOverlay();
     }
     if (M5.BtnB.wasPressed()) {
-      g_paused = !g_paused;
+      const uint32_t target_ms = g_play_time_ms + (kSkipSeconds * 1000UL);
+      const int framesToSkip = framesForSeconds(kSkipSeconds);
+      if (!skipFrames(g_file, g_frame_buf, kFrameBufSize, framesToSkip)) {
+        g_status = "Skip end";
+        g_file.seek(0);
+        g_play_time_ms = 0;
+        g_sub_index = 0;
+        updateSubtitleForTime(0);
+      } else {
+        g_play_time_ms = target_ms;
+        g_last_frame_ms = millis();
+        updateSubtitleForTime(g_play_time_ms);
+      }
     }
 
     if (!g_file) {
@@ -303,18 +652,37 @@ void loop() {
     }
 
     if (g_paused) {
+      if (!g_tenstar_connected) {
+        drawSubtitleLocal(g_current_sub_text);
+      }
       delay(20);
       return;
     }
 
     if (!readNextFrame(g_file, g_frame_buf, kFrameBufSize, g_frame_len)) {
       g_file.seek(0);
+      g_play_time_ms = 0;
+      g_sub_index = 0;
+      updateSubtitleForTime(0);
       return;
     }
 
     uint32_t t0 = millis();
     TJpgDec.drawJpg(0, 0, g_frame_buf, g_frame_len);
+    if (!g_tenstar_connected) {
+      drawSubtitleLocal(g_current_sub_text);
+    }
     uint32_t dt = millis() - t0;
+    uint32_t now = millis();
+    uint32_t frame_ms = kFrameDelayMs;
+    if (g_last_frame_ms > 0) {
+      frame_ms = now - g_last_frame_ms;
+      // Exponential moving average for skip timing
+      g_avg_frame_ms = g_avg_frame_ms * 0.9f + frame_ms * 0.1f;
+    }
+    g_last_frame_ms = now;
+    g_play_time_ms += frame_ms;
+    updateSubtitleForTime(g_play_time_ms);
     if (dt < kFrameDelayMs) {
       delay(kFrameDelayMs - dt);
     }

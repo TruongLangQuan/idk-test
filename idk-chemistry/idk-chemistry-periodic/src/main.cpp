@@ -110,33 +110,133 @@ bool parseFormula(const String& input, std::vector<ElemCount>& out, String& err)
   return !out.empty();
 }
 
-void actionLookup() {
-  String query = "";
-  if (!keyboardInput(query, "Element (H/8)", false, true, g_telex_mode, 16, false)) return;
-  query.trim();
-  if (query.isEmpty()) return;
-
-  const ElementInfo* info = nullptr;
-  bool allDigits = true;
-  for (int i = 0; i < query.length(); ++i) {
-    if (!isdigit(static_cast<unsigned char>(query[i]))) { allDigits = false; break; }
-  }
-  if (allDigits) {
-    info = findElementByNumber(query.toInt());
-  } else {
-    String sym = "";
-    sym += static_cast<char>(toupper(static_cast<unsigned char>(query[0])));
-    if (query.length() > 1) sym += static_cast<char>(tolower(static_cast<unsigned char>(query[1])));
-    info = findElementBySymbol(sym);
-  }
-
-  if (!info) { showResult("Element", "Not found"); return; }
+void showElementInfo(const ElementInfo* info) {
+  if (!info) return;
   String out = "";
   out += info->symbol; out += " - "; out += info->name;
   out += "\nZ = "; out += String(info->atomic_number);
   out += "\nMass = "; out += formatFloat(info->atomic_mass, 4);
   if (strlen(info->oxidation_states) > 0) { out += "\nOx = "; out += info->oxidation_states; }
   showResult("Element", out);
+}
+
+void actionLookup() {
+  const size_t total = sizeof(kElements) / sizeof(kElements[0]);
+  constexpr int kCols = 6;
+  constexpr int kRows = 4;
+  constexpr int kPerPage = kCols * kRows;
+  const int totalPages = (total + kPerPage - 1) / kPerPage;
+  int page = 0;
+  int sel = 0;
+
+  auto clampSelection = [&](int& p, int& s) {
+    if (p < 0) p = 0;
+    if (p >= totalPages) p = totalPages - 1;
+    int pageStart = p * kPerPage;
+    int pageCount = static_cast<int>(total - pageStart);
+    if (pageCount > kPerPage) pageCount = kPerPage;
+    if (pageCount <= 0) { s = 0; return; }
+    if (s < 0) s = 0;
+    if (s >= pageCount) s = pageCount - 1;
+  };
+
+  auto draw = [&]() {
+    clampSelection(page, sel);
+    const int screenW = M5.Display.width();
+    const int screenH = M5.Display.height();
+    const int titleY = 2;
+    const int gridY = 16;
+    const int footerY = screenH - 11;
+    const int gridH = footerY - gridY - 2;
+    const int cellW = screenW / kCols;
+    const int cellH = gridH / kRows;
+
+    M5.Display.fillScreen(TFT_BLACK);
+    M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+    M5.Display.setTextSize(1);
+    M5.Display.setCursor(2, titleY);
+    M5.Display.print("Periodic Table");
+
+    String pageInfo = String(page + 1) + "/" + String(totalPages);
+    int pw = M5.Display.textWidth(pageInfo.c_str());
+    M5.Display.setCursor(screenW - pw - 2, titleY);
+    M5.Display.print(pageInfo);
+
+    const int pageStart = page * kPerPage;
+    for (int i = 0; i < kPerPage; ++i) {
+      int idx = pageStart + i;
+      if (idx >= static_cast<int>(total)) break;
+      int row = i / kCols;
+      int col = i % kCols;
+      const int x = col * cellW;
+      const int y = gridY + row * cellH;
+      const bool selected = (i == sel);
+      uint16_t bg = selected ? TFT_WHITE : TFT_BLACK;
+      uint16_t fg = selected ? TFT_BLACK : TFT_WHITE;
+      M5.Display.fillRect(x, y, cellW, cellH, bg);
+      M5.Display.drawRect(x, y, cellW, cellH, TFT_DARKGREY);
+
+      const char* label = kElements[idx].symbol;
+      int tw = M5.Display.textWidth(label);
+      int th = M5.Display.fontHeight();
+      int tx = x + (cellW - tw) / 2;
+      int ty = y + (cellH - th) / 2;
+      M5.Display.setTextColor(fg, bg);
+      M5.Display.setCursor(tx, ty);
+      M5.Display.print(label);
+    }
+
+    M5.Display.setTextColor(TFT_DARKGREY, TFT_BLACK);
+    M5.Display.setCursor(2, footerY);
+    M5.Display.print("A:Select  B:Next  PWR:Prev");
+    M5.Display.setCursor(2, footerY + 9);
+    M5.Display.print("Hold A:Back");
+  };
+
+  draw();
+  bool longAHandled = false;
+  while (true) {
+    M5.update();
+
+    if (M5.BtnB.wasPressed()) {
+      int pageStart = page * kPerPage;
+      int pageCount = static_cast<int>(total - pageStart);
+      if (pageCount > kPerPage) pageCount = kPerPage;
+      sel++;
+      if (sel >= pageCount) {
+        page = (page + 1) % totalPages;
+        sel = 0;
+      }
+      draw();
+    }
+    if (M5.BtnPWR.wasPressed()) {
+      sel--;
+      if (sel < 0) {
+        page = (page - 1 + totalPages) % totalPages;
+        int pageStart = page * kPerPage;
+        int pageCount = static_cast<int>(total - pageStart);
+        if (pageCount > kPerPage) pageCount = kPerPage;
+        sel = pageCount > 0 ? pageCount - 1 : 0;
+      }
+      draw();
+    }
+
+    if (M5.BtnA.pressedFor(600) && !longAHandled) {
+      longAHandled = true;
+      return;
+    }
+    if (M5.BtnA.wasReleased()) {
+      longAHandled = false;
+    }
+    if (M5.BtnA.wasPressed() && !longAHandled) {
+      int idx = page * kPerPage + sel;
+      if (idx >= 0 && idx < static_cast<int>(total)) {
+        showElementInfo(&kElements[idx]);
+      }
+      draw();
+    }
+    delay(8);
+  }
 }
 
 void actionMolarMass() {
@@ -157,7 +257,7 @@ void actionMolarMass() {
 }
 
 MenuItem kMenu[] = {
-    {"Lookup element", actionLookup},
+    {"Periodic table", actionLookup},
     {"Molar mass", actionMolarMass},
 };
 constexpr int kMenuCount = sizeof(kMenu) / sizeof(kMenu[0]);

@@ -259,26 +259,28 @@ String formatFloat(double value, int decimals) {
 
 bool keyboardInput(String& out, const String& title, bool mask_input, bool allow_telex, bool& telexMode,
                    size_t maxLen, bool allow_math) {
-  const char* buttons_all[7];
+  const char* btnLabels[7];
   int btnCount = 0;
-  buttons_all[btnCount++] = "OK";
-  buttons_all[btnCount++] = "CAP";
-  buttons_all[btnCount++] = "DEL";
-  buttons_all[btnCount++] = "SPACE";
-  buttons_all[btnCount++] = "BACK";
-  if (allow_telex) buttons_all[btnCount++] = "VI";
-  if (allow_math) buttons_all[btnCount++] = "MATH";
-  constexpr int gap = 2;
-  constexpr int btnH = 16;
+  btnLabels[btnCount++] = "OK";
+  btnLabels[btnCount++] = "CAP";
+  btnLabels[btnCount++] = "DEL";
+  btnLabels[btnCount++] = "SPACE";
+  btnLabels[btnCount++] = "BACK";
+  int viIndex = -1;
+  int mathIndex = -1;
+  if (allow_telex) { viIndex = btnCount; btnLabels[btnCount++] = "VI"; }
+  if (allow_math) { mathIndex = btnCount; btnLabels[btnCount++] = "MATH"; }
 
   const int screenW = M5.Display.width();
   const int screenH = M5.Display.height();
-  const int btnW = (screenW - gap * (btnCount + 1)) / btnCount;
-  const int btnY = 2;
-  const int titleY = btnY + btnH + 2;
-  const int boxY = titleY + 10;
-  const int boxH = 18;
-  const int gridY = boxY + boxH + 4;
+  constexpr int kBtnH = 20;
+  constexpr int kBtnY = 2;
+  constexpr int kGap = 2;
+  const int btnW = (screenW - kGap * (btnCount + 1)) / btnCount;
+  const int titleY = 24;  // like idk-firmware-idk
+  const int boxY = 32;
+  const int boxH = 20;
+  const int gridY = 54;
   const int keyW = screenW / kKeyboardCols;
   const int keyH = (screenH - gridY) / kKeyboardRows;
 
@@ -296,43 +298,33 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
 
     // Top buttons
     for (int i = 0; i < btnCount; ++i) {
-      const int bx = gap + i * (btnW + gap);
+      const int bx = kGap + i * (btnW + kGap);
       const bool selected = (y == -1 && x == i);
       bool active = false;
       if (i == 1 && caps) active = true;
-      if (allow_telex) {
-        int viIndex = 5;
-        if (allow_math) viIndex = 5;
-        if (allow_telex && i == viIndex && telexMode) active = true;
-      }
-      if (allow_math) {
-        int mathIndex = allow_telex ? 6 : 5;
-        if (i == mathIndex && mathMode) active = true;
-      }
+      if (i == viIndex && telexMode) active = true;
+      if (i == mathIndex && mathMode) active = true;
 
       uint16_t bg = selected ? TFT_WHITE : (active ? TFT_DARKGREY : TFT_BLACK);
       uint16_t fg = selected ? TFT_BLACK : TFT_WHITE;
-
-      M5.Display.fillRect(bx, btnY, btnW, btnH, bg);
-      M5.Display.drawRect(bx, btnY, btnW, btnH, TFT_WHITE);
-      const int tw = M5.Display.textWidth(buttons_all[i]);
+      M5.Display.fillRect(bx, kBtnY, btnW, kBtnH, bg);
+      M5.Display.drawRect(bx, kBtnY, btnW, kBtnH, TFT_WHITE);
+      const int tw = M5.Display.textWidth(btnLabels[i]);
       const int th = M5.Display.fontHeight();
       const int tx = bx + (btnW - tw) / 2;
-      const int ty = btnY + (btnH - th) / 2;
+      const int ty = kBtnY + (kBtnH - th) / 2;
       M5.Display.setTextColor(fg, bg);
       M5.Display.setCursor(tx, ty);
-      M5.Display.print(buttons_all[i]);
+      M5.Display.print(btnLabels[i]);
     }
 
     // Title + counter
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-    M5.Display.setCursor(2, titleY);
-    M5.Display.print(title);
-    if (allow_telex) {
-      M5.Display.print(" (");
-      M5.Display.print(telexMode ? "VI" : "EN");
-      M5.Display.print(")");
-    }
+    String mode = "";
+    if (allow_telex) mode += telexMode ? " [VI]" : " [EN]";
+    if (allow_math) mode += mathMode ? " [MATH]" : "";
+    M5.Display.setCursor(3, titleY);
+    M5.Display.print(title + mode);
 
     String counter = String(value.length()) + "/" + String(maxLen);
     int cw = M5.Display.textWidth(counter.c_str());
@@ -340,8 +332,8 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
     M5.Display.print(counter);
 
     // Input box
-    M5.Display.drawRect(2, boxY, screenW - 4, boxH, TFT_DARKGREY);
-    M5.Display.setCursor(4, boxY + 2);
+    M5.Display.drawRect(3, boxY, screenW - 3, boxH, TFT_DARKGREY);
+    M5.Display.setCursor(5, boxY + 2);
     M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
     String displayValue = value;
     if (mask_input) {
@@ -387,22 +379,28 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
   while (true) {
     M5.update();
 
-    if (M5.BtnB.pressedFor(650) && !longBHandled) {
+    if (M5.BtnB.pressedFor(300) && !longBHandled) {
       longBHandled = true;
-      int maxX = (y == -1) ? btnCount : kKeyboardCols;
-      x = (x - 1 + maxX) % maxX;
+      if (y == -1) {
+        x = (x - 1 + btnCount) % btnCount;
+      } else {
+        x = (x - 1 + kKeyboardCols) % kKeyboardCols;
+      }
       draw();
     }
     if (M5.BtnB.wasReleased()) {
       longBHandled = false;
     }
     if (M5.BtnB.wasPressed() && !longBHandled) {
-      int maxX = (y == -1) ? btnCount : kKeyboardCols;
-      x = (x + 1) % maxX;
+      if (y == -1) {
+        x = (x + 1) % btnCount;
+      } else {
+        x = (x + 1) % kKeyboardCols;
+      }
       draw();
     }
 
-    if (M5.BtnPWR.pressedFor(650) && !longPwrHandled) {
+    if (M5.BtnPWR.pressedFor(300) && !longPwrHandled) {
       longPwrHandled = true;
       y--;
       if (y < -1) y = kKeyboardRows - 1;
@@ -426,14 +424,8 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
         if (x == 2) { if (!value.isEmpty()) removeLastCodepoint(value); }
         if (x == 3) { if (value.length() + 1 <= maxLen) value += ' '; }
         if (x == 4) { return false; }
-        if (allow_telex) {
-          int viIndex = 5;
-          if (x == viIndex) { telexMode = !telexMode; }
-        }
-        if (allow_math) {
-          int mathIndex = allow_telex ? 6 : 5;
-          if (x == mathIndex) { mathMode = !mathMode; }
-        }
+        if (viIndex >= 0 && x == viIndex) { telexMode = !telexMode; }
+        if (mathIndex >= 0 && x == mathIndex) { mathMode = !mathMode; }
       } else {
         if (mathMode && allow_math) {
           const char* token = kMathKeys[y][x];
