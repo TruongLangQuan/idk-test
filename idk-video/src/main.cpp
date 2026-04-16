@@ -6,13 +6,15 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
+#include "../../shared/idk_vn_text.h"
+
 static const uint32_t kFrameDelayMs = 100; // 10 fps default
 static const size_t kFrameBufSize = 80 * 1024;
 static const int kMaxFiles = 128;
 static const int kSkipSeconds = 10;
 static const int kMaxSubtitles = 600;
 static const uint16_t kSubtitlePort = 4210;
-static const char *kApSsid = "Diddy heil Epstein";
+static const char *kApSsid = "Diddy Heil Epstein";
 static const char *kApPass = "TruongLangQuan";
 static const uint32_t kTenstarTimeoutMs = 3000;
 static const uint16_t kFgColor = 0x07E0;    // Launcher-like green
@@ -387,9 +389,45 @@ static bool parseSubtitleTimeLine(const String &line, uint32_t &start_ms, uint32
 }
 
 static String subtitlePathForVideo(const String &videoPath) {
-  int dot = videoPath.lastIndexOf('.');
-  if (dot <= 0) return videoPath + ".srt";
-  return videoPath.substring(0, dot) + ".srt";
+  int slash = videoPath.lastIndexOf('/');
+  String dir = (slash >= 0) ? videoPath.substring(0, slash) : String("/");
+  String name = (slash >= 0) ? videoPath.substring(slash + 1) : videoPath;
+  int dot = name.lastIndexOf('.');
+  String stem = (dot > 0) ? name.substring(0, dot) : name;
+  const String targets[] = {stem + ".srt", stem + ".vi.srt", stem + ".vi-orig.srt", stem + ".en.srt"};
+
+  for (const auto &target : targets) {
+    String candidate = joinPath(dir, target);
+    if (g_fs && g_fs->exists(candidate.c_str())) return candidate;
+  }
+
+  // Case-insensitive scan for .srt
+  if (g_fs) {
+    File root = g_fs->open(dir.c_str());
+    if (root && root.isDirectory()) {
+      File f = root.openNextFile();
+      while (f) {
+        if (!f.isDirectory()) {
+          String fname = f.name();
+          int s = fname.lastIndexOf('/');
+          if (s >= 0) fname = fname.substring(s + 1);
+          String lower = fname;
+          lower.toLowerCase();
+          for (const auto &target : targets) {
+            String want = target;
+            want.toLowerCase();
+            if (lower == want) {
+              root.close();
+              return joinPath(dir, fname);
+            }
+          }
+        }
+        f = root.openNextFile();
+      }
+      root.close();
+    }
+  }
+  return joinPath(dir, targets[0]);
 }
 
 static bool loadSubtitlesForVideo(const String &videoPath) {
@@ -469,40 +507,15 @@ static void updateTenstarStatus() {
 }
 
 static void drawSubtitleLocal(const String &text) {
-  if (text.isEmpty()) return;
   int w = M5.Display.width();
   int h = M5.Display.height();
-  int box_h = 26;
+  int box_h = 30;
   int y = h - box_h;
   M5.Display.fillRect(0, y, w, box_h, kBgColor);
   M5.Display.drawRect(0, y, w, box_h, kFgColor);
-  M5.Display.setTextColor(kFgColor, kBgColor);
+  if (text.isEmpty()) return;
   M5.Display.setTextSize(1);
-
-  String line = "";
-  int cx = 4;
-  int cy = y + 4;
-  for (size_t i = 0; i <= text.length(); ++i) {
-    char ch = (i < text.length()) ? text[i] : ' ';
-    if (ch == '\n') ch = ' ';
-    if (ch != ' ' && i < text.length()) {
-      line += ch;
-      continue;
-    }
-    if (!line.isEmpty()) {
-      String word = line + " ";
-      int wpx = M5.Display.textWidth(word.c_str());
-      if (cx + wpx > w - 4) {
-        cx = 4;
-        cy += 10;
-        if (cy > y + box_h - 10) break;
-      }
-      M5.Display.setCursor(cx, cy);
-      M5.Display.print(word);
-      cx += wpx;
-      line = "";
-    }
-  }
+  idk_vn_text::drawWrapped(M5.Display, text, 4, y + 4, w - 8, box_h - 8, kFgColor, kBgColor, 1);
 }
 
 static void updateSubtitleForTime(uint32_t ms) {

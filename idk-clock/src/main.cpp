@@ -33,6 +33,13 @@ int g_wifi_index = 0;
 String g_wifi_status = "Scanning...";
 uint32_t g_connect_start = 0;
 uint32_t g_next_clock = 0;
+bool g_rtc_enabled = false;
+bool g_rtc_synced = false;
+
+void applyVietnamTimezone() {
+  setenv("TZ", "<+07>-7", 1);
+  tzset();
+}
 
 void drawWifi() {
   M5.Display.fillScreen(TFT_BLACK);
@@ -69,10 +76,27 @@ void drawWifi() {
 }
 
 void syncTimeVN() {
-  configTime(7 * 3600, 0, "pool.ntp.org", "time.google.com", "time.windows.com");
+  applyVietnamTimezone();
+  configTzTime("<+07>-7", "pool.ntp.org", "time.google.com", "time.windows.com");
+}
+
+void loadRtcToSystem() {
+  if (!g_rtc_enabled) return;
+  M5.Rtc.setSystemTimeFromRtc();
+}
+
+void syncRtcFromSystem() {
+  if (!g_rtc_enabled) return;
+  time_t now = time(nullptr);
+  if (now < 100000) return;
+  struct tm utc_tm;
+  gmtime_r(&now, &utc_tm);
+  M5.Rtc.setDateTime(utc_tm);
+  g_rtc_synced = true;
 }
 
 void startClock() {
+  loadRtcToSystem();
   syncTimeVN();
   g_state = AppState::CLOCK;
   g_next_clock = 0;
@@ -276,8 +300,9 @@ void handleConnectingState() {
 void drawClockUI() {
   M5.Display.fillScreen(TFT_BLACK);
 
+  time_t now = time(nullptr);
   struct tm tm_now;
-  bool hasTime = getLocalTime(&tm_now, 20);
+  bool hasTime = (now >= 100000) && (localtime_r(&now, &tm_now) != nullptr);
 
   char time_buf[16] = "--:--:--";
   char date_buf[24] = "--- 0000-00-00";
@@ -309,14 +334,21 @@ void drawClockUI() {
   } else {
     M5.Display.print("WiFi: offline");
   }
+  if (g_rtc_enabled) {
+    M5.Display.print(" | RTC");
+  }
 }
 
 }  // namespace
 
 void setup() {
   auto cfg = M5.config();
+  cfg.external_rtc = true;
   M5.begin(cfg);
   M5.Display.setRotation(3);
+  applyVietnamTimezone();
+  g_rtc_enabled = M5.Rtc.isEnabled();
+  loadRtcToSystem();
   scanWifi();
 }
 
@@ -336,6 +368,9 @@ void loop() {
   }
 
   if ((int32_t)(millis() - g_next_clock) >= 0) {
+    if (WiFi.status() == WL_CONNECTED && !g_rtc_synced && time(nullptr) >= 100000) {
+      syncRtcFromSystem();
+    }
     drawClockUI();
     g_next_clock = millis() + 1000;
   }

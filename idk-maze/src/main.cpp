@@ -1,4 +1,6 @@
 #include <M5Unified.h>
+#include <WiFi.h>
+#include <WiFiUdp.h>
 #include <vector>
 #include <cmath>
 
@@ -8,6 +10,9 @@ static const uint16_t kBg = TFT_BLACK;
 static const uint16_t kFg = TFT_GREEN;
 static const uint16_t kAccent = TFT_RED;
 static const uint32_t kMoveCooldownMs = 250;
+static const char* kApSsid = "Diddy Heil Epstein";
+static const char* kApPass = "TruongLangQuan";
+static const uint16_t kUdpPort = 4211;
 
 static const int kCols = 12;
 static const int kRows = 8;
@@ -30,6 +35,9 @@ static int g_px = 0;
 static int g_py = 0;
 static int g_pz = 0;
 static uint32_t g_last_move_ms = 0;
+static WiFiUDP g_udp;
+
+static bool isAtExit();
 
 static int cellSize() {
   int w = M5.Display.width();
@@ -106,10 +114,10 @@ static void generateLayer(int z) {
 static void placeStairs(int levels) {
   if (levels <= 1) return;
   for (int z = 0; z < levels - 1; ++z) {
-    int sx = esp_random() % kCols;
-    int sy = esp_random() % kRows;
-    g_cells[z][sy][sx].stairDown = true;
-    g_cells[z + 1][sy][sx].stairUp = true;
+    int sx = 1 + (esp_random() % (kCols - 2));
+    int sy = 1 + (esp_random() % (kRows - 2));
+    g_cells[z][sy][sx].stairUp = true;
+    g_cells[z + 1][sy][sx].stairDown = true;
   }
 }
 
@@ -161,10 +169,12 @@ static void drawMaze() {
     }
   }
 
-  // Exit
-  int ex = ox + (kCols - 1) * cs + cs / 2;
-  int ey = oy + (kRows - 1) * cs + cs / 2;
-  M5.Display.drawCircle(ex, ey, 4, TFT_YELLOW);
+  // Exit is only active on the last level in 3D mode.
+  if (g_pz == g_level_count - 1) {
+    int ex = ox + (kCols - 1) * cs + cs / 2;
+    int ey = oy + (kRows - 1) * cs + cs / 2;
+    M5.Display.drawCircle(ex, ey, 4, TFT_YELLOW);
+  }
 
   // Player
   int px = ox + g_px * cs + cs / 2;
@@ -172,8 +182,14 @@ static void drawMaze() {
   M5.Display.fillCircle(px, py, 3, TFT_RED);
 
   M5.Display.setTextColor(TFT_DARKGREY, kBg);
+  M5.Display.setCursor(2, h - 20);
+  if (g_mode_3d) {
+    M5.Display.printf("Exit at L%d | %s", g_level_count, isAtExit() ? "GOAL" : "Find stairs");
+  } else {
+    M5.Display.print("Reach the yellow exit");
+  }
   M5.Display.setCursor(2, h - 10);
-  M5.Display.print("Tilt move | A:Up B:Down PWR:New");
+  M5.Display.print("Tilt/UDP | A:^ B:v PWR:Mode");
 }
 
 static bool tryMove(int dx, int dy) {
@@ -191,8 +207,12 @@ static bool tryMove(int dx, int dy) {
   return true;
 }
 
+static bool isAtExit() {
+  return g_px == kCols - 1 && g_py == kRows - 1 && g_pz == g_level_count - 1;
+}
+
 static void checkWin() {
-  if (g_px == kCols - 1 && g_py == kRows - 1 && g_pz == g_level_count - 1) {
+  if (isAtExit()) {
     M5.Display.fillScreen(TFT_BLACK);
     M5.Display.setTextColor(TFT_GREEN, TFT_BLACK);
     M5.Display.setCursor(40, 60);
@@ -203,6 +223,58 @@ static void checkWin() {
   }
 }
 
+static bool tryUseStairs(int delta) {
+  Cell& c = g_cells[g_pz][g_py][g_px];
+  if (delta > 0) {
+    if (!c.stairUp || g_pz >= g_level_count - 1) return false;
+    g_pz++;
+  } else if (delta < 0) {
+    if (!c.stairDown || g_pz <= 0) return false;
+    g_pz--;
+  } else {
+    return false;
+  }
+  drawMaze();
+  checkWin();
+  return true;
+}
+
+static void handleRemoteCommand(const String& cmd) {
+  if (cmd == "LEFT") {
+    if (tryMove(-1, 0)) drawMaze();
+  } else if (cmd == "RIGHT") {
+    if (tryMove(1, 0)) drawMaze();
+  } else if (cmd == "UP") {
+    if (tryMove(0, -1)) drawMaze();
+  } else if (cmd == "DOWN") {
+    if (tryMove(0, 1)) drawMaze();
+  } else if (cmd == "STAIR_UP") {
+    tryUseStairs(1);
+  } else if (cmd == "STAIR_DOWN") {
+    tryUseStairs(-1);
+  } else if (cmd == "NEW") {
+    generateMaze();
+    drawMaze();
+  } else if (cmd == "TOGGLE_3D") {
+    g_mode_3d = !g_mode_3d;
+    generateMaze();
+    drawMaze();
+  }
+  checkWin();
+}
+
+static void pollRemoteControl() {
+  int packet = g_udp.parsePacket();
+  if (packet <= 0) return;
+  String cmd = "";
+  while (g_udp.available()) {
+    cmd += static_cast<char>(g_udp.read());
+    if (cmd.length() > 32) break;
+  }
+  cmd.trim();
+  handleRemoteCommand(cmd);
+}
+
 }  // namespace
 
 void setup() {
@@ -210,12 +282,16 @@ void setup() {
   M5.begin(cfg);
   M5.Display.setRotation(3);
   M5.Display.setBrightness(180);
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(kApSsid, kApPass);
+  g_udp.begin(kUdpPort);
   generateMaze();
   drawMaze();
 }
 
 void loop() {
   M5.update();
+  pollRemoteControl();
 
   if (M5.BtnPWR.wasPressed()) {
     g_mode_3d = !g_mode_3d;
@@ -224,19 +300,11 @@ void loop() {
   }
 
   if (M5.BtnA.wasPressed()) {
-    Cell &c = g_cells[g_pz][g_py][g_px];
-    if (c.stairUp && g_pz < g_level_count - 1) {
-      g_pz++;
-      drawMaze();
-    }
+    tryUseStairs(1);
   }
 
   if (M5.BtnB.wasPressed()) {
-    Cell &c = g_cells[g_pz][g_py][g_px];
-    if (c.stairDown && g_pz > 0) {
-      g_pz--;
-      drawMaze();
-    }
+    tryUseStairs(-1);
   }
 
   float ax = 0, ay = 0, az = 0;
@@ -245,12 +313,16 @@ void loop() {
     if (now - g_last_move_ms > kMoveCooldownMs) {
       int dx = 0;
       int dy = 0;
-      // Tilt right -> move right, left -> move left
-      if (ax > 0.35f) dx = 1;
-      else if (ax < -0.35f) dx = -1;
-      // Tilt up -> move up, down -> move down
-      if (ay > 0.35f) dy = 1;
-      else if (ay < -0.35f) dy = -1;
+      // Rotation=3 (right landscape): screen X follows -Y accel, screen Y follows -X accel.
+      float sx = -ay;
+      float sy = -ax;
+      if (fabsf(sx) > fabsf(sy)) {
+        if (sx > 0.35f) dx = 1;
+        else if (sx < -0.35f) dx = -1;
+      } else {
+        if (sy > 0.35f) dy = 1;
+        else if (sy < -0.35f) dy = -1;
+      }
       if (tryMove(dx, dy)) {
         g_last_move_ms = now;
         drawMaze();

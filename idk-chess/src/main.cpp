@@ -5,6 +5,26 @@
 #include <array>
 #include <cstdint>
 
+#ifndef IDK_CHESS_APP_TITLE
+#define IDK_CHESS_APP_TITLE "idk-chess"
+#endif
+
+#ifndef IDK_CHESS_AI_LABEL
+#define IDK_CHESS_AI_LABEL "Classic"
+#endif
+
+#ifndef IDK_CHESS_BASE_DEPTH
+#define IDK_CHESS_BASE_DEPTH 3
+#endif
+
+#ifndef IDK_CHESS_ENDGAME_DEPTH
+#define IDK_CHESS_ENDGAME_DEPTH 4
+#endif
+
+#ifndef IDK_CHESS_MAX_DEPTH
+#define IDK_CHESS_MAX_DEPTH 5
+#endif
+
 namespace {
 
 constexpr int8_t EMPTY = 0;
@@ -219,6 +239,83 @@ char pieceChar(int8_t p) {
 }
 
 bool inBounds(int r, int c) { return r >= 0 && r < 8 && c >= 0 && c < 8; }
+
+int pieceSquareBonus(int8_t p, int sq) {
+  static constexpr int pawnTable[64] = {
+      0, 0, 0, 0, 0, 0, 0, 0,
+      8, 10, 10, -4, -4, 10, 10, 8,
+      6, 8, 8, 12, 12, 8, 8, 6,
+      4, 6, 10, 16, 16, 10, 6, 4,
+      3, 5, 8, 14, 14, 8, 5, 3,
+      2, 4, 6, 8, 8, 6, 4, 2,
+      4, 6, 6, -8, -8, 6, 6, 4,
+      0, 0, 0, 0, 0, 0, 0, 0,
+  };
+  static constexpr int knightTable[64] = {
+      -20, -12, -8, -8, -8, -8, -12, -20,
+      -12, -2, 2, 4, 4, 2, -2, -12,
+      -8, 4, 8, 10, 10, 8, 4, -8,
+      -8, 2, 10, 12, 12, 10, 2, -8,
+      -8, 2, 10, 12, 12, 10, 2, -8,
+      -8, 4, 8, 10, 10, 8, 4, -8,
+      -12, -2, 2, 2, 2, 2, -2, -12,
+      -20, -12, -8, -8, -8, -8, -12, -20,
+  };
+  static constexpr int bishopTable[64] = {
+      -8, -4, -4, -4, -4, -4, -4, -8,
+      -4, 4, 2, 2, 2, 2, 4, -4,
+      -4, 6, 6, 8, 8, 6, 6, -4,
+      -4, 2, 8, 10, 10, 8, 2, -4,
+      -4, 2, 8, 10, 10, 8, 2, -4,
+      -4, 6, 6, 8, 8, 6, 6, -4,
+      -4, 4, 2, 2, 2, 2, 4, -4,
+      -8, -4, -4, -4, -4, -4, -4, -8,
+  };
+  static constexpr int rookTable[64] = {
+      2, 4, 6, 8, 8, 6, 4, 2,
+      4, 8, 10, 12, 12, 10, 8, 4,
+      -2, 0, 2, 4, 4, 2, 0, -2,
+      -2, 0, 2, 4, 4, 2, 0, -2,
+      -2, 0, 2, 4, 4, 2, 0, -2,
+      -2, 0, 2, 4, 4, 2, 0, -2,
+      -2, 0, 2, 4, 4, 2, 0, -2,
+      0, 2, 4, 6, 6, 4, 2, 0,
+  };
+  static constexpr int queenTable[64] = {
+      -10, -6, -4, -2, -2, -4, -6, -10,
+      -6, 0, 2, 2, 2, 2, 0, -6,
+      -4, 2, 4, 4, 4, 4, 2, -4,
+      -2, 2, 4, 6, 6, 4, 2, -2,
+      -2, 2, 4, 6, 6, 4, 2, -2,
+      -4, 2, 4, 4, 4, 4, 2, -4,
+      -6, 0, 2, 2, 2, 2, 0, -6,
+      -10, -6, -4, -2, -2, -4, -6, -10,
+  };
+  static constexpr int kingTable[64] = {
+      -16, -20, -20, -24, -24, -20, -20, -16,
+      -12, -16, -16, -20, -20, -16, -16, -12,
+      -8, -12, -12, -16, -16, -12, -12, -8,
+      -4, -8, -8, -12, -12, -8, -8, -4,
+      0, -4, -4, -8, -8, -4, -4, 0,
+      4, 0, 0, -4, -4, 0, 0, 4,
+      10, 12, 6, 0, 0, 6, 12, 10,
+      12, 18, 8, 2, 2, 8, 18, 12,
+  };
+
+  int idx = sq;
+  if (p < 0) {
+    idx = (7 - rowOf(sq)) * 8 + colOf(sq);
+  }
+  switch (pieceAbs(p)) {
+    case 1: return pawnTable[idx];
+    case 2: return knightTable[idx];
+    case 3: return bishopTable[idx];
+    case 4: return rookTable[idx];
+    case 5: return queenTable[idx];
+    case 6: return kingTable[idx];
+    default: return 0;
+  }
+}
 
 void initBoard() {
   g_game.board = {
@@ -597,10 +694,52 @@ int evalBoard(const GameState& st) {
   int score = 0;
   for (int sq = 0; sq < 64; ++sq) {
     int8_t p = st.board[sq];
-    if (p > 0) score += val[p];
-    else if (p < 0) score -= val[-p];
+    if (p > 0) score += val[p] + pieceSquareBonus(p, sq);
+    else if (p < 0) score -= val[-p] + pieceSquareBonus(p, sq);
   }
+  MoveList whiteMoves;
+  MoveList blackMoves;
+  GameState whitePos = st;
+  whitePos.whiteToMove = true;
+  generateLegal(whitePos, whiteMoves);
+  GameState blackPos = st;
+  blackPos.whiteToMove = false;
+  generateLegal(blackPos, blackMoves);
+  score += (whiteMoves.count - blackMoves.count) * 3;
   return score;
+}
+
+int moveOrderingScore(const GameState& st, const Move& m) {
+  static constexpr int val[7] = {0, 100, 320, 330, 500, 900, 20000};
+  int score = 0;
+  int8_t mover = st.board[m.from];
+  int8_t target = st.board[m.to];
+  if (m.flags & MF_EP) {
+    target = st.whiteToMove ? PC_BP : PC_WP;
+  }
+  if (target != 0) {
+    score += 12000 + val[pieceAbs(target)] * 16 - val[pieceAbs(mover)];
+  }
+  if (m.flags & MF_PROMOTION) {
+    score += 10000 + val[pieceAbs(m.promo)];
+  }
+  if (m.flags & (MF_CASTLE_SHORT | MF_CASTLE_LONG)) {
+    score += 1500;
+  }
+  GameState probe = st;
+  makeMove(probe, m);
+  if (inCheck(probe, probe.whiteToMove)) {
+    score += 2200;
+  }
+  score += pieceSquareBonus(mover, m.to) - pieceSquareBonus(mover, m.from);
+  return score;
+}
+
+void sortMoves(const GameState& st, MoveList& list) {
+  std::sort(list.data.begin(), list.data.begin() + list.count,
+            [&](const Move& a, const Move& b) {
+              return moveOrderingScore(st, a) > moveOrderingScore(st, b);
+            });
 }
 
 int negamax(GameState& st, int depth, int alpha, int beta) {
@@ -615,6 +754,7 @@ int negamax(GameState& st, int depth, int alpha, int beta) {
     return st.whiteToMove ? raw : -raw;
   }
 
+  sortMoves(st, legal);
   int best = -200000;
   for (int i = 0; i < legal.count; ++i) {
     Undo u = makeMove(st, legal.data[i]);
@@ -632,6 +772,7 @@ Move findBestMove(const GameState& st, int depth) {
   generateLegal(st, legal);
   if (legal.count == 0) return Move{0, 0, 0, MF_NONE};
 
+  sortMoves(st, legal);
   Move best = legal.data[0];
   int bestScore = -200000;
 
@@ -845,7 +986,7 @@ void drawWifi() {
   M5.Display.fillScreen(TFT_BLACK);
   M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
   M5.Display.setCursor(2, 2);
-  M5.Display.println("idk-chess WiFi");
+  M5.Display.printf("%s WiFi\n", IDK_CHESS_APP_TITLE);
   M5.Display.println("Next/Prev:scroll  M5:connect");
   M5.Display.println("M5+Prev:offline");
   M5.Display.println(g_wifi_status);
@@ -896,12 +1037,14 @@ void drawBoard() {
   M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
   M5.Display.setCursor(2, 2);
   M5.Display.printf("You:%d Bot:%d", g_player_score, g_bot_score);
+  M5.Display.setCursor(2, 12);
+  M5.Display.printf("AI:%s", IDK_CHESS_AI_LABEL);
   M5.Display.setCursor(136, 2);
   M5.Display.print(g_game.whiteToMove ? "Turn:You" : "Turn:Bot");
 
   constexpr int cell = 14;
   constexpr int boardX = 64;
-  constexpr int boardY = 14;
+  constexpr int boardY = 20;
 
   for (int r = 0; r < 8; ++r) {
     for (int c = 0; c < 8; ++c) {
@@ -1027,11 +1170,37 @@ void handleConnectingState() {
   }
 }
 
+int chooseSearchDepth(const GameState& st) {
+  int nonKingPieces = 0;
+  for (int sq = 0; sq < 64; ++sq) {
+    int8_t p = st.board[sq];
+    if (p != 0 && pieceAbs(p) != 6) {
+      nonKingPieces++;
+    }
+  }
+
+  int depth = IDK_CHESS_BASE_DEPTH;
+  if (st.halfmove > 20 || nonKingPieces <= 10) {
+    depth = IDK_CHESS_ENDGAME_DEPTH;
+  }
+  if (nonKingPieces <= 6) {
+    depth = std::min(IDK_CHESS_MAX_DEPTH, depth + 1);
+  }
+
+  MoveList legal;
+  generateLegal(st, legal);
+  if (legal.count <= 10) {
+    depth = std::min(IDK_CHESS_MAX_DEPTH, depth + 1);
+  }
+  return depth;
+}
+
 void botStepIfNeeded() {
   if (g_game_over) return;
   if (g_game.whiteToMove == g_player_is_white) return;
 
-  Move best = findBestMove(g_game, 2);
+  int depth = chooseSearchDepth(g_game);
+  Move best = findBestMove(g_game, depth);
   executeMove(best);
 }
 

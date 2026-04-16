@@ -5,6 +5,8 @@
 
 #include <idk_ui.h>
 
+#include "generated_word_hashes.h"
+
 namespace {
 
 constexpr int kMenuLines = 6;
@@ -121,6 +123,30 @@ bool g_telex_mode = false;
 String g_status = "Ready";
 int g_menu_idx = 0;
 int g_menu_scroll = 0;
+
+uint32_t hashWord(const String& word) {
+  uint32_t h = 2166136261u;
+  for (size_t i = 0; i < word.length(); ++i) {
+    h ^= static_cast<uint8_t>(word[i]);
+    h *= 16777619u;
+  }
+  return h;
+}
+
+bool dictionaryContains(const String& word) {
+  if (word.isEmpty()) return false;
+  uint32_t target = hashWord(word);
+  size_t left = 0;
+  size_t right = kWordHashCount;
+  while (left < right) {
+    size_t mid = left + (right - left) / 2;
+    uint32_t value = kWordHashes[mid];
+    if (value == target) return true;
+    if (value < target) left = mid + 1;
+    else right = mid;
+  }
+  return false;
+}
 
 String toLowerCopy(String s) {
   s.toLowerCase();
@@ -246,8 +272,9 @@ String superlative(const String& w) {
 
 PosFlags fetchPosTags(const String& word, String& status) {
   PosFlags flags;
+  flags.known = dictionaryContains(word);
   if (WiFi.status() != WL_CONNECTED) {
-    status = "Offline";
+    status = flags.known ? "Oxford offline" : "Offline";
     return flags;
   }
   WiFiClientSecure client;
@@ -270,8 +297,8 @@ PosFlags fetchPosTags(const String& word, String& status) {
   flags.verb = body.indexOf("\"v\"") >= 0;
   flags.adj = body.indexOf("adj") >= 0 || body.indexOf("\"a\"") >= 0;
   flags.adv = body.indexOf("adv") >= 0;
-  flags.known = flags.noun || flags.verb || flags.adj || flags.adv;
-  status = flags.known ? "Online" : "Online (pos?)";
+  flags.known = flags.known || flags.noun || flags.verb || flags.adj || flags.adv;
+  status = flags.known ? "Oxford+online" : "Online (pos?)";
   return flags;
 }
 
@@ -357,6 +384,8 @@ void actionLookup() {
   String status = "Offline";
   PosFlags pos = fetchPosTags(toLowerCopy(word), status);
   String out = buildResult(word, pos);
+  out += "Known: ";
+  out += pos.known ? "yes\n" : "no\n";
   out += "Mode: ";
   out += status;
   showResult("Wordform", out);
@@ -370,7 +399,7 @@ void actionWifi() {
 }
 
 void actionAbout() {
-  showResult("About", "Offline rules + online POS (Datamuse)");
+  showResult("About", "Oxford/local dictionary + offline rules + online POS");
 }
 
 void handleMenuSelect() {
