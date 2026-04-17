@@ -35,10 +35,50 @@ uint32_t g_connect_start = 0;
 uint32_t g_next_clock = 0;
 bool g_rtc_enabled = false;
 bool g_rtc_synced = false;
+bool g_has_fallback_clock = false;
+time_t g_fallback_epoch = 0;
+uint32_t g_fallback_started_ms = 0;
 
 void applyVietnamTimezone() {
   setenv("TZ", "<+07>-7", 1);
   tzset();
+}
+
+int monthIndex(const char* mon) {
+  static const char* kMonths[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+  for (int i = 0; i < 12; ++i) {
+    if (strncmp(mon, kMonths[i], 3) == 0) return i;
+  }
+  return 0;
+}
+
+time_t buildCompileEpoch() {
+  char mon[4] = {0};
+  int day = 1;
+  int year = 2026;
+  int hh = 0, mm = 0, ss = 0;
+  sscanf(__DATE__, "%3s %d %d", mon, &day, &year);
+  sscanf(__TIME__, "%d:%d:%d", &hh, &mm, &ss);
+  struct tm tm_value = {};
+  tm_value.tm_year = year - 1900;
+  tm_value.tm_mon = monthIndex(mon);
+  tm_value.tm_mday = day;
+  tm_value.tm_hour = hh;
+  tm_value.tm_min = mm;
+  tm_value.tm_sec = ss;
+  return mktime(&tm_value);
+}
+
+time_t currentClockValue() {
+  time_t now = time(nullptr);
+  if (now >= 100000) return now;
+  if (!g_has_fallback_clock) {
+    g_fallback_epoch = buildCompileEpoch();
+    g_fallback_started_ms = millis();
+    g_has_fallback_clock = true;
+  }
+  return g_fallback_epoch + (millis() - g_fallback_started_ms) / 1000;
 }
 
 void drawWifi() {
@@ -98,6 +138,11 @@ void syncRtcFromSystem() {
 void startClock() {
   loadRtcToSystem();
   syncTimeVN();
+  if (time(nullptr) < 100000) {
+    g_fallback_epoch = buildCompileEpoch();
+    g_fallback_started_ms = millis();
+    g_has_fallback_clock = true;
+  }
   g_state = AppState::CLOCK;
   g_next_clock = 0;
 }
@@ -300,7 +345,7 @@ void handleConnectingState() {
 void drawClockUI() {
   M5.Display.fillScreen(TFT_BLACK);
 
-  time_t now = time(nullptr);
+  time_t now = currentClockValue();
   struct tm tm_now;
   bool hasTime = (now >= 100000) && (localtime_r(&now, &tm_now) != nullptr);
 
@@ -336,6 +381,8 @@ void drawClockUI() {
   }
   if (g_rtc_enabled) {
     M5.Display.print(" | RTC");
+  } else if (g_has_fallback_clock) {
+    M5.Display.print(" | fallback");
   }
 }
 

@@ -6,7 +6,7 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
-#include "../../shared/idk_vn_text.h"
+#include "../../shared/idk_vi_font.h"
 
 static const uint32_t kFrameDelayMs = 100; // 10 fps default
 static const size_t kFrameBufSize = 80 * 1024;
@@ -72,6 +72,7 @@ static String g_current_sub_text = "";
 static uint32_t g_last_tenstar_ms = 0;
 static bool g_tenstar_connected = false;
 static WiFiUDP g_udp;
+static bool g_vi_font_loaded = false;
 
 static bool loadSubtitlesForVideo(const String &videoPath);
 static void updateSubtitleForTime(uint32_t ms);
@@ -514,8 +515,14 @@ static void drawSubtitleLocal(const String &text) {
   M5.Display.fillRect(0, y, w, box_h, kBgColor);
   M5.Display.drawRect(0, y, w, box_h, kFgColor);
   if (text.isEmpty()) return;
-  M5.Display.setTextSize(1);
-  idk_vn_text::drawWrapped(M5.Display, text, 4, y + 4, w - 8, box_h - 8, kFgColor, kBgColor, 1);
+  if (g_vi_font_loaded) {
+    idk_vi_font::drawWrapped(M5.Display, text, 4, y + 4, w - 8, box_h - 8, kFgColor, kBgColor, 14);
+  } else {
+    M5.Display.setTextSize(1);
+    M5.Display.setTextColor(kFgColor, kBgColor);
+    M5.Display.setCursor(4, y + 4);
+    M5.Display.print(text);
+  }
 }
 
 static void updateSubtitleForTime(uint32_t ms) {
@@ -556,6 +563,7 @@ void setup() {
   M5.begin(cfg);
   M5.Display.setRotation(3); // Left landscape
   M5.Display.setBrightness(180);
+  g_vi_font_loaded = idk_vi_font::load(M5.Display);
 
   WiFi.mode(WIFI_AP);
   WiFi.softAP(kApSsid, kApPass);
@@ -680,25 +688,20 @@ void loop() {
       return;
     }
 
-    uint32_t t0 = millis();
+    updateSubtitleForTime(g_play_time_ms);
+    uint32_t frame_start_ms = millis();
     TJpgDec.drawJpg(0, 0, g_frame_buf, g_frame_len);
     if (!g_tenstar_connected) {
       drawSubtitleLocal(g_current_sub_text);
     }
-    uint32_t dt = millis() - t0;
-    uint32_t now = millis();
-    uint32_t frame_ms = kFrameDelayMs;
-    if (g_last_frame_ms > 0) {
-      frame_ms = now - g_last_frame_ms;
-      // Exponential moving average for skip timing
-      g_avg_frame_ms = g_avg_frame_ms * 0.9f + frame_ms * 0.1f;
+    uint32_t draw_ms = millis() - frame_start_ms;
+    if (draw_ms < kFrameDelayMs) {
+      delay(kFrameDelayMs - draw_ms);
     }
-    g_last_frame_ms = now;
+    uint32_t frame_ms = millis() - frame_start_ms;
+    g_avg_frame_ms = g_avg_frame_ms * 0.9f + frame_ms * 0.1f;
+    g_last_frame_ms = millis();
     g_play_time_ms += frame_ms;
-    updateSubtitleForTime(g_play_time_ms);
-    if (dt < kFrameDelayMs) {
-      delay(kFrameDelayMs - dt);
-    }
     return;
   }
 }

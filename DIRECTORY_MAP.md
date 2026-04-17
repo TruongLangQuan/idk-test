@@ -1,0 +1,61 @@
+# DIRECTORY_MAP
+
+- `Launcher/`
+  - Purpose: multi-board app launcher, OTA/bin management, SD/web UI
+  - Key files: `src/main.cpp`, `src/settings.cpp`, `src/sd_functions.cpp`, `boards/pinouts/*`
+  - Edit level: VERY HIGH RISK
+- `shared/`
+  - Purpose: shared UI/text helpers
+  - Key files: `shared/idk_ui/*`, `shared/idk_vi_font.h`, `shared/idk_vn_text.h`
+  - Edit level: MEDIUM
+- `tools/`
+  - Purpose: asset compilation and generated outputs
+  - Key files: `asset_compiler.py`, `assets/`, `out/`
+  - Edit level: LOW to MEDIUM
+- `docs/`
+  - Purpose: repo/project notes
+  - Key files: markdown files
+  - Edit level: LOW
+- `idk-video/`
+  - Purpose: MJPG player + subtitle + UDP broadcast
+  - Key files: `src/main.cpp`, `platformio.ini`, `data/`, `tools/`
+  - Edit level: HIGH
+- `idk-subtitle/`
+  - Purpose: Tenstar subtitle display + UDP remote
+  - Key files: `src/main.cpp`, `platformio.ini`
+  - Edit level: HIGH
+- `idk-clock/`
+  - Purpose: WiFi/RTC clock
+  - Key files: `src/main.cpp`
+  - Edit level: HIGH
+- `idk-audio/`, `idk-maze/`, `idk-dice/`, `idk-worldgen-2d/`, `idk-worldgen-3d/`, `idk-geogen-2d/`, `idk-geogen-multidim/`, `idk-screensaver/`
+  - Purpose: focused single-firmware apps
+  - Key files: `src/main.cpp`, `platformio.ini`
+  - Edit level: LOW to MEDIUM unless touching SD/WiFi/IMU
+- `idk-english-wordform/`
+  - Purpose: offline/online wordform lookup
+  - Key files: `src/main.cpp`, `tools/build_dictionary_header.py`, `src/generated_word_hashes.h`
+  - Edit level: MEDIUM
+- `idk-chess/`, `idk-chess-5d/`, `idk-chess-infinity/`
+  - Purpose: chess engines/UI experiments
+  - Key files: `src/main.cpp`
+  - Edit level: MEDIUM
+- `idk-miner/`, `idk-mine/`
+  - Purpose: crypto dashboard/mining-related logic
+  - Key files: `idk-miner/src/*`, `idk-mine/shared/*`, `idk-mine/scripts/*`
+  - Edit level: HIGH
+- `idk-atom/`, `idk-blackhole/`, `idk-gif/`, `idk-img/`, `idk-ir/`, `idk-linux/`, `idk-portal/`, `idk-txt/`, `idk-ai/`, `idk-translator/`, `idk-cyd/`, `idk-bat/`
+  - Purpose: standalone firmware apps
+  - Key files: project `src/main.cpp`, `platformio.ini`
+  - Edit level: LOW to MEDIUM
+- `idk-biology/`, `idk-chemistry/`, `idk-math/`, `idk-physics/`
+  - Purpose: grouped educational mini-firmwares
+  - Key files: nested `*/src/main.cpp`
+  - Edit level: LOW to MEDIUM
+- `idk-bin/`
+  - Purpose: merged output binaries
+  - Key files: generated `.bin`
+  - Edit level: GENERATED
+- `.pio/`, nested `.pio/`
+  - Purpose: PlatformIO build cache
+  - Edit level: GENERATED / IGNORE

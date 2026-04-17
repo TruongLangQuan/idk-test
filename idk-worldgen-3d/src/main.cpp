@@ -3,13 +3,14 @@
 
 namespace {
 
-static const int kMapW = 12;
-static const int kMapH = 10;
+static const int kMapW = 10;
+static const int kMapH = 8;
 static const uint32_t kMoveCooldownMs = 180;
 
 struct Tile {
   uint8_t height = 0;
-  bool building = false;
+  bool town = false;
+  bool water = false;
 };
 
 Tile g_map[kMapH][kMapW];
@@ -18,65 +19,74 @@ int g_cursor_y = 0;
 uint32_t g_last_move_ms = 0;
 uint32_t g_seed = 1;
 
-int isoX(int x, int y) { return 120 + (x - y) * 10; }
-int isoY(int x, int y, int h) { return 90 + (x + y) * 5 - h * 5; }
+int isoX(int x, int y) { return 120 + (x - y) * 13; }
+int isoY(int x, int y, int h) { return 80 + (x + y) * 7 - h * 6; }
 
 void generateWorld() {
   g_seed = esp_random();
   for (int y = 0; y < kMapH; ++y) {
     for (int x = 0; x < kMapW; ++x) {
       uint32_t n = g_seed ^ (x * 1664525u) ^ (y * 1013904223u);
-      int ridge = abs(x - kMapW / 2) + abs(y - kMapH / 2);
-      g_map[y][x].height = 2 + ((n >> 18) % 6) + (ridge < 4 ? 2 : 0);
-      g_map[y][x].building = false;
+      g_map[y][x].height = 2 + ((n >> 18) % 6);
+      g_map[y][x].water = g_map[y][x].height <= 2;
+      g_map[y][x].town = false;
     }
   }
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 4; ++i) {
     int x = 1 + (esp_random() % (kMapW - 2));
     int y = 1 + (esp_random() % (kMapH - 2));
-    if (g_map[y][x].height >= 5) g_map[y][x].building = true;
+    if (!g_map[y][x].water && g_map[y][x].height >= 4) g_map[y][x].town = true;
   }
   g_cursor_x = kMapW / 2;
   g_cursor_y = kMapH / 2;
 }
 
 uint16_t topColor(const Tile& tile) {
-  if (tile.building) return TFT_ORANGE;
-  if (tile.height <= 3) return M5.Display.color565(50, 150, 70);
-  if (tile.height <= 5) return M5.Display.color565(120, 170, 80);
-  if (tile.height <= 7) return M5.Display.color565(125, 100, 70);
-  return TFT_LIGHTGREY;
+  if (tile.water) return M5.Display.color565(48, 102, 194);
+  if (tile.town) return M5.Display.color565(219, 194, 138);
+  if (tile.height <= 3) return M5.Display.color565(67, 154, 88);
+  if (tile.height <= 5) return M5.Display.color565(124, 157, 86);
+  return M5.Display.color565(152, 132, 94);
 }
 
-void drawColumn(int x, int y, const Tile& tile, bool selected) {
+void drawPrism(int x, int y, const Tile& tile, bool selected) {
   int sx = isoX(x, y);
   int sy = isoY(x, y, tile.height);
-  int hpx = tile.height * 4 + (tile.building ? 10 : 0);
+  int topY = sy - 8;
+  int bodyH = tile.height * 6 + (tile.town ? 10 : 0);
   uint16_t top = selected ? TFT_YELLOW : topColor(tile);
-  uint16_t left = M5.Display.color565(40, 80, 40);
-  uint16_t right = M5.Display.color565(70, 110, 60);
-  M5.Display.fillTriangle(sx, sy, sx + 10, sy + 5, sx, sy + 10, left);
-  M5.Display.fillTriangle(sx, sy + 10, sx + 10, sy + 5, sx + 10, sy + 15, right);
-  M5.Display.fillRect(sx, sy + 5, 10, hpx, right);
-  M5.Display.fillRect(sx - 10, sy + 10, 10, hpx, left);
-  M5.Display.fillTriangle(sx, sy - 5, sx + 10, sy, sx, sy + 5, top);
-  M5.Display.fillTriangle(sx, sy + 5, sx + 10, sy, sx + 10, sy + 10, top);
+  uint16_t left = tile.water ? M5.Display.color565(28, 65, 140) : M5.Display.color565(74, 101, 58);
+  uint16_t right = tile.water ? M5.Display.color565(35, 84, 167) : M5.Display.color565(102, 122, 71);
+
+  M5.Display.fillTriangle(sx, topY, sx + 13, topY + 7, sx, topY + 14, top);
+  M5.Display.fillTriangle(sx, topY + 14, sx + 13, topY + 7, sx + 13, topY + 21, top);
+  M5.Display.fillTriangle(sx - 13, topY + 7, sx, topY + 14, sx - 13, topY + 14 + bodyH, left);
+  M5.Display.fillTriangle(sx - 13, topY + 14 + bodyH, sx, topY + 14, sx, topY + 21 + bodyH, left);
+  M5.Display.fillTriangle(sx, topY + 14, sx + 13, topY + 21, sx, topY + 21 + bodyH, right);
+  M5.Display.fillTriangle(sx, topY + 21 + bodyH, sx + 13, topY + 21, sx + 13, topY + 28 + bodyH, right);
+
+  if (tile.town) {
+    M5.Display.fillRect(sx - 3, topY + 6, 7, 12, M5.Display.color565(195, 79, 61));
+    M5.Display.fillTriangle(sx - 4, topY + 6, sx, topY + 1, sx + 4, topY + 6, TFT_RED);
+  }
 }
 
 void drawWorld() {
-  M5.Display.fillScreen(TFT_BLACK);
+  M5.Display.fillScreen(M5.Display.color565(17, 22, 30));
+  M5.Display.fillRect(0, 0, 240, 18, M5.Display.color565(28, 36, 48));
   M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-  M5.Display.setCursor(2, 2);
+  M5.Display.setCursor(4, 4);
   M5.Display.printf("idk-worldgen-3d seed:%u", g_seed);
   for (int y = 0; y < kMapH; ++y) {
     for (int x = 0; x < kMapW; ++x) {
-      drawColumn(x, y, g_map[y][x], x == g_cursor_x && y == g_cursor_y);
+      drawPrism(x, y, g_map[y][x], x == g_cursor_x && y == g_cursor_y);
     }
   }
   const Tile& cur = g_map[g_cursor_y][g_cursor_x];
-  M5.Display.setCursor(2, 124);
+  M5.Display.fillRect(0, 122, 240, 13, M5.Display.color565(28, 36, 48));
+  M5.Display.setCursor(4, 125);
   M5.Display.printf("X:%02d Y:%02d H:%d %s", g_cursor_x, g_cursor_y, cur.height,
-                    cur.building ? "BUILD" : "LAND");
+                    cur.town ? "TOWN" : cur.water ? "WATER" : "LAND");
 }
 
 void moveCursor(int dx, int dy) {

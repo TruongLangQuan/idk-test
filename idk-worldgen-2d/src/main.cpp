@@ -3,13 +3,23 @@
 
 namespace {
 
-static const int kMapW = 32;
-static const int kMapH = 18;
+static const int kMapW = 24;
+static const int kMapH = 14;
 static const uint32_t kMoveCooldownMs = 180;
+
+enum Terrain : uint8_t {
+  Water,
+  Grass,
+  Dirt,
+  Hill,
+  Rock,
+};
 
 struct Tile {
   uint8_t height = 0;
+  Terrain terrain = Grass;
   bool building = false;
+  bool road = false;
 };
 
 Tile g_map[kMapH][kMapW];
@@ -24,13 +34,20 @@ uint8_t clampHeight(int v) {
   return static_cast<uint8_t>(v);
 }
 
-uint16_t tileColor(const Tile& tile) {
-  if (tile.building) return TFT_ORANGE;
-  if (tile.height <= 2) return M5.Display.color565(20, 70, 180);
-  if (tile.height <= 4) return M5.Display.color565(30, 150, 60);
-  if (tile.height <= 6) return M5.Display.color565(120, 160, 70);
-  if (tile.height <= 8) return M5.Display.color565(110, 90, 60);
-  return TFT_LIGHTGREY;
+uint16_t terrainColor(const Tile& tile) {
+  switch (tile.terrain) {
+    case Water:
+      return M5.Display.color565(26, 86, 178);
+    case Grass:
+      return M5.Display.color565(57, 150, 82);
+    case Dirt:
+      return M5.Display.color565(148, 118, 76);
+    case Hill:
+      return M5.Display.color565(110, 143, 75);
+    case Rock:
+    default:
+      return M5.Display.color565(145, 150, 156);
+  }
 }
 
 void smoothMap() {
@@ -56,17 +73,43 @@ void smoothMap() {
   }
 }
 
+void classifyTerrain() {
+  for (int y = 0; y < kMapH; ++y) {
+    for (int x = 0; x < kMapW; ++x) {
+      Tile& t = g_map[y][x];
+      t.building = false;
+      t.road = false;
+      if (t.height <= 2) t.terrain = Water;
+      else if (t.height <= 4) t.terrain = Grass;
+      else if (t.height <= 6) t.terrain = Dirt;
+      else if (t.height <= 8) t.terrain = Hill;
+      else t.terrain = Rock;
+    }
+  }
+}
+
 bool canPlaceBuilding(int x0, int y0, int w, int h) {
   if (x0 < 1 || y0 < 1 || x0 + w >= kMapW - 1 || y0 + h >= kMapH - 1) return false;
-  int base = g_map[y0][x0].height;
-  if (base < 3 || base > 6) return false;
   for (int y = y0; y < y0 + h; ++y) {
     for (int x = x0; x < x0 + w; ++x) {
-      if (g_map[y][x].building) return false;
-      if (abs(g_map[y][x].height - base) > 1) return false;
+      const Tile& t = g_map[y][x];
+      if (t.terrain == Water || t.terrain == Rock || t.building) return false;
     }
   }
   return true;
+}
+
+void layRoad(int x0, int y0, int w, int h) {
+  int cx = x0 + w / 2;
+  int cy = y0 + h / 2;
+  while (cx > 1) {
+    g_map[cy][cx].road = true;
+    cx--;
+  }
+  while (cy > 1) {
+    g_map[cy][cx].road = true;
+    cy--;
+  }
 }
 
 void placeBuildings() {
@@ -74,15 +117,14 @@ void placeBuildings() {
   for (int i = 0; i < count; ++i) {
     for (int tries = 0; tries < 24; ++tries) {
       int bw = 2 + (esp_random() % 3);
-      int bh = 2 + (esp_random() % 3);
-      int x0 = esp_random() % (kMapW - bw);
-      int y0 = esp_random() % (kMapH - bh);
+      int bh = 2 + (esp_random() % 2);
+      int x0 = 1 + (esp_random() % (kMapW - bw - 2));
+      int y0 = 1 + (esp_random() % (kMapH - bh - 2));
       if (!canPlaceBuilding(x0, y0, bw, bh)) continue;
       for (int y = y0; y < y0 + bh; ++y) {
-        for (int x = x0; x < x0 + bw; ++x) {
-          g_map[y][x].building = true;
-        }
+        for (int x = x0; x < x0 + bw; ++x) g_map[y][x].building = true;
       }
+      layRoad(x0, y0, bw, bh);
       break;
     }
   }
@@ -94,41 +136,66 @@ void generateWorld() {
     for (int x = 0; x < kMapW; ++x) {
       uint32_t n = g_seed ^ (x * 1103515245u) ^ (y * 12345u);
       g_map[y][x].height = 1 + ((n >> 16) % 9);
-      g_map[y][x].building = false;
     }
   }
   smoothMap();
+  classifyTerrain();
   placeBuildings();
   g_cursor_x = kMapW / 2;
   g_cursor_y = kMapH / 2;
 }
 
+void drawTile(int px, int py, int tile, const Tile& t) {
+  uint16_t base = terrainColor(t);
+  M5.Display.fillRoundRect(px, py, tile, tile, 2, base);
+  if (t.terrain == Water) {
+    M5.Display.drawFastHLine(px + 1, py + tile / 2, tile - 2, TFT_CYAN);
+  } else if (t.terrain == Grass) {
+    M5.Display.drawPixel(px + 2, py + 2, TFT_DARKGREEN);
+    M5.Display.drawPixel(px + tile - 3, py + tile - 3, TFT_DARKGREEN);
+  } else if (t.terrain == Hill) {
+    M5.Display.drawFastHLine(px + 1, py + 1, tile - 2, TFT_OLIVE);
+  } else if (t.terrain == Rock) {
+    M5.Display.drawLine(px + 1, py + tile - 2, px + tile - 2, py + 1, TFT_WHITE);
+  }
+  if (t.road) {
+    M5.Display.fillRect(px + tile / 2 - 1, py, 2, tile, M5.Display.color565(90, 70, 45));
+    M5.Display.fillRect(px, py + tile / 2 - 1, tile, 2, M5.Display.color565(90, 70, 45));
+  }
+  if (t.building) {
+    M5.Display.fillRect(px + 2, py + 3, tile - 4, tile - 5, M5.Display.color565(222, 205, 154));
+    M5.Display.fillTriangle(px + 1, py + 4, px + tile / 2, py, px + tile - 1, py + 4,
+                            M5.Display.color565(165, 62, 49));
+    M5.Display.drawRect(px + 2, py + 3, tile - 4, tile - 5, TFT_BROWN);
+  }
+}
+
 void drawWorld() {
-  M5.Display.fillScreen(TFT_BLACK);
+  M5.Display.fillScreen(M5.Display.color565(14, 25, 24));
+  M5.Display.fillRect(0, 0, 240, 16, M5.Display.color565(24, 38, 35));
   M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-  M5.Display.setCursor(2, 2);
+  M5.Display.setCursor(4, 4);
   M5.Display.printf("idk-worldgen-2d  seed:%u", g_seed);
-  const int tile = 6;
-  const int ox = 24;
-  const int oy = 18;
+
+  const int tile = 9;
+  const int ox = 12;
+  const int oy = 20;
   for (int y = 0; y < kMapH; ++y) {
     for (int x = 0; x < kMapW; ++x) {
-      const Tile& t = g_map[y][x];
-      int px = ox + x * tile;
-      int py = oy + y * tile;
-      M5.Display.fillRect(px, py, tile, tile, tileColor(t));
-      if (t.building) {
-        M5.Display.drawRect(px + 1, py + 1, tile - 2, tile - 2, TFT_RED);
-      }
+      drawTile(ox + x * tile, oy + y * tile, tile - 1, g_map[y][x]);
     }
   }
+
   int cx = ox + g_cursor_x * tile;
   int cy = oy + g_cursor_y * tile;
-  M5.Display.drawRect(cx - 1, cy - 1, tile + 2, tile + 2, TFT_YELLOW);
-  M5.Display.setCursor(2, 124);
+  M5.Display.drawRoundRect(cx - 1, cy - 1, tile + 1, tile + 1, 2, TFT_YELLOW);
+  M5.Display.drawRoundRect(cx - 2, cy - 2, tile + 3, tile + 3, 2, TFT_RED);
+
   const Tile& cur = g_map[g_cursor_y][g_cursor_x];
+  M5.Display.fillRect(0, 122, 240, 13, M5.Display.color565(24, 38, 35));
+  M5.Display.setCursor(4, 125);
   M5.Display.printf("X:%02d Y:%02d H:%d %s", g_cursor_x, g_cursor_y, cur.height,
-                    cur.building ? "BUILD" : "LAND");
+                    cur.building ? "TOWN" : cur.road ? "ROAD" : "FIELD");
 }
 
 void moveCursor(int dx, int dy) {

@@ -25,7 +25,7 @@ static const uint16_t kFgColor = 0x07E0;
 static const uint16_t kAccentColor = 0xF800;
 static const uint16_t kBgColor = 0x0000;
 static const int kHeaderH = 20;
-static const int kFooterH = 40;
+static const int kFooterH = 32;
 
 enum class Mode {
   Subtitle,
@@ -233,7 +233,7 @@ static void pollUdp() {
     text += static_cast<char>(udp.read());
     if (text.length() > 320) break;
   }
-  text.trim();
+  text.replace("\r", "");
   if (text == "HELLO") return;
   updateSubtitle(text);
 }
