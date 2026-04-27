@@ -6,6 +6,35 @@
 
 namespace {
 
+// ─── 5-way tactile switch GPIO mapping ──────────────────────────
+static constexpr int kPinUp = 32;
+static constexpr int kPinDown = 33;
+static constexpr int kPinLeft = 25;
+static constexpr int kPinRight = 26;
+static constexpr int kPinCenter = 0;
+
+struct ExtButton {
+  int pin;
+  bool pressed;
+  uint32_t lastRepeatMs;
+};
+
+static ExtButton g_ext[] = {
+    {kPinUp, false, 0},
+    {kPinDown, false, 0},
+    {kPinLeft, false, 0},
+    {kPinRight, false, 0},
+    {kPinCenter, false, 0},
+};
+
+static bool g_5way_detected = false;
+static constexpr uint32_t kExtRepeatMs = 200;
+
+bool readExtPressed(int pin) {
+  return digitalRead(pin) == LOW;
+}
+
+// ─── Maze constants ─────────────────────────────────────────────
 static const uint16_t kBg = TFT_BLACK;
 static const uint16_t kFg = TFT_GREEN;
 static const uint16_t kAccent = TFT_RED;
@@ -169,7 +198,7 @@ static void drawMaze() {
     }
   }
 
-  // Exit is only active on the last level in 3D mode.
+  // Exit — only active on the last level in 3D mode.
   if (g_pz == g_level_count - 1) {
     int ex = ox + (kCols - 1) * cs + cs / 2;
     int ey = oy + (kRows - 1) * cs + cs / 2;
@@ -189,7 +218,11 @@ static void drawMaze() {
     M5.Display.print("Reach the yellow exit");
   }
   M5.Display.setCursor(2, h - 10);
-  M5.Display.print("Tilt/UDP | A:^ B:v PWR:Mode");
+  if (g_5way_detected) {
+    M5.Display.print("5-way|Tilt|UDP  A/B:Stairs PWR:Mode");
+  } else {
+    M5.Display.print("Tilt/UDP | A:^ B:v PWR:Mode");
+  }
 }
 
 static bool tryMove(int dx, int dy) {
@@ -275,6 +308,65 @@ static void pollRemoteControl() {
   handleRemoteCommand(cmd);
 }
 
+// ─── 5-way tactile switch handler ───────────────────────────────
+// Directions → move the player in the maze.
+// CENTER → use stairs (toggles up/down, or generate new maze if not on stairs).
+
+static int g_stair_toggle = 1;  // +1 = try up first, -1 = try down first
+
+static void handleExtButtons() {
+  if (!g_5way_detected) return;
+  const uint32_t now = millis();
+
+  auto handleDir = [&](ExtButton& btn, int dx, int dy) {
+    const bool down = readExtPressed(btn.pin);
+    if (!down) {
+      btn.pressed = false;
+      return;
+    }
+    bool trigger = false;
+    if (!btn.pressed) {
+      btn.pressed = true;
+      btn.lastRepeatMs = now;
+      trigger = true;
+    } else if (now - btn.lastRepeatMs > kExtRepeatMs) {
+      btn.lastRepeatMs = now;
+      trigger = true;
+    }
+    if (trigger) {
+      if (tryMove(dx, dy)) {
+        drawMaze();
+        checkWin();
+      }
+    }
+  };
+
+  handleDir(g_ext[0], 0, -1);  // UP
+  handleDir(g_ext[1], 0, 1);   // DOWN
+  handleDir(g_ext[2], -1, 0);  // LEFT
+  handleDir(g_ext[3], 1, 0);   // RIGHT
+
+  // CENTER — use stairs or generate new maze
+  ExtButton& center = g_ext[4];
+  const bool cDown = (now > 400) && readExtPressed(center.pin);
+  if (!cDown) {
+    center.pressed = false;
+    return;
+  }
+  if (!center.pressed) {
+    center.pressed = true;
+    // Try stairs in current toggle direction; if that fails, try opposite
+    if (!tryUseStairs(g_stair_toggle)) {
+      if (!tryUseStairs(-g_stair_toggle)) {
+        // Not on any stairs — generate new maze
+        generateMaze();
+        drawMaze();
+      }
+    }
+    g_stair_toggle = -g_stair_toggle;  // alternate next time
+  }
+}
+
 }  // namespace
 
 void setup() {
@@ -282,6 +374,16 @@ void setup() {
   M5.begin(cfg);
   M5.Display.setRotation(3);
   M5.Display.setBrightness(180);
+
+  // Init 5-way pins
+  pinMode(kPinUp, INPUT_PULLUP);
+  pinMode(kPinDown, INPUT_PULLUP);
+  pinMode(kPinLeft, INPUT_PULLUP);
+  pinMode(kPinRight, INPUT_PULLUP);
+  pinMode(kPinCenter, INPUT_PULLUP);
+  delay(10);
+  g_5way_detected = true;  // always enable — no harm if absent
+
   WiFi.mode(WIFI_AP);
   WiFi.softAP(kApSsid, kApPass);
   g_udp.begin(kUdpPort);
@@ -292,6 +394,7 @@ void setup() {
 void loop() {
   M5.update();
   pollRemoteControl();
+  handleExtButtons();
 
   if (M5.BtnPWR.wasPressed()) {
     g_mode_3d = !g_mode_3d;

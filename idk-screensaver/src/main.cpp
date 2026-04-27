@@ -26,6 +26,12 @@ enum Saver {
   TTSand,
   TTSplits,
   TTTunnel,
+  // ─── ASCII-based screensavers ──────────────────────
+  AsciiRain,
+  AsciiCode,
+  AsciiScroll,
+  AsciiWave,
+  AsciiBlocks,
   Count,
 };
 
@@ -34,6 +40,7 @@ static const char* kNames[] = {
     "bash-pipes",   "bash-rain",     "bash-speaky",    "bash-stars",     "bash-tunnel", "bash-vibe",
     "tt-ant",       "tt-balls",      "tt-bubble",      "tt-cube",        "tt-life",     "tt-pipes3d",
     "tt-rings",     "tt-sand",       "tt-splits",      "tt-tunnel",
+    "ascii-rain",   "ascii-code",    "ascii-scroll",   "ascii-wave",     "ascii-blocks",
 };
 
 static Saver g_saver = BashAlpha;
@@ -114,6 +121,8 @@ void initSaver() {
   if (g_saver == BashLife || g_saver == TTLife) initLife();
   if (g_saver == TTSand) initSand();
   if (g_saver == TTAnt) initAnt();
+  // ─── ASCII screensavers need no special init ──────────
+  // Just reset frame counter
   g_speaky_phase = 0;
 }
 
@@ -401,6 +410,110 @@ void drawSplits() {
   }
 }
 
+// ─── ASCII-based screensavers ──────────────────────────────────
+
+void drawAsciiRain() {
+  M5.Display.fillScreen(TFT_BLACK);
+  M5.Display.setTextSize(1);
+  const char* chars = "01#@*~+=-./:;,!?\\|/";
+  for (int i = 0; i < 30; ++i) {
+    int x = (i * 8) % 240;
+    int y = (g_frame * 3 + i * 4) % 135 + 14;
+    char c = chars[(g_frame + i) % strlen(chars)];
+    uint16_t color = M5.Display.color565(0, 200 + (i % 55), (i * 12) % 256);
+    M5.Display.setTextColor(color, TFT_BLACK);
+    M5.Display.setCursor(x, y);
+    M5.Display.print(c);
+  }
+}
+
+void drawAsciiCode() {
+  M5.Display.fillScreen(TFT_BLACK);
+  M5.Display.setTextSize(1);
+  M5.Display.setTextColor(0x07E0, TFT_BLACK);  // green text
+  const char* lines[] = {
+      "int x = 42;",
+      "if(x > 0) {",
+      "  loop();",
+      "}",
+      "for(;;) {}"
+  };
+  int offset = (g_frame / 4) % 5;
+  for (int i = 0; i < 5; ++i) {
+    int lineX = ((i - offset + 5) % 5) * 4 - 4;
+    if (lineX >= 0 && lineX < 240) {
+      M5.Display.setCursor(4 + lineX, 20 + i * 16);
+      M5.Display.print(lines[(i + offset) % 5]);
+    }
+  }
+}
+
+void drawAsciiScroll() {
+  M5.Display.fillScreen(TFT_BLACK);
+  M5.Display.setTextSize(1);
+  const char* text = "   ASCII SCREENSAVER   ";
+  int len = strlen(text);
+  int pos = (g_frame / 2) % (240 / 6 + len);
+  
+  M5.Display.setTextColor(TFT_YELLOW, TFT_BLACK);
+  M5.Display.setCursor(pos * 6 - len * 6, 60);
+  for (int i = 0; i < len; ++i) {
+    char c = text[i];
+    uint16_t fade = (i * 255 / len) * pos / (240 / 6);
+    M5.Display.setTextColor(
+      M5.Display.color565(
+        ((int)c % 3) * 80 + fade / 4,
+        ((int)c % 5) * 50,
+        ((int)c % 7) * 30 + fade / 4
+      ),
+      TFT_BLACK
+    );
+    M5.Display.print(c);
+  }
+}
+
+void drawAsciiWave() {
+  M5.Display.fillScreen(TFT_BLACK);
+  M5.Display.setTextSize(1);
+  const char wave[] = "~-~-~-~-~-~-~-~-~-~-";
+  for (int row = 0; row < 8; ++row) {
+    int phase = (g_frame + row * 4) % 240;
+    int offset = sin(phase * 3.14159 / 120.0) * 40;
+    M5.Display.setTextColor(
+      M5.Display.color565(
+        200 - row * 20,
+        100 + row * 10,
+        150
+      ),
+      TFT_BLACK
+    );
+    M5.Display.setCursor(20 + offset, 20 + row * 12);
+    M5.Display.print(wave);
+  }
+}
+
+void drawAsciiBlocks() {
+  M5.Display.fillScreen(TFT_BLACK);
+  M5.Display.setTextSize(1);
+  // Block characters: ▓ ▒ ░ █ ■
+  char blocks[] = {0xDB, 0xB0, 0xB1, 0xB2};  // Block density chars
+  for (int y = 0; y < 8; ++y) {
+    for (int x = 0; x < 30; ++x) {
+      int idx = ((g_frame + x + y) % 4);
+      int py = 20 + y * 12;
+      int px = 8 + x * 8;
+      uint16_t color = M5.Display.color565(
+        ((x + g_frame) * 8) % 256,
+        ((y + g_frame) * 8) % 256,
+        ((x ^ y ^ g_frame) * 12) % 256
+      );
+      M5.Display.setTextColor(color, TFT_BLACK);
+      M5.Display.setCursor(px, py);
+      M5.Display.print(char('*' + (idx % 4)));
+    }
+  }
+}
+
 void drawCurrent() {
   switch (g_saver) {
     case BashAlpha: drawAlpha(); break;
@@ -425,6 +538,11 @@ void drawCurrent() {
     case TTSand: drawSand(); break;
     case TTSplits: drawSplits(); break;
     case TTTunnel: drawTunnel(false); break;
+    case AsciiRain: drawAsciiRain(); break;
+    case AsciiCode: drawAsciiCode(); break;
+    case AsciiScroll: drawAsciiScroll(); break;
+    case AsciiWave: drawAsciiWave(); break;
+    case AsciiBlocks: drawAsciiBlocks(); break;
     default: break;
   }
   clearTopBar();

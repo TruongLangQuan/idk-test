@@ -27,6 +27,37 @@
 
 namespace {
 
+// ─── 5-way tactile switch GPIO mapping ──────────────────────────
+// Active-LOW with INPUT_PULLUP.
+// UP=32(Grove), DOWN=33(Grove), LEFT=25(header), RIGHT=26(header), CENTER=0(header)
+static constexpr int kPinUp = 32;
+static constexpr int kPinDown = 33;
+static constexpr int kPinLeft = 25;
+static constexpr int kPinRight = 26;
+static constexpr int kPinCenter = 0;
+
+struct ExtButton {
+  int pin;
+  bool pressed;
+  uint32_t lastRepeatMs;
+};
+
+static ExtButton g_ext[] = {
+    {kPinUp, false, 0},
+    {kPinDown, false, 0},
+    {kPinLeft, false, 0},
+    {kPinRight, false, 0},
+    {kPinCenter, false, 0},
+};
+
+static bool g_5way_detected = false;
+static constexpr uint32_t kExtRepeatMs = 100;  // faster repeat for chess cursor
+
+bool readExtPressed(int pin) {
+  return digitalRead(pin) == LOW;
+}
+
+// ─── Chess constants ────────────────────────────────────────────
 constexpr int8_t EMPTY = 0;
 constexpr int8_t PC_WP = 1;
 constexpr int8_t PC_WN = 2;
@@ -103,6 +134,10 @@ AppState g_app_state = AppState::WIFI_SELECT;
 GameState g_game;
 MoveList g_legal;
 MoveList g_selected;
+
+// ─── Offline mode and connectivity ──────────────────────────────
+bool g_offline_mode = false;  // true = play vs AI locally, false = try WiFi first
+bool g_force_offline = false; // true = user explicitly chose offline
 
 std::array<String, 16> g_ssids{};
 std::array<int, 16> g_rssi{};
@@ -692,11 +727,39 @@ void generateLegal(const GameState& st, MoveList& out) {
 int evalBoard(const GameState& st) {
   static constexpr int val[7] = {0, 100, 320, 330, 500, 900, 20000};
   int score = 0;
+  int whitePieces = 0, blackPieces = 0;
+
+  // Material + piece-square bonuses + endgame adjustments
   for (int sq = 0; sq < 64; ++sq) {
     int8_t p = st.board[sq];
-    if (p > 0) score += val[p] + pieceSquareBonus(p, sq);
-    else if (p < 0) score -= val[-p] + pieceSquareBonus(p, sq);
+    if (p > 0) {
+      score += val[p] + pieceSquareBonus(p, sq);
+      whitePieces++;
+    } else if (p < 0) {
+      score -= val[-p] + pieceSquareBonus(p, sq);
+      blackPieces++;
+    }
   }
+
+  // King safety: in endgame, white king should be more active (closer to center)
+  // In middlegame, white king should be safer (near corner)
+  int totalPieces = whitePieces + blackPieces;
+  for (int sq = 0; sq < 64; ++sq) {
+    int8_t p = st.board[sq];
+    if (p == PC_WK) {
+      if (totalPieces < 10) {  // endgame
+        int dist = abs((sq % 8) - 3) + abs((sq / 8) - 3);
+        score += (14 - dist) * 5;  // encourage moving toward center
+      }
+    } else if (p == PC_BK) {
+      if (totalPieces < 10) {
+        int dist = abs((sq % 8) - 4) + abs((sq / 8) - 4);
+        score -= (14 - dist) * 5;
+      }
+    }
+  }
+
+  // Mobility: more moves = better position (weight increased)
   MoveList whiteMoves;
   MoveList blackMoves;
   GameState whitePos = st;
@@ -705,7 +768,21 @@ int evalBoard(const GameState& st) {
   GameState blackPos = st;
   blackPos.whiteToMove = false;
   generateLegal(blackPos, blackMoves);
-  score += (whiteMoves.count - blackMoves.count) * 3;
+  score += (whiteMoves.count - blackMoves.count) * 5;  // increased from 3 to 5
+
+  // Pawn structure bonus: connected pawns
+  for (int sq = 0; sq < 64; ++sq) {
+    if (st.board[sq] == PC_WP) {
+      int c = sq % 8;
+      if (c > 0 && st.board[sq - 1] == PC_WP) score += 10;  // pawn next to pawn
+      if (c < 7 && st.board[sq + 1] == PC_WP) score += 10;
+    } else if (st.board[sq] == PC_BP) {
+      int c = sq % 8;
+      if (c > 0 && st.board[sq - 1] == PC_BP) score -= 10;
+      if (c < 7 && st.board[sq + 1] == PC_BP) score -= 10;
+    }
+  }
+
   return score;
 }
 
@@ -982,6 +1059,86 @@ bool inputPassword(String& out) {
   }
 }
 
+// ─── 5-way tactile switch input handler ────────────────────────
+void handleExtButtons() {
+  if (!g_5way_detected) return;
+  const uint32_t now = millis();
+
+  auto handleDir = [&](ExtButton& btn, int dx, int dy) {
+    const bool down = readExtPressed(btn.pin);
+    if (!down) {
+      btn.pressed = false;
+      return;
+    }
+    bool trigger = false;
+    if (!btn.pressed) {
+      btn.pressed = true;
+      btn.lastRepeatMs = now;
+      trigger = true;
+    } else if (now - btn.lastRepeatMs > kExtRepeatMs) {
+      btn.lastRepeatMs = now;
+      trigger = true;
+    }
+    if (trigger) {
+      // dx controls column (LEFT=-1, RIGHT=+1)
+      // dy controls row (UP=-1, DOWN=+1)
+      if (dx != 0) g_cursor_c = (g_cursor_c + dx + 8) % 8;
+      if (dy != 0) g_cursor_r = (g_cursor_r + dy + 8) % 8;
+    }
+  };
+
+  handleDir(g_ext[0], 0, -1);  // UP
+  handleDir(g_ext[1], 0, 1);   // DOWN
+  handleDir(g_ext[2], -1, 0);  // LEFT
+  handleDir(g_ext[3], 1, 0);   // RIGHT
+
+  // CENTER — select square
+  ExtButton& center = g_ext[4];
+  const bool cDown = (now > 400) && readExtPressed(center.pin);
+  if (!cDown) {
+    center.pressed = false;
+    return;
+  }
+  if (!center.pressed) {
+    center.pressed = true;
+    // Simulate M5.BtnA press
+    int sq = toIndex(g_cursor_r, g_cursor_c);
+    if (g_selected_sq < 0) {
+      int8_t p = g_game.board[sq];
+      if (p != EMPTY && (p > 0) == g_game.whiteToMove) {
+        g_selected_sq = sq;
+        buildSelectedMoves();
+        if (hasCastleOptions()) startCastleSelection();
+        else if (hasPromotionFromTo(sq, sq)) maybeStartPromotionMenu(sq, sq);
+      }
+    } else {
+      if (isValidDest(sq)) {
+        if (hasPromotionFromTo(g_selected_sq, sq)) {
+          maybeStartPromotionMenu(g_selected_sq, sq);
+        } else {
+          Move m{static_cast<uint8_t>(g_selected_sq), static_cast<uint8_t>(sq), 0, MF_NONE};
+          bool found = false;
+          for (int i = 0; i < g_legal.count; ++i) {
+            if (g_legal.data[i].from == m.from && g_legal.data[i].to == m.to && g_legal.data[i].promo == 0) {
+              m = g_legal.data[i];
+              found = true;
+              break;
+            }
+          }
+          if (found) {
+            executeMove(m);
+            g_selected_sq = -1;
+            g_selected.clear();
+          }
+        }
+      } else {
+        g_selected_sq = -1;
+        g_selected.clear();
+      }
+    }
+  }
+}
+
 void drawWifi() {
   M5.Display.fillScreen(TFT_BLACK);
   M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -1111,6 +1268,62 @@ void drawBoard() {
 }
 
 void handleWifiInput() {
+  // ─── 5-way support for WiFi selection ───────────────────────
+  if (g_5way_detected) {
+    if (readExtPressed(kPinDown) && g_wifi_count > 0) {
+      static uint32_t lastDown = 0;
+      uint32_t now = millis();
+      if (now - lastDown > 200) {
+        g_wifi_index = (g_wifi_index + 1) % g_wifi_count;
+        drawWifi();
+        lastDown = now;
+      }
+    }
+    if (readExtPressed(kPinUp) && g_wifi_count > 0) {
+      static uint32_t lastUp = 0;
+      uint32_t now = millis();
+      if (now - lastUp > 200) {
+        g_wifi_index = (g_wifi_index + g_wifi_count - 1) % g_wifi_count;
+        drawWifi();
+        lastUp = now;
+      }
+    }
+    if (readExtPressed(kPinCenter)) {
+      static uint32_t lastCenter = 0;
+      uint32_t now = millis();
+      if (now - lastCenter > 400) {
+        // CENTER button leads to WiFi connect (same as BtnA on single press)
+        if (g_wifi_count == 0) {
+          g_offline_mode = true;
+          g_wifi_status = "No WiFi - Offline";
+          startGame();
+          lastCenter = now;
+          return;
+        }
+        String pass = "";
+        if (g_secured[g_wifi_index]) {
+          bool ok = inputPassword(pass);
+          if (!ok) {
+            g_wifi_status = "Cancelled";
+            drawWifi();
+            lastCenter = now;
+            return;
+          }
+        }
+        WiFi.mode(WIFI_STA);
+        if (g_secured[g_wifi_index]) WiFi.begin(g_ssids[g_wifi_index].c_str(), pass.c_str());
+        else WiFi.begin(g_ssids[g_wifi_index].c_str());
+        g_connect_start = millis();
+        g_wifi_status = "Connecting: " + g_ssids[g_wifi_index];
+        g_app_state = AppState::WIFI_CONNECTING;
+        drawWifi();
+        lastCenter = now;
+        return;
+      }
+    }
+  }
+
+  // ─── M5 button support (original) ────────────────────────────
   if (M5.BtnB.wasPressed() && g_wifi_count > 0) {
     g_wifi_index = (g_wifi_index + 1) % g_wifi_count;
     drawWifi();
@@ -1124,6 +1337,7 @@ void handleWifiInput() {
   bool skipPressed = M5.BtnA.isPressed() && M5.BtnPWR.wasPressed();
 
   if (skipPressed) {
+    g_offline_mode = true;
     g_wifi_status = "Offline mode";
     startGame();
     return;
@@ -1131,6 +1345,7 @@ void handleWifiInput() {
 
   if (selectPressed) {
     if (g_wifi_count == 0) {
+      g_offline_mode = true;
       startGame();
       return;
     }
@@ -1249,6 +1464,10 @@ void moveCursorHold() {
 }
 
 void handleChessInput() {
+  // ─── 5-way tactile switch support (priority) ───────────────────
+  handleExtButtons();
+
+  // ─── M5 button support (fallback) ────────────────────────────
   bool selectPressed = M5.BtnA.wasPressed();
   bool castleCombo = M5.BtnA.isPressed() && M5.BtnPWR.wasPressed();
 
@@ -1342,7 +1561,23 @@ void setup() {
   M5.begin(cfg);
   M5.Display.setRotation(3);
   M5.Display.setTextSize(1);
-  scanWifi();
+
+  // Configure 5-way tactile switch pins
+  pinMode(kPinUp, INPUT_PULLUP);
+  pinMode(kPinDown, INPUT_PULLUP);
+  pinMode(kPinLeft, INPUT_PULLUP);
+  pinMode(kPinRight, INPUT_PULLUP);
+  pinMode(kPinCenter, INPUT_PULLUP);
+  delay(10);  // let pull-ups settle
+  g_5way_detected = true;  // always enable — no harm if absent
+
+  if (!g_force_offline) {
+    scanWifi();
+  } else {
+    g_offline_mode = true;
+    startGame();
+    g_app_state = AppState::CHESS;
+  }
 }
 
 void loop() {

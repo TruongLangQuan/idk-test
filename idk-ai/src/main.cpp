@@ -1,6 +1,8 @@
 #include <M5Unified.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <SD.h>
+#include <SPIFFS.h>
 
 #include <idk_ui.h>
 #include "generated/vi12_font.h"
@@ -15,8 +17,10 @@ struct MenuItem {
 };
 
 // TODO: set API endpoint + key when available.
-static const char* kApiUrl = "";
-static const char* kApiKey = "";
+// API will try to load from: /sd/api_key.txt → /SPIFFS/api_key.txt
+static String g_api_url = "";    // OpenRouter API endpoint
+static String g_api_key = "";    // API key (loaded from file)
+static bool g_api_key_loaded = false;
 
 bool g_telex_mode = false;
 String g_status = "Ready";
@@ -33,15 +37,73 @@ constexpr KnownWifi kKnownWifis[] = {
 int g_menu_idx = 0;
 int g_menu_scroll = 0;
 
+// ─── API key file loading ──────────────────────────────────────
+
+bool loadApiKeyFromFile() {
+  // Try SD first, then SPIFFS
+  // File should contain exactly one API key (plain text, no quotes)
+  
+  // Try SD card
+  bool sdExists = SD.exists("/api_key.txt");
+  if (sdExists) {
+    File f = SD.open("/api_key.txt", FILE_READ);
+    if (f) {
+      String content = "";
+      while (f.available()) {
+        int c = f.read();
+        if (c == '\n' || c == '\r') break;  // stop at first newline
+        if (c > 0) content += (char)c;
+      }
+      f.close();
+      content.trim();
+      if (content.length() > 0) {
+        g_api_key = content;
+        g_api_key_loaded = true;
+        g_api_url = "https://openrouter.ai/api/v1/chat/completions";
+        return true;
+      }
+    }
+  }
+
+  // Try SPIFFS
+  bool spiffsExists = SPIFFS.exists("/api_key.txt");
+  if (spiffsExists) {
+    File f = SPIFFS.open("/api_key.txt", FILE_READ);
+    if (f) {
+      String content = "";
+      while (f.available()) {
+        int c = f.read();
+        if (c == '\n' || c == '\r') break;
+        if (c > 0) content += (char)c;
+      }
+      f.close();
+      content.trim();
+      if (content.length() > 0) {
+        g_api_key = content;
+        g_api_key_loaded = true;
+        g_api_url = "https://openrouter.ai/api/v1/chat/completions";
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 String callApi(const String& prompt) {
-  if (strlen(kApiUrl) == 0) return "API not configured";
+  if (g_api_url.length() == 0) {
+    if (!g_api_key_loaded) {
+      return "API key not loaded. Place api_key.txt on SD or SPIFFS.";
+    }
+    return "API not configured";
+  }
   if (WiFi.status() != WL_CONNECTED) return "WiFi not connected";
 
   HTTPClient http;
-  http.begin(kApiUrl);
+  http.begin(g_api_url);
   http.addHeader("Content-Type", "application/json");
-  if (strlen(kApiKey) > 0) {
-    http.addHeader("Authorization", String("Bearer ") + kApiKey);
+  if (g_api_key.length() > 0) {
+    http.addHeader("Authorization", String("Bearer ") + g_api_key);
   }
 
   String payload = "{\"prompt\":\"" + prompt + "\"}";
@@ -68,7 +130,12 @@ void actionStatus() {
   String out = "WiFi: ";
   out += (WiFi.status() == WL_CONNECTED) ? "OK" : "NO";
   out += "\nAPI: ";
-  out += (strlen(kApiUrl) > 0) ? kApiUrl : "not set";
+  out += g_api_key_loaded ? "LOADED" : "NOT LOADED";
+  if (g_api_key_loaded) {
+    out += "\nKey length: ";
+    out += g_api_key.length();
+    out += " chars";
+  }
   showResult("Status", out);
 }
 
@@ -119,7 +186,19 @@ void setup() {
   M5.Display.setRotation(3);
   M5.Display.setBrightness(180);
 
+  // Initialize file systems
+  SD.begin();        // SD card (if available)
+  SPIFFS.begin(true);  // SPIFFS with format if needed
+
   (void)loadFontFromMemory(vi12_font, vi12_font_len, g_font_wrap);
+  
+  // Load API key from file
+  if (loadApiKeyFromFile()) {
+    g_status = "API key loaded";
+  } else {
+    g_status = "No API key";
+  }
+
   autoConnectKnownWifi(kKnownWifis, sizeof(kKnownWifis) / sizeof(kKnownWifis[0]), g_status);
   drawMenu();
 }

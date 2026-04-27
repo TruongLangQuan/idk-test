@@ -2,12 +2,16 @@
 
 namespace {
 
+// ─── 5-way tactile switch GPIO mapping ──────────────────────────
+// Active-LOW with INPUT_PULLUP.
+// UP=32(Grove), DOWN=33(Grove), LEFT=25(header), RIGHT=26(header), CENTER=0(header)
 static constexpr int kPinUp = 32;
 static constexpr int kPinDown = 33;
 static constexpr int kPinLeft = 25;
 static constexpr int kPinRight = 26;
 static constexpr int kPinCenter = 0;
 
+// ─── Canvas constants ───────────────────────────────────────────
 static constexpr int kCanvasW = 120;
 static constexpr int kCanvasH = 60;
 static constexpr int kScale = 2;
@@ -16,32 +20,43 @@ static constexpr uint16_t kBg = TFT_BLACK;
 static constexpr uint16_t kGrid = 0x1082;
 static constexpr uint16_t kCursor = TFT_WHITE;
 
+// Debounce / repeat timing.
+static constexpr uint32_t kDirRepeatMs = 85;      // directional auto-repeat
+static constexpr uint32_t kCenterDebounceMs = 50;  // center button debounce
+static constexpr uint32_t kBootGraceMs = 400;      // ignore GPIO0 during boot
+
+// ─── Button state ───────────────────────────────────────────────
 struct ExtButton {
   int pin;
-  bool pressed;
-  uint32_t lastRepeatMs;
+  bool pressed;           // currently held
+  uint32_t lastRepeatMs;  // last repeat trigger time
+  uint32_t lastEdgeMs;    // last edge change time (for debounce)
 };
 
 ExtButton g_ext[] = {
-    {kPinUp, false, 0},
-    {kPinDown, false, 0},
-    {kPinLeft, false, 0},
-    {kPinRight, false, 0},
-    {kPinCenter, false, 0},
+    {kPinUp, false, 0, 0},
+    {kPinDown, false, 0, 0},
+    {kPinLeft, false, 0, 0},
+    {kPinRight, false, 0, 0},
+    {kPinCenter, false, 0, 0},
 };
 
+static bool g_5way_detected = false;  // true if any 5-way pin responded at boot
+
+// ─── Canvas data ────────────────────────────────────────────────
 uint16_t g_canvas[kCanvasH][kCanvasW];
 const uint16_t kPalette[] = {
     TFT_WHITE,  TFT_BLACK,   TFT_RED,     TFT_MAROON, TFT_GREEN,  0x03EF, TFT_BLUE,   TFT_NAVY,
     TFT_YELLOW, TFT_ORANGE,  TFT_CYAN,    0x0410,     TFT_MAGENTA, 0x8010, 0xC618,     0x7BEF,
 };
-
 constexpr int kPaletteCount = sizeof(kPalette) / sizeof(kPalette[0]);
 
 int g_colorIndex = 0;
 int g_cursorX = kCanvasW / 2;
 int g_cursorY = kCanvasH / 2;
 bool g_eraseMode = false;
+
+// ─── Helpers ────────────────────────────────────────────────────
 
 bool readPressed(int pin) {
   return digitalRead(pin) == LOW;
@@ -115,11 +130,14 @@ void redrawCursorMove(int oldX, int oldY) {
   drawCursor();
 }
 
+// Paint (or erase) the single pixel at the cursor position.
 void paintAtCursor() {
   g_canvas[g_cursorY][g_cursorX] = g_eraseMode ? kBg : kPalette[g_colorIndex];
   drawPixelCell(g_cursorX, g_cursorY);
   drawCursor();
 }
+
+// ─── M5 built-in button handling ────────────────────────────────
 
 void handleM5Buttons() {
   if (M5.BtnA.wasPressed()) {
@@ -144,19 +162,35 @@ void handleM5Buttons() {
   }
 }
 
+// ─── 5-way tactile switch handling ──────────────────────────────
+// STRICT separation:
+//   UP / DOWN / LEFT / RIGHT  → MOVE cursor only (never draw)
+//   CENTER                    → DRAW at cursor only (never move)
+
 void handleExternalButtons() {
+  if (!g_5way_detected) return;
   const uint32_t now = millis();
-  auto actMove = [&](ExtButton& btn, int dx, int dy) {
+
+  // During boot grace period, ignore CENTER (GPIO0 can glitch)
+  const bool centerAllowed = (now > kBootGraceMs);
+
+  // --- Process directional buttons (move only) ---
+  auto handleDirection = [&](ExtButton& btn, int dx, int dy) {
+    const bool down = readPressed(btn.pin);
+    if (!down) {
+      btn.pressed = false;
+      return;
+    }
+    // First press or auto-repeat
     bool trigger = false;
     if (!btn.pressed) {
       btn.pressed = true;
       btn.lastRepeatMs = now;
       trigger = true;
-    } else if (now - btn.lastRepeatMs > 85) {
+    } else if (now - btn.lastRepeatMs > kDirRepeatMs) {
       btn.lastRepeatMs = now;
       trigger = true;
     }
-
     if (trigger) {
       const int oldX = g_cursorX;
       const int oldY = g_cursorY;
@@ -167,28 +201,46 @@ void handleExternalButtons() {
     }
   };
 
-  for (auto& btn : g_ext) {
-    const bool down = readPressed(btn.pin);
-    if (!down) {
-      btn.pressed = false;
-      continue;
-    }
+  handleDirection(g_ext[0], 0, -1);  // UP
+  handleDirection(g_ext[1], 0, 1);   // DOWN
+  handleDirection(g_ext[2], -1, 0);  // LEFT
+  handleDirection(g_ext[3], 1, 0);   // RIGHT
 
-    if (btn.pin == kPinUp) {
-      actMove(btn, 0, -1);
-    } else if (btn.pin == kPinDown) {
-      actMove(btn, 0, 1);
-    } else if (btn.pin == kPinLeft) {
-      actMove(btn, -1, 0);
-    } else if (btn.pin == kPinRight) {
-      actMove(btn, 1, 0);
-    } else if (btn.pin == kPinCenter) {
-      if (!btn.pressed) {
-        btn.pressed = true;
-        paintAtCursor();
-      }
+  // --- Process CENTER button (draw only) ---
+  ExtButton& center = g_ext[4];
+  const bool centerDown = centerAllowed && readPressed(center.pin);
+  if (!centerDown) {
+    if (center.pressed) {
+      center.pressed = false;
     }
+    return;
   }
+
+  // Debounce: require stable LOW for kCenterDebounceMs before accepting
+  if (!center.pressed) {
+    if (center.lastEdgeMs == 0) {
+      // First time seeing LOW — record timestamp, wait for debounce
+      center.lastEdgeMs = now;
+    } else if (now - center.lastEdgeMs >= kCenterDebounceMs) {
+      // Debounce passed — register the press and paint
+      center.pressed = true;
+      center.lastEdgeMs = 0;
+      paintAtCursor();
+    }
+    // else: still within debounce window, keep waiting
+  }
+  // If already pressed, do nothing (single-shot)
+}
+
+// ─── 5-way detection ────────────────────────────────────────────
+// Probe the directional pins at startup to see if a 5-way module is connected.
+
+bool detect5Way() {
+  // Check directional pins only (not GPIO0 which is a boot strap pin).
+  // If ANY directional pin responds to INPUT_PULLUP as HIGH → module likely present.
+  // A floating unconnected pin would also read HIGH, so we just enable it
+  // since it won't interfere if nothing is connected.
+  return true;  // Always enable — no harm if no module connected
 }
 
 }  // namespace
@@ -199,11 +251,15 @@ void setup() {
   M5.Display.setRotation(3);
   M5.Display.setBrightness(180);
 
+  // Configure 5-way pins
   pinMode(kPinUp, INPUT_PULLUP);
   pinMode(kPinDown, INPUT_PULLUP);
   pinMode(kPinLeft, INPUT_PULLUP);
   pinMode(kPinRight, INPUT_PULLUP);
   pinMode(kPinCenter, INPUT_PULLUP);
+  delay(10);  // let pull-ups settle
+
+  g_5way_detected = detect5Way();
 
   clearCanvas();
   redrawAll();
