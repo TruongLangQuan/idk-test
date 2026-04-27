@@ -1,5 +1,6 @@
 #include <M5Unified.h>
 #include <SD.h>
+#include <SPIFFS.h>
 #include <vector>
 #include <algorithm>
 
@@ -72,7 +73,11 @@ void scanRoms() {
   File file = root.openNextFile();
   while (file) {
     String name = file.name();
-    if (name.endsWith(".nes") || name.endsWith(".NES")) {
+    String nameLower = name;
+    nameLower.toLowerCase();
+    
+    if (nameLower.endsWith(".nes") || nameLower.endsWith(".gb") || 
+        nameLower.endsWith(".gba") || nameLower.endsWith(".smc")) {
       String displayName = name.substring(name.lastIndexOf('/') + 1);
       g_roms.push_back({name, displayName, file.size(), false});
     }
@@ -141,9 +146,17 @@ void drawRomInfo() {
   M5.Display.printf("Name: ");
   M5.Display.println(rom.displayName);
 
+  String format = "UNKNOWN";
+  String nameLower = rom.filename;
+  nameLower.toLowerCase();
+  if (nameLower.endsWith(".nes")) format = "NES";
+  else if (nameLower.endsWith(".gb")) format = "GameBoy";
+  else if (nameLower.endsWith(".gba")) format = "GameBoy Advance";
+  else if (nameLower.endsWith(".smc")) format = "SNES";
+
   M5.Display.printf("Size: %u KB\n", rom.fileSize / 1024);
-  M5.Display.printf("Format: NES (iNES)\n");
-  M5.Display.printf("Status: %s\n", rom.isLoaded ? "LOADED" : "READY");
+  M5.Display.printf("Format: %s\n", format.c_str());
+  M5.Display.printf("Status: %s\n", rom.isLoaded ? "IN SPIFFS" : "ON SD CARD");
 
   M5.Display.setTextColor(TFT_DARKGREY, TFT_BLACK);
   M5.Display.setCursor(4, 125);
@@ -190,9 +203,49 @@ void handleInput() {
       if (g_screen == ScreenState::ROM_LIST) {
         g_screen = ScreenState::ROM_INFO;
       } else if (g_screen == ScreenState::ROM_INFO) {
-        // Would load ROM here
-        // TODO: Implement ROM loading
+        // Copy to SPIFFS logic
         g_screen = ScreenState::EMULATING;
+        
+        M5.Display.fillScreen(TFT_BLACK);
+        M5.Display.setTextColor(TFT_YELLOW);
+        M5.Display.setCursor(20, 40);
+        M5.Display.print("Copying to SPIFFS...");
+        
+        // Ensure SPIFFS is ready
+        if (!SPIFFS.begin(true)) {
+          M5.Display.setCursor(20, 60);
+          M5.Display.setTextColor(TFT_RED);
+          M5.Display.print("SPIFFS format failed");
+          delay(2000);
+          g_screen = ScreenState::ROM_INFO;
+          return;
+        }
+        
+        RomEntry& rom = g_roms[g_rom_index];
+        File source = SD.open(rom.filename, FILE_READ);
+        if (source) {
+          String destName = String("/") + rom.displayName;
+          File dest = SPIFFS.open(destName, FILE_WRITE);
+          if (dest) {
+            uint8_t buf[2048];
+            size_t copied = 0;
+            while (source.available()) {
+              size_t len = source.read(buf, sizeof(buf));
+              dest.write(buf, len);
+              copied += len;
+              
+              // Draw progress bar
+              if (copied % 16384 == 0 || copied == rom.fileSize) {
+                int w = (int)((float)copied / rom.fileSize * 200.0f);
+                M5.Display.drawRect(20, 60, 200, 10, TFT_WHITE);
+                M5.Display.fillRect(20, 60, w, 10, TFT_GREEN);
+              }
+            }
+            dest.close();
+            rom.isLoaded = true;
+          }
+          source.close();
+        }
       }
       lastPress = now;
     }
@@ -215,11 +268,22 @@ void drawScreen() {
       drawRomInfo();
       break;
     case ScreenState::EMULATING:
-      // TODO: Draw emulation output
       M5.Display.fillScreen(TFT_BLACK);
+      M5.Display.setTextColor(TFT_CYAN);
+      M5.Display.setTextSize(2);
+      M5.Display.setCursor(60, 40);
+      M5.Display.print("EMULATOR");
+      
+      M5.Display.setTextSize(1);
       M5.Display.setTextColor(TFT_WHITE);
-      M5.Display.setCursor(60, 60);
-      M5.Display.print("Emulating...");
+      M5.Display.setCursor(40, 70);
+      M5.Display.printf("Running: %s", g_roms[g_rom_index].displayName.c_str());
+      
+      M5.Display.setTextColor(TFT_RED);
+      M5.Display.setCursor(10, 100);
+      M5.Display.print("NOTE: Real emulation requires");
+      M5.Display.setCursor(10, 115);
+      M5.Display.print("additional C/C++ libraries!");
       break;
   }
 }

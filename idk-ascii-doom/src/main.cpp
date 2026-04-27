@@ -18,13 +18,16 @@ struct Player {
   int hp, maxHp;
   int ammo;
   int weapon;      // 0=pistol, 1=shotgun, 2=plasma
+  bool isFiring;
+  int fireAnim;
 };
 
 struct Enemy {
   float x, y;
   int hp;
   int type;        // 0=demon, 1=cyborg, 2=spider, 3=spectre
-  bool visible;
+  int state;       // 0=idle, 1=chasing, 2=attacking, 3=dead
+  uint32_t lastAttack;
 };
 
 enum GameState {
@@ -34,15 +37,24 @@ enum GameState {
   WON,
 };
 
-static Player g_player = {.x = 50, .y = 50, .angle = 0, .hp = 100, .maxHp = 100, .ammo = 30, .weapon = 0};
+static Player g_player = {.x = 1.5f, .y = 1.5f, .angle = 0.0f, .hp = 100, .maxHp = 100, .ammo = 30, .weapon = 0, .isFiring = false, .fireAnim = 0};
 static std::vector<Enemy> g_enemies;
 static GameState g_state = IN_GAME;
 static int g_level = 1;
 static int g_kills = 0;
 static uint32_t g_last_shot = 0;
+static uint32_t g_frame = 0;
 
-// ─── Dungeon Map (simple 32x32 grid, 0=open, 1=wall) ──────────
-static uint8_t g_map[32][32];
+// ─── Dungeon Map (16x16 grid, 0=open, 1=wall, 2=exit) ─────────
+static constexpr int kMapSize = 16;
+static uint8_t g_map[kMapSize][kMapSize];
+
+// ─── Constants ─────────────────────────────────────────────────
+static constexpr float kFOV = 1.047f; // 60 degrees in radians
+static constexpr int kNumRays = 60; // Better resolution
+static constexpr int kScreenW = 240;
+static constexpr int kScreenH = 135;
+static constexpr int kHalfH = 67;
 
 // ─── Helpers ───────────────────────────────────────────────────
 
@@ -51,139 +63,288 @@ bool readPressed(int pin) {
 }
 
 void generateDungeon() {
-  // Simple maze generation (placeholder)
-  for (int y = 0; y < 32; ++y) {
-    for (int x = 0; x < 32; ++x) {
-      if (x == 0 || y == 0 || x == 31 || y == 31) {
+  for (int y = 0; y < kMapSize; ++y) {
+    for (int x = 0; x < kMapSize; ++x) {
+      if (x == 0 || y == 0 || x == kMapSize - 1 || y == kMapSize - 1) {
         g_map[y][x] = 1;  // border walls
-      } else if ((x % 4) == 0 || (y % 4) == 0) {
-        g_map[y][x] = esp_random() % 2;
+      } else if (esp_random() % 100 < 20 && (x != 1 && y != 1)) {
+        g_map[y][x] = 1;  // random pillars
       } else {
         g_map[y][x] = 0;
       }
     }
   }
-  g_map[1][1] = 0;  // player start
-  g_map[30][30] = 0;  // exit
+  g_map[1][1] = 0; // ensure start is open
+  g_player.x = 1.5f;
+  g_player.y = 1.5f;
+  g_player.angle = 0.785f; // 45 deg
+  g_map[kMapSize - 2][kMapSize - 2] = 2; // exit
 }
 
 void spawnEnemies(int count) {
   g_enemies.clear();
   for (int i = 0; i < count; ++i) {
-    int x = 10 + (esp_random() % 12);
-    int y = 10 + (esp_random() % 12);
-    if (g_map[y][x] == 0) {
-      Enemy e = {
-          .x = (float)x,
-          .y = (float)y,
-          .hp = 20 + (esp_random() % 20),
-          .type = (int)(esp_random() % 4),
-          .visible = false,
-      };
-      g_enemies.push_back(e);
-    }
+    int x, y;
+    do {
+      x = 2 + (esp_random() % (kMapSize - 3));
+      y = 2 + (esp_random() % (kMapSize - 3));
+    } while (g_map[y][x] != 0 || (x < 4 && y < 4));
+
+    Enemy e = {
+        .x = x + 0.5f,
+        .y = y + 0.5f,
+        .hp = 20 + (esp_random() % (10 + g_level * 10)),
+        .type = (int)(esp_random() % 4),
+        .state = 0,
+        .lastAttack = 0,
+    };
+    g_enemies.push_back(e);
   }
 }
 
-void castRay(float angle, int& distanceOut, int& typeOut) {
-  // Simple raycasting for DOOM-like effect
-  float dx = cosf(angle);
-  float dy = sinf(angle);
+// ─── DDA Raycasting ────────────────────────────────────────────
+void castRays() {
+  // We don't draw in a loop anymore, we draw the whole screen frame
+  M5.Display.fillScreen(TFT_BLACK);
+  
+  // Draw floor and ceiling
+  M5.Display.fillRect(0, 0, kScreenW, kHalfH, M5.Display.color565(20, 20, 20));
+  M5.Display.fillRect(0, kHalfH, kScreenW, kHalfH, M5.Display.color565(40, 40, 40));
 
-  for (int dist = 1; dist < 20; ++dist) {
-    float px = g_player.x + dx * dist;
-    float py = g_player.y + dy * dist;
-    int mx = (int)px;
-    int my = (int)py;
+  float zBuffer[kScreenW]; // To handle sprite occlusion
 
-    if (mx < 0 || mx >= 32 || my < 0 || my >= 32 || g_map[my][mx] == 1) {
-      distanceOut = dist;
-      typeOut = 0;  // wall
-      return;
+  // 1. Raycast walls
+  for (int x = 0; x < kScreenW; ++x) {
+    float cameraX = 2 * x / (float)kScreenW - 1; // -1 to 1
+    float rayDirX = cosf(g_player.angle) + sinf(g_player.angle) * cameraX;
+    float rayDirY = sinf(g_player.angle) - cosf(g_player.angle) * cameraX;
+
+    int mapX = (int)g_player.x;
+    int mapY = (int)g_player.y;
+
+    float sideDistX, sideDistY;
+    float deltaDistX = fabsf(1 / rayDirX);
+    float deltaDistY = fabsf(1 / rayDirY);
+    float perpWallDist;
+
+    int stepX, stepY;
+    int hit = 0;
+    int side;
+
+    if (rayDirX < 0) {
+      stepX = -1;
+      sideDistX = (g_player.x - mapX) * deltaDistX;
+    } else {
+      stepX = 1;
+      sideDistX = (mapX + 1.0f - g_player.x) * deltaDistX;
+    }
+    if (rayDirY < 0) {
+      stepY = -1;
+      sideDistY = (g_player.y - mapY) * deltaDistY;
+    } else {
+      stepY = 1;
+      sideDistY = (mapY + 1.0f - g_player.y) * deltaDistY;
     }
 
-    // Check for enemies
-    for (auto& enemy : g_enemies) {
-      float edx = enemy.x - g_player.x;
-      float edy = enemy.y - g_player.y;
-      float edist = sqrtf(edx * edx + edy * edy);
-      float eangle = atan2f(edy, edx);
+    // DDA loop
+    while (hit == 0) {
+      if (sideDistX < sideDistY) {
+        sideDistX += deltaDistX;
+        mapX += stepX;
+        side = 0;
+      } else {
+        sideDistY += deltaDistY;
+        mapY += stepY;
+        side = 1;
+      }
+      if (mapX < 0 || mapX >= kMapSize || mapY < 0 || mapY >= kMapSize) break;
+      if (g_map[mapY][mapX] > 0) hit = g_map[mapY][mapX];
+    }
 
-      if (fabsf(eangle - angle) < 0.3f && edist < dist) {
-        distanceOut = edist;
-        typeOut = 1;  // enemy
-        return;
+    if (side == 0) perpWallDist = (mapX - g_player.x + (1 - stepX) / 2) / rayDirX;
+    else           perpWallDist = (mapY - g_player.y + (1 - stepY) / 2) / rayDirY;
+
+    zBuffer[x] = perpWallDist; // Save for sprite rendering
+
+    int lineHeight = (int)(kScreenH / perpWallDist);
+    int drawStart = -lineHeight / 2 + kHalfH;
+    if (drawStart < 0) drawStart = 0;
+    int drawEnd = lineHeight / 2 + kHalfH;
+    if (drawEnd >= kScreenH) drawEnd = kScreenH - 1;
+
+    uint16_t color;
+    if (hit == 1) { // Normal wall
+      // Fake shading based on side
+      if (side == 1) color = M5.Display.color565(120, 120, 120);
+      else color = M5.Display.color565(80, 80, 80);
+      // Distance fading
+      int fade = std::max(0, 255 - (int)(perpWallDist * 20));
+      color = M5.Display.color565(fade/2, fade/2, fade/2);
+    } else if (hit == 2) { // Exit
+      color = TFT_MAGENTA;
+    } else {
+      color = TFT_BLACK;
+    }
+
+    M5.Display.drawFastVLine(x, drawStart, drawEnd - drawStart, color);
+  }
+
+  // 2. Render Enemies (Sprites)
+  // Calculate distances for sorting
+  struct SpriteDist { int index; float dist; };
+  std::vector<SpriteDist> spList;
+  for (size_t i = 0; i < g_enemies.size(); i++) {
+    if (g_enemies[i].state == 3) continue; // dead
+    float dx = g_player.x - g_enemies[i].x;
+    float dy = g_player.y - g_enemies[i].y;
+    spList.push_back({(int)i, dx*dx + dy*dy});
+  }
+
+  // Sort sprites from far to close
+  std::sort(spList.begin(), spList.end(), [](const SpriteDist& a, const SpriteDist& b) {
+    return a.dist > b.dist;
+  });
+
+  M5.Display.setTextSize(2);
+  M5.Display.setTextDatum(MC_DATUM);
+
+  for (auto& sd : spList) {
+    Enemy& enemy = g_enemies[sd.index];
+    
+    // Transform sprite
+    float spriteX = enemy.x - g_player.x;
+    float spriteY = enemy.y - g_player.y;
+    
+    // Inverse camera matrix
+    float invDet = 1.0f / (1.0f); // Simplification, actually need plane vectors
+    
+    // Simpler sprite projection
+    float eangle = atan2f(spriteY, spriteX) - g_player.angle;
+    while (eangle < -PI) eangle += 2 * PI;
+    while (eangle > PI) eangle -= 2 * PI;
+    
+    // Is sprite in front of us?
+    if (fabsf(eangle) < PI/2) {
+      float dist = sqrtf(sd.dist);
+      int screenX = (int)((0.5f * (eangle / (kFOV/2)) + 0.5f) * kScreenW);
+      int spriteScale = (int)(kScreenH / dist);
+      
+      if (screenX > 0 && screenX < kScreenW && dist < zBuffer[screenX]) {
+        // Draw ASCII Enemy
+        char eChar = 'D';
+        uint16_t eColor = TFT_RED;
+        if (enemy.type == 1) { eChar = 'C'; eColor = TFT_ORANGE; }
+        else if (enemy.type == 2) { eChar = 'S'; eColor = TFT_PURPLE; }
+        else if (enemy.type == 3) { eChar = '&'; eColor = TFT_CYAN; }
+
+        int ypos = kHalfH + spriteScale/4;
+        
+        M5.Display.setTextColor(eColor, TFT_BLACK);
+        M5.Display.setCursor(screenX - 5, ypos - 10);
+        if (enemy.state == 2) M5.Display.print("!"); // Attacking
+        else M5.Display.print(eChar);
       }
     }
   }
 
-  distanceOut = 20;
-  typeOut = -1;  // nothing
-}
+  // 3. Draw Minimap
+  for (int y = 0; y < kMapSize; y++) {
+    for (int x = 0; x < kMapSize; x++) {
+      int dx = kScreenW - 40 + x * 2;
+      int dy = 4 + y * 2;
+      if (g_map[y][x] == 1) M5.Display.fillRect(dx, dy, 2, 2, TFT_WHITE);
+      else if (g_map[y][x] == 2) M5.Display.fillRect(dx, dy, 2, 2, TFT_MAGENTA);
+    }
+  }
+  // Player on minimap
+  M5.Display.fillRect(kScreenW - 40 + (int)(g_player.x)*2, 4 + (int)(g_player.y)*2, 2, 2, TFT_GREEN);
 
-void drawGameScreen() {
-  M5.Display.fillScreen(TFT_BLACK);
-  M5.Display.setTextColor(TFT_GREEN, TFT_BLACK);
+  // 4. Draw Weapon & HUD
+  M5.Display.setTextDatum(TL_DATUM);
   M5.Display.setTextSize(1);
 
-  // First-person view (16 rays)
-  const int rayCount = 16;
-  for (int i = 0; i < rayCount; ++i) {
-    float rayAngle = g_player.angle - 0.5f + (float)i / rayCount;
-    int dist, type;
-    castRay(rayAngle, dist, type);
-
-    // ASCII wall rendering based on distance
-    char wallChar = ' ';
-    uint16_t color = TFT_WHITE;
+  // Weapon Animation
+  int wX = kScreenW / 2;
+  int wY = kScreenH - 20;
+  
+  if (g_player.isFiring) {
+    wX += (esp_random() % 4) - 2;
+    wY += (esp_random() % 4);
+    M5.Display.setTextColor(TFT_YELLOW);
+    M5.Display.setCursor(wX - 5, wY - 15);
+    M5.Display.print("*BANG*");
     
-    if (type == 0) {  // wall
-      if (dist < 5) {
-        wallChar = '#';
-        color = TFT_WHITE;
-      } else if (dist < 10) {
-        wallChar = 'H';
-        color = TFT_LIGHTGREY;
-      } else {
-        wallChar = '-';
-        color = TFT_DARKGREY;
-      }
-    } else if (type == 1) {  // enemy
-      if (dist < 5) {
-        wallChar = 'D';
-        color = TFT_RED;
-      } else {
-        wallChar = 'd';
-        color = TFT_ORANGE;
-      }
+    g_player.fireAnim++;
+    if (g_player.fireAnim > 3) {
+      g_player.isFiring = false;
+      g_player.fireAnim = 0;
     }
-
-    M5.Display.setTextColor(color);
-    M5.Display.setCursor(15 * i, 50);
-    M5.Display.print(wallChar);
   }
 
-  // HUD
-  M5.Display.setTextColor(TFT_YELLOW);
+  M5.Display.setTextColor(TFT_LIGHTGREY);
+  M5.Display.setCursor(wX - 10, wY);
+  if (g_player.weapon == 0) M5.Display.print("=|--o");
+  else if (g_player.weapon == 1) M5.Display.print("=[==o");
+  
+  M5.Display.setTextColor(TFT_YELLOW, TFT_BLACK);
   M5.Display.setCursor(4, 4);
-  M5.Display.printf("HP:%d  AMO:%d  LV:%d", g_player.hp, g_player.ammo, g_level);
-
-  M5.Display.setTextColor(TFT_CYAN);
+  M5.Display.printf("HP:%d AMO:%d LV:%d", g_player.hp, g_player.ammo, g_level);
   M5.Display.setCursor(4, 120);
-  M5.Display.printf("W:%d  K:%d  FPS:30", g_player.weapon, g_kills);
+  M5.Display.printf("W:%d K:%d FPS:30", g_player.weapon, g_kills);
+}
+
+void updateEnemies() {
+  uint32_t now = millis();
+  for (auto& enemy : g_enemies) {
+    if (enemy.state == 3) continue;
+
+    float dx = g_player.x - enemy.x;
+    float dy = g_player.y - enemy.y;
+    float dist = sqrtf(dx*dx + dy*dy);
+
+    if (dist < 5.0f) {
+      enemy.state = 1; // Chase
+      
+      if (dist > 1.2f) {
+        // Move towards player
+        float nx = enemy.x + (dx/dist) * 0.05f;
+        float ny = enemy.y + (dy/dist) * 0.05f;
+        if (g_map[(int)ny][(int)nx] == 0) {
+          enemy.x = nx;
+          enemy.y = ny;
+        }
+      } else {
+        enemy.state = 2; // Attack
+        if (now - enemy.lastAttack > 1000) {
+          g_player.hp -= (5 + g_level*2);
+          enemy.lastAttack = now;
+          if (g_player.hp <= 0) {
+            g_player.hp = 0;
+            g_state = DEAD;
+          }
+        }
+      }
+    } else {
+      enemy.state = 0; // Idle
+    }
+  }
 }
 
 void handleGameInput() {
-  const float moveSpeed = 0.5f;
-  const float turnSpeed = 0.1f;
+  const float moveSpeed = 0.12f;
+  const float turnSpeed = 0.08f;
 
   if (readPressed(kPinUp)) {
-    g_player.x += cosf(g_player.angle) * moveSpeed;
-    g_player.y += sinf(g_player.angle) * moveSpeed;
+    float nx = g_player.x + cosf(g_player.angle) * moveSpeed;
+    float ny = g_player.y + sinf(g_player.angle) * moveSpeed;
+    if (g_map[(int)ny][(int)g_player.x] == 0 || g_map[(int)ny][(int)g_player.x] == 2) g_player.y = ny;
+    if (g_map[(int)g_player.y][(int)nx] == 0 || g_map[(int)g_player.y][(int)nx] == 2) g_player.x = nx;
   }
   if (readPressed(kPinDown)) {
-    g_player.x -= cosf(g_player.angle) * moveSpeed;
-    g_player.y -= sinf(g_player.angle) * moveSpeed;
+    float nx = g_player.x - cosf(g_player.angle) * moveSpeed;
+    float ny = g_player.y - sinf(g_player.angle) * moveSpeed;
+    if (g_map[(int)ny][(int)g_player.x] == 0) g_player.y = ny;
+    if (g_map[(int)g_player.y][(int)nx] == 0) g_player.x = nx;
   }
   if (readPressed(kPinLeft)) {
     g_player.angle -= turnSpeed;
@@ -192,21 +353,43 @@ void handleGameInput() {
     g_player.angle += turnSpeed;
   }
 
+  // Handle Exit
+  if (g_map[(int)g_player.y][(int)g_player.x] == 2) {
+    g_level++;
+    if (g_level > 5) {
+      g_state = WON;
+    } else {
+      generateDungeon();
+      spawnEnemies(5 + g_level * 2);
+    }
+  }
+
   if (readPressed(kPinCenter)) {
     uint32_t now = millis();
-    if (now - g_last_shot > 200) {
-      // Fire weapon
+    if (now - g_last_shot > 300 && g_player.ammo > 0) {
+      g_player.isFiring = true;
+      g_player.ammo--;
+      
+      // Simple hitscan
       for (auto& enemy : g_enemies) {
+        if (enemy.state == 3) continue;
         float edx = enemy.x - g_player.x;
         float edy = enemy.y - g_player.y;
-        float eangle = atan2f(edy, edx);
-        if (fabsf(eangle - g_player.angle) < 0.2f) {
-          enemy.hp -= 15;  // damage
-          if (enemy.hp <= 0) g_kills++;
+        float eangle = atan2f(edy, edx) - g_player.angle;
+        while (eangle < -PI) eangle += 2 * PI;
+        while (eangle > PI) eangle -= 2 * PI;
+        
+        if (fabsf(eangle) < 0.2f) {
+          enemy.hp -= 25;
+          if (enemy.hp <= 0) {
+            enemy.state = 3;
+            g_kills++;
+            g_player.ammo += 5; // drop ammo
+          }
+          break; // Only hit one per shot
         }
       }
       g_last_shot = now;
-      g_player.ammo--;
     }
   }
 
@@ -240,32 +423,42 @@ void setup() {
 
 void loop() {
   M5.update();
+  g_frame++;
 
   switch (g_state) {
     case IN_GAME:
       handleGameInput();
-      drawGameScreen();
+      updateEnemies();
+      castRays();
       break;
     case MENU:
       M5.Display.fillScreen(TFT_BLACK);
       M5.Display.setTextColor(TFT_WHITE);
-      M5.Display.setCursor(50, 60);
+      M5.Display.setTextSize(2);
+      M5.Display.setCursor(60, 60);
       M5.Display.print("PAUSED");
+      M5.Display.setTextSize(1);
+      M5.Display.setCursor(40, 90);
+      M5.Display.print("BtnA to Resume");
       if (M5.BtnA.wasPressed()) g_state = IN_GAME;
       break;
     case DEAD:
       M5.Display.fillScreen(TFT_BLACK);
       M5.Display.setTextColor(TFT_RED);
+      M5.Display.setTextSize(2);
       M5.Display.setCursor(40, 60);
       M5.Display.print("YOU DIED");
+      if (M5.BtnA.wasPressed() || M5.BtnPWR.wasPressed()) ESP.restart();
       break;
     case WON:
       M5.Display.fillScreen(TFT_BLACK);
       M5.Display.setTextColor(TFT_GREEN);
+      M5.Display.setTextSize(2);
       M5.Display.setCursor(50, 60);
       M5.Display.print("VICTORY!");
+      if (M5.BtnA.wasPressed() || M5.BtnPWR.wasPressed()) ESP.restart();
       break;
   }
 
-  delay(5);
+  delay(20);
 }

@@ -105,15 +105,56 @@ String callApi(const String& prompt) {
   if (g_api_key.length() > 0) {
     http.addHeader("Authorization", String("Bearer ") + g_api_key);
   }
+  http.addHeader("HTTP-Referer", "https://idk-device.local");
+  http.addHeader("X-Title", "idk-ai");
 
-  String payload = "{\"prompt\":\"" + prompt + "\"}";
+  // OpenRouter chat completions format
+  String escaped = prompt;
+  escaped.replace("\\", "\\\\");
+  escaped.replace("\"", "\\\"");
+  escaped.replace("\n", "\\n");
+
+  String payload = "{\"model\":\"meta-llama/llama-3.1-8b-instruct:free\",\"messages\":[{\"role\":\"user\",\"content\":\"";
+  payload += escaped;
+  payload += "\"}],\"max_tokens\":256}";
+
   int code = http.POST(payload);
   if (code <= 0) {
     http.end();
-    return "HTTP error";
+    return String("HTTP error: ") + String(code);
   }
+
   String resp = http.getString();
   http.end();
+
+  // Parse JSON response to extract message content
+  // Format: {"choices":[{"message":{"content":"..."}}]}
+  int contentStart = resp.indexOf("\"content\":\"");
+  if (contentStart >= 0) {
+    contentStart += 11;  // skip "content":"
+    int contentEnd = resp.indexOf("\"", contentStart);
+    // Handle escaped quotes
+    while (contentEnd > 0 && resp[contentEnd - 1] == '\\') {
+      contentEnd = resp.indexOf("\"", contentEnd + 1);
+    }
+    if (contentEnd > contentStart) {
+      String content = resp.substring(contentStart, contentEnd);
+      content.replace("\\n", "\n");
+      content.replace("\\\"", "\"");
+      content.replace("\\\\", "\\");
+      if (content.length() > 400) content = content.substring(0, 400) + "...";
+      return content;
+    }
+  }
+
+  // Fallback: check for error
+  int errStart = resp.indexOf("\"message\":\"");
+  if (errStart >= 0) {
+    errStart += 11;
+    int errEnd = resp.indexOf("\"", errStart);
+    if (errEnd > errStart) return "Error: " + resp.substring(errStart, errEnd);
+  }
+
   if (resp.length() > 320) resp = resp.substring(0, 320);
   return resp;
 }

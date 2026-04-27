@@ -14,15 +14,15 @@
 #endif
 
 #ifndef IDK_CHESS_BASE_DEPTH
-#define IDK_CHESS_BASE_DEPTH 3
+#define IDK_CHESS_BASE_DEPTH 4
 #endif
 
 #ifndef IDK_CHESS_ENDGAME_DEPTH
-#define IDK_CHESS_ENDGAME_DEPTH 4
+#define IDK_CHESS_ENDGAME_DEPTH 5
 #endif
 
 #ifndef IDK_CHESS_MAX_DEPTH
-#define IDK_CHESS_MAX_DEPTH 5
+#define IDK_CHESS_MAX_DEPTH 6
 #endif
 
 namespace {
@@ -377,6 +377,7 @@ void initBoard() {
   g_game_over_text = "";
   g_promotion_active = false;
   g_castle_select_active = false;
+  g_historyCount = 0;
 }
 
 bool isSquareAttacked(const GameState& st, int sq, bool byWhite) {
@@ -819,48 +820,312 @@ void sortMoves(const GameState& st, MoveList& list) {
             });
 }
 
-int negamax(GameState& st, int depth, int alpha, int beta) {
+// ─── Zobrist Hashing ────────────────────────────────────────────
+static uint64_t g_zobrist_pieces[13][64];   // piece_index(0-12) x square
+static uint64_t g_zobrist_side;             // side to move
+static uint64_t g_zobrist_castling[16];     // castling rights
+static uint64_t g_zobrist_ep[65];           // en passant file (+1 for none)
+static bool g_zobrist_init = false;
+
+static uint64_t xorshift64(uint64_t& s) {
+  s ^= s << 13; s ^= s >> 7; s ^= s << 17; return s;
+}
+
+void initZobrist() {
+  if (g_zobrist_init) return;
+  uint64_t seed = 0x123456789ABCDEF0ULL;
+  for (int p = 0; p < 13; ++p)
+    for (int s = 0; s < 64; ++s)
+      g_zobrist_pieces[p][s] = xorshift64(seed);
+  g_zobrist_side = xorshift64(seed);
+  for (int i = 0; i < 16; ++i) g_zobrist_castling[i] = xorshift64(seed);
+  for (int i = 0; i < 65; ++i) g_zobrist_ep[i] = xorshift64(seed);
+  g_zobrist_init = true;
+}
+
+int pieceToIndex(int8_t p) {
+  // Maps piece -6..-1, 0, 1..6 to 0..12
+  return p + 6;
+}
+
+uint64_t computeHash(const GameState& st) {
+  uint64_t h = 0;
+  for (int sq = 0; sq < 64; ++sq) {
+    if (st.board[sq] != 0) h ^= g_zobrist_pieces[pieceToIndex(st.board[sq])][sq];
+  }
+  if (!st.whiteToMove) h ^= g_zobrist_side;
+  h ^= g_zobrist_castling[st.castling & 0xF];
+  h ^= g_zobrist_ep[st.epSquare < 0 ? 64 : st.epSquare];
+  return h;
+}
+
+// ─── Transposition Table ────────────────────────────────────────
+enum TTFlag : uint8_t { TT_EXACT = 0, TT_ALPHA = 1, TT_BETA = 2 };
+
+struct TTEntry {
+  uint64_t key = 0;
+  int16_t score = 0;
+  uint8_t depth = 0;
+  TTFlag flag = TT_EXACT;
+  Move bestMove{};
+};
+
+static constexpr int kTTSize = 4096;  // small for ESP32 memory
+static TTEntry g_tt[kTTSize];
+
+void clearTT() {
+  memset(g_tt, 0, sizeof(g_tt));
+}
+
+TTEntry* probeTT(uint64_t key) {
+  TTEntry& e = g_tt[key % kTTSize];
+  if (e.key == key) return &e;
+  return nullptr;
+}
+
+void storeTT(uint64_t key, int score, int depth, TTFlag flag, const Move& bestMove) {
+  TTEntry& e = g_tt[key % kTTSize];
+  if (e.key == key && e.depth > depth) return;  // don't overwrite deeper entries
+  e.key = key;
+  e.score = static_cast<int16_t>(score);
+  e.depth = static_cast<uint8_t>(depth);
+  e.flag = flag;
+  e.bestMove = bestMove;
+}
+
+// ─── Killer Moves ───────────────────────────────────────────────
+static Move g_killers[IDK_CHESS_MAX_DEPTH + 2][2];
+
+void storeKiller(int ply, const Move& m) {
+  if (ply >= IDK_CHESS_MAX_DEPTH + 2) return;
+  if (!moveEquals(m, g_killers[ply][0])) {
+    g_killers[ply][1] = g_killers[ply][0];
+    g_killers[ply][0] = m;
+  }
+}
+
+bool isKiller(int ply, const Move& m) {
+  if (ply >= IDK_CHESS_MAX_DEPTH + 2) return false;
+  return moveEquals(m, g_killers[ply][0]) || moveEquals(m, g_killers[ply][1]);
+}
+
+// ─── Enhanced Move Ordering with killers ────────────────────────
+int moveOrderingScoreEx(const GameState& st, const Move& m, int ply, const Move* ttMove) {
+  int score = moveOrderingScore(st, m);
+  if (ttMove && moveEquals(m, *ttMove)) score += 50000;  // TT move first
+  if (isKiller(ply, m)) score += 8000;  // killer bonus
+  return score;
+}
+
+void sortMovesEx(const GameState& st, MoveList& list, int ply, const Move* ttMove) {
+  std::sort(list.data.begin(), list.data.begin() + list.count,
+            [&](const Move& a, const Move& b) {
+              return moveOrderingScoreEx(st, a, ply, ttMove) > moveOrderingScoreEx(st, b, ply, ttMove);
+            });
+}
+
+// ─── Quiescence Search ──────────────────────────────────────────
+int quiescence(GameState& st, int alpha, int beta) {
+  int raw = evalBoard(st);
+  int stand_pat = st.whiteToMove ? raw : -raw;
+  if (stand_pat >= beta) return beta;
+  if (stand_pat > alpha) alpha = stand_pat;
+
   MoveList legal;
   generateLegal(st, legal);
-  if (depth == 0 || legal.count == 0) {
-    if (legal.count == 0 && inCheck(st, st.whiteToMove)) {
-      return -100000 + (3 - depth);
-    }
-    if (legal.count == 0) return 0;
-    int raw = evalBoard(st);
-    return st.whiteToMove ? raw : -raw;
+
+  for (int i = 0; i < legal.count; ++i) {
+    const Move& m = legal.data[i];
+    if (!(m.flags & (MF_CAPTURE | MF_EP | MF_PROMOTION))) continue;  // captures/promos only
+
+    Undo u = makeMove(st, m);
+    int score = -quiescence(st, -beta, -alpha);
+    unmakeMove(st, u);
+
+    if (score >= beta) return beta;
+    if (score > alpha) alpha = score;
+  }
+  return alpha;
+}
+
+// ─── Negamax with TT + Quiescence + Killers ─────────────────────
+int negamax(GameState& st, int depth, int alpha, int beta, int ply) {
+  uint64_t hash = computeHash(st);
+
+  // Probe transposition table
+  TTEntry* tte = probeTT(hash);
+  Move* ttMove = nullptr;
+  if (tte && tte->depth >= depth) {
+    if (tte->flag == TT_EXACT) return tte->score;
+    if (tte->flag == TT_ALPHA && tte->score <= alpha) return alpha;
+    if (tte->flag == TT_BETA && tte->score >= beta) return beta;
+  }
+  if (tte) ttMove = &tte->bestMove;
+
+  MoveList legal;
+  generateLegal(st, legal);
+
+  if (legal.count == 0) {
+    if (inCheck(st, st.whiteToMove)) return -100000 + ply;
+    return 0;  // stalemate
   }
 
-  sortMoves(st, legal);
+  if (depth <= 0) return quiescence(st, alpha, beta);
+
+  sortMovesEx(st, legal, ply, ttMove);
+
   int best = -200000;
+  Move bestMove = legal.data[0];
+  TTFlag flag = TT_ALPHA;
+
   for (int i = 0; i < legal.count; ++i) {
     Undo u = makeMove(st, legal.data[i]);
-    int score = -negamax(st, depth - 1, -beta, -alpha);
+    int score = -negamax(st, depth - 1, -beta, -alpha, ply + 1);
     unmakeMove(st, u);
-    if (score > best) best = score;
-    if (best > alpha) alpha = best;
-    if (alpha >= beta) break;
+
+    if (score > best) {
+      best = score;
+      bestMove = legal.data[i];
+    }
+    if (best > alpha) {
+      alpha = best;
+      flag = TT_EXACT;
+    }
+    if (alpha >= beta) {
+      if (!(legal.data[i].flags & (MF_CAPTURE | MF_EP))) {
+        storeKiller(ply, legal.data[i]);  // non-capture cutoff = killer
+      }
+      flag = TT_BETA;
+      break;
+    }
   }
+
+  storeTT(hash, best, depth, flag, bestMove);
   return best;
 }
 
+// ─── Simple Opening Book ────────────────────────────────────────
+struct BookEntry {
+  const char* moves;  // space-separated algebraic (e.g. "e2e4 e7e5 g1f3")
+};
+
+static const BookEntry kOpeningBook[] = {
+  {"e2e4 e7e5 g1f3 b8c6 f1b5"},  // Ruy Lopez
+  {"e2e4 e7e5 g1f3 b8c6 f1c4"},  // Italian
+  {"d2d4 d7d5 c2c4"},              // Queen's Gambit
+  {"e2e4 c7c5 g1f3 d7d6 d2d4"},  // Sicilian
+  {"e2e4 e7e6 d2d4 d7d5"},        // French
+  {"d2d4 g8f6 c2c4 g7g6"},        // King's Indian
+  {"e2e4 e7e5 f1c4 g8f6"},        // Two Knights
+  {"g1f3 d7d5 c2c4"},              // English-Reti
+};
+constexpr int kBookCount = sizeof(kOpeningBook) / sizeof(kOpeningBook[0]);
+
+struct BookMove { uint8_t from; uint8_t to; };
+
+bool parseAlgebraic(const char* s, BookMove& bm) {
+  if (strlen(s) < 4) return false;
+  int fc = s[0] - 'a', fr = 8 - (s[1] - '0');
+  int tc = s[2] - 'a', tr = 8 - (s[3] - '0');
+  if (fc < 0 || fc > 7 || fr < 0 || fr > 7) return false;
+  if (tc < 0 || tc > 7 || tr < 0 || tr > 7) return false;
+  bm.from = fr * 8 + fc;
+  bm.to = tr * 8 + tc;
+  return true;
+}
+
+static std::array<BookMove, 32> g_history;
+static int g_historyCount = 0;
+
+void recordMove(const Move& m) {
+  if (g_historyCount < 32) {
+    g_history[g_historyCount++] = {m.from, m.to};
+  }
+}
+
+bool tryBookMove(const GameState& st, Move& out) {
+  if (g_historyCount > 10) return false;  // out of book range
+
+  for (int b = 0; b < kBookCount; ++b) {
+    String line = kOpeningBook[b].moves;
+    int pos = 0;
+    bool match = true;
+    int moveIdx = 0;
+
+    // Parse all moves in the book line
+    std::array<BookMove, 16> bookMoves;
+    int bookLen = 0;
+    int start = 0;
+    for (int i = 0; i <= (int)line.length(); ++i) {
+      if (i == (int)line.length() || line[i] == ' ') {
+        String token = line.substring(start, i);
+        BookMove bm;
+        if (parseAlgebraic(token.c_str(), bm) && bookLen < 16) {
+          bookMoves[bookLen++] = bm;
+        }
+        start = i + 1;
+      }
+    }
+
+    // Check if history matches this book line
+    if (g_historyCount >= bookLen) continue;
+    match = true;
+    for (int i = 0; i < g_historyCount && i < bookLen; ++i) {
+      if (g_history[i].from != bookMoves[i].from || g_history[i].to != bookMoves[i].to) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match && g_historyCount < bookLen) {
+      BookMove& next = bookMoves[g_historyCount];
+      // Find this in legal moves
+      MoveList legal;
+      generateLegal(st, legal);
+      for (int i = 0; i < legal.count; ++i) {
+        if (legal.data[i].from == next.from && legal.data[i].to == next.to) {
+          out = legal.data[i];
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 Move findBestMove(const GameState& st, int depth) {
+  // Try opening book first
+  Move bookMove;
+  if (tryBookMove(st, bookMove)) return bookMove;
+
+  initZobrist();
+  memset(g_killers, 0, sizeof(g_killers));
+
   MoveList legal;
   generateLegal(st, legal);
   if (legal.count == 0) return Move{0, 0, 0, MF_NONE};
 
-  sortMoves(st, legal);
+  // Iterative deepening
   Move best = legal.data[0];
   int bestScore = -200000;
 
-  for (int i = 0; i < legal.count; ++i) {
-    GameState cp = st;
-    makeMove(cp, legal.data[i]);
-    int score = -negamax(cp, depth - 1, -200000, 200000);
-    if (score > bestScore) {
-      bestScore = score;
-      best = legal.data[i];
+  for (int d = 1; d <= depth; ++d) {
+    sortMovesEx(st, legal, 0, nullptr);
+    int currentBest = -200000;
+    Move currentBestMove = legal.data[0];
+
+    for (int i = 0; i < legal.count; ++i) {
+      GameState cp = st;
+      makeMove(cp, legal.data[i]);
+      int score = -negamax(cp, d - 1, -200000, 200000, 1);
+      if (score > currentBest) {
+        currentBest = score;
+        currentBestMove = legal.data[i];
+      }
     }
+
+    best = currentBestMove;
+    bestScore = currentBest;
   }
   return best;
 }
@@ -879,6 +1144,7 @@ bool executeMove(const Move& m) {
   }
   if (!found) return false;
 
+  recordMove(m);
   makeMove(g_game, m);
   g_selected_sq = -1;
   g_selected.clear();
@@ -1178,7 +1444,16 @@ void scanWifi() {
     startGame();
     return;
   }
-  g_wifi_status = g_wifi_count > 0 ? "Select WiFi" : "No WiFi";
+  if (g_wifi_count == 0) {
+    // Auto-fallback to offline mode when no WiFi networks found
+    g_offline_mode = true;
+    g_wifi_status = "No WiFi - Going offline";
+    drawWifi();
+    delay(800);
+    startGame();
+    return;
+  }
+  g_wifi_status = "Select WiFi";
   drawWifi();
 }
 
@@ -1416,6 +1691,7 @@ void botStepIfNeeded() {
 
   int depth = chooseSearchDepth(g_game);
   Move best = findBestMove(g_game, depth);
+  recordMove(best);
   executeMove(best);
 }
 
