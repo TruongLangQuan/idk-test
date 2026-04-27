@@ -7,6 +7,7 @@
 #include <WiFiUdp.h>
 
 #include "../../shared/idk_vi_font.h"
+#include "../../shared/idk_vn_text.h"
 
 static const uint32_t kFrameDelayMs = 100; // 10 fps default
 static const size_t kFrameBufSize = 80 * 1024;
@@ -515,14 +516,8 @@ static void drawSubtitleLocal(const String &text) {
   M5.Display.fillRect(0, y, w, box_h, kBgColor);
   M5.Display.drawRect(0, y, w, box_h, kFgColor);
   if (text.isEmpty()) return;
-  if (g_vi_font_loaded) {
-    idk_vi_font::drawWrapped(M5.Display, text, 4, y + 4, w - 8, box_h - 8, kFgColor, kBgColor, 14);
-  } else {
-    M5.Display.setTextSize(1);
-    M5.Display.setTextColor(kFgColor, kBgColor);
-    M5.Display.setCursor(4, y + 4);
-    M5.Display.print(text);
-  }
+  // Use idk_vn_text for proper Vietnamese rendering (handles Unicode/diacritics)
+  idk_vn_text::drawWrapped(M5.Display, text, 4, y + 4, w - 8, box_h - 8, kFgColor, kBgColor, 1);
 }
 
 static void updateSubtitleForTime(uint32_t ms) {
