@@ -1,0 +1,47 @@
+{
+  "name": "FAST Tetris PERFECT - M5StickC Plus2",
+  "description": "🚀 ULTIMATE FAST TETRIS with PERFECT rotation mechanics! Modern Tetris features: Hold piece, Next piece preview, Ghost piece, 500ms lock delay. 21 speed levels (0-20) with insane 1ms drops at Level 20. WiFi beacon spam with 50+ cool SSIDs. All pieces rotate correctly! T and L pieces fixed. Ready for competitive speed play.",
+  "version": "1.6.0",
+  "author": "Enhanced by AI Assistant",
+  "category": "Games",
+  "website": "https://github.com/m5stack/m5stack",
+  "image": "https://m5stack.oss-cn-shenzhen.aliyuncs.com/image/base/product_01.jpg",
+  "flash": [
+    {
+      "address": "0x0",
+      "file": "FAST-Tetris-PERFECT-COMPLETE.bin"
+    }
+  ],
+  "features": [
+    "Modern Tetris mechanics with hold piece",
+    "Next piece preview with mini display",
+    "Ghost piece for precise placement",
+    "500ms lock delay for advanced techniques",
+    "21 speed levels: 150ms to 1ms drops",
+    "Perfect rotation mechanics - T and L pieces fixed",
+    "WiFi beacon spam with 50+ cool SSIDs",
+    "Real-time WiFi scanner",
+    "IR remote control functionality",
+    "External joystick support",
+    "Performance optimized (-O3, fast math)",
+    "Battery level display",
+    "Level selection screen",
+    "Competitive ready"
+  ],
+  "controls": {
+    "Joystick": "Move pieces left/right/down",
+    "Joystick Button": "Rotate pieces",
+    "L Button": "Rotate pieces (opposite direction)",
+    "M5 Button": "Hold piece / Menu navigation",
+    "R Button": "Pause game",
+    "Up Joystick": "Hard drop / WiFi scanner",
+    "L+R Buttons": "WiFi beacon spam mode"
+  },
+  "difficulty_levels": {
+    "Level 0-5": "Normal play (150ms-50ms)",
+    "Level 6-10": "Fast (40ms-15ms)", 
+    "Level 11-15": "Lightning (10ms-5ms)",
+    "Level 16-18": "Ludicrous (3ms-2ms)",
+    "Level 19-20": "MATRIX MODE (1ms drops!)"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "M5Catode",
+  "description": "Virtual cat pet (Catode32 port) for M5StickC Plus2",
+  "version": "1.0.0",
+  "compatible": ["M5StickC-Plus2"],
+  "author": "coreymillia",
+  "created": "2026-02-24",
+  "firmware": "M5Catode-v1.0-MERGED.bin",
+  "flash_size": "4MB",
+  "flash_mode": "dio",
+  "flash_freq": "80m",
+  "bootloader": "0x1000",
+  "partition": "0x8000",
+  "app": "0x10000",
+  "features": [
+    "Virtual cat pet with animated sprites",
+    "Auto-triggered cat behaviors (sleeping, playing, stretching, zoomies, etc.)",
+    "Care actions: feed, pet, kiss, groom, toys",
+    "Stat decay and persistence across reboots",
+    "Environment settings: time of day, weather, season, moon phase",
+    "Dynamic sky rendering reacts to environment",
+    "Mini-games: Zoomies, Breakout, Snake, Tic-Tac-Toe",
+    "Stats screen with all pet stats"
+  ],
+  "controls": {
+    "Button B (short)": "Scroll down / next",
+    "Button PWR (short)": "Scroll up / previous",
+    "Button A (short)": "Select / confirm",
+    "Button B (long)": "Back / close menu",
+    "Button A (long)": "Quick care action",
+    "Button PWR (double)": "Open main menu from idle",
+    "Button PWR (in mini-games)": "Exit to menu"
+  },
+  "notes": [
+    "Pet stats decay over time - remember to feed and care for your cat",
+    "Stats and environment settings persist across reboots",
+    "Based on the Catode32 MicroPython project by mhv75"
+  ]
+}

@@ -1,0 +1,251 @@
+═══════════════════════════════════════════════════════════════════════════
+        M5STICKSONIC - GITHUB REPOSITORY UPLOAD INSTRUCTIONS
+═══════════════════════════════════════════════════════════════════════════
+
+This guide will help you upload the complete M5StickSonic project to GitHub.
+
+───────────────────────────────────────────────────────────────────────────
+📦 PACKAGE CONTENTS
+───────────────────────────────────────────────────────────────────────────
+
+Total Files: 66
+  • 18 C++ source files (.cpp)
+  • 34 Header files (.h)
+  • 2 Configuration files (.ini, .json)
+  • 4 Documentation files (.md, .txt)
+  • 4 Binary files (.bin)
+
+Package Size: 3.4 MB
+
+───────────────────────────────────────────────────────────────────────────
+🚀 METHOD 1: GITHUB WEB INTERFACE
+───────────────────────────────────────────────────────────────────────────
+
+Step 1: Create Repository
+  1. Go to https://github.com/new
+  2. Repository name: M5StickSonic (or your choice)
+  3. Description: "Sonic The Hedgehog for M5StickC Plus2 with DOWN-TO-ROLL"
+  4. Set to Public
+  5. DO NOT initialize with README (we have one)
+  6. Click "Create repository"
+
+Step 2: Upload via Web
+  1. Click "uploading an existing file"
+  2. Drag the ENTIRE github-release folder contents
+  3. OR click "choose your files" and select all
+  4. Commit message: "Initial release v1.2.0 with DOWN-TO-ROLL"
+  5. Click "Commit changes"
+
+Step 3: Create Release
+  1. Click "Releases" on right sidebar
+  2. Click "Create a new release"
+  3. Tag: v1.2.0
+  4. Title: "M5StickSonic v1.2.0 - DOWN-TO-ROLL Edition"
+  5. Description: Copy from releases/RELEASE_NOTES.txt
+  6. Attach binaries from releases/ folder:
+     - M5StickSonic-v1.2-FINAL-MERGED.bin
+     - M5StickSonic-v1.2-FINAL.bin
+     - bootloader.bin
+     - partitions.bin
+  7. Click "Publish release"
+
+───────────────────────────────────────────────────────────────────────────
+🖥️ METHOD 2: COMMAND LINE (GIT)
+───────────────────────────────────────────────────────────────────────────
+
+Step 1: Initialize Repository
+  cd github-release
+  git init
+  git add .
+  git commit -m "Initial release v1.2.0 with DOWN-TO-ROLL mechanic"
+
+Step 2: Create GitHub Repository
+  (Do this on GitHub.com first - see Method 1, Step 1)
+
+Step 3: Push to GitHub
+  git remote add origin https://github.com/YOUR_USERNAME/M5StickSonic.git
+  git branch -M main
+  git push -u origin main
+
+Step 4: Create Release via Git
+  git tag -a v1.2.0 -m "v1.2.0 - DOWN-TO-ROLL Edition"
+  git push origin v1.2.0
+
+Then upload binaries via GitHub web interface (Releases section).
+
+───────────────────────────────────────────────────────────────────────────
+📝 RECOMMENDED REPOSITORY SETTINGS
+───────────────────────────────────────────────────────────────────────────
+
+Repository Settings:
+  ✓ Public repository
+  ✓ Allow issues (for bug reports)
+  ✓ Allow discussions (optional)
+  ✓ Topics: m5stack, sonic, esp32, m5stickc-plus2, retro-gaming, arduino
+
+About Section:
+  Description: "Sonic The Hedgehog Green Hill Zone Act 1 for M5StickC Plus2"
+  Website: (your project page or demo video)
+  Topics: m5stack, sonic, esp32, retro-gaming, platformer
+
+Branch Protection (optional):
+  • Protect main branch
+  • Require pull request reviews
+
+───────────────────────────────────────────────────────────────────────────
+🏷️ RELEASE NOTES TEMPLATE
+───────────────────────────────────────────────────────────────────────────
+
+Title: M5StickSonic v1.2.0 - DOWN-TO-ROLL Edition
+
+Description:
+───────────
+🦔 **Sonic The Hedgehog for M5StickC Plus2 - FINAL RELEASE**
+
+Play the complete Green Hill Zone Act 1 on your M5StickC Plus2!
+
+## 🆕 What's New in v1.2.0
+
+**DOWN-TO-ROLL mechanic** - The feature that makes it feel authentic!
+- Press DOWN on joystick while moving → Roll into ball
+- Release DOWN → Stand back up
+- Just like the original Sonic game!
+
+## 🎮 Features
+
+- Complete Green Hill Zone Act 1
+- Authentic Sonic physics
+- 211x119 optimized display (88% screen coverage)
+- 27-30 FPS smooth gameplay
+- Mini Joy C Hat analog joystick
+- All classic moves: run, jump, roll, spindash
+- Ring collection & enemy AI
+
+## 📦 Installation
+
+**Quick Start (M5Burner):**
+1. Download M5StickSonic-v1.2-FINAL-MERGED.bin
+2. Flash with M5Burner
+3. Connect Mini Joy C Hat
+4. Play!
+
+See README.md for full documentation.
+
+## 📚 Credits
+
+- Original M5Stack port: GalaxyShad (2020)
+- M5StickC Plus2 adaptation: coreymillia + GitHub Copilot CLI
+- Characters & Graphics: © SEGA
+
+**Gotta Go Fast!** 🦔💨
+
+───────────────────────────────────────────────────────────────────────────
+📎 FILES TO ATTACH TO RELEASE
+───────────────────────────────────────────────────────────────────────────
+
+From releases/ folder:
+  ✓ M5StickSonic-v1.2-FINAL-MERGED.bin  (PRIMARY - for M5Burner)
+  ✓ M5StickSonic-v1.2-FINAL.bin         (App only)
+  ✓ bootloader.bin                      (For manual flash)
+  ✓ partitions.bin                      (For manual flash)
+
+Optional:
+  ✓ m5burner_config.json                (M5Burner metadata)
+  ✓ RELEASE_NOTES.txt                   (Full release notes)
+
+───────────────────────────────────────────────────────────────────────────
+🎯 POST-UPLOAD CHECKLIST
+───────────────────────────────────────────────────────────────────────────
+
+After uploading to GitHub:
+
+Repository Settings:
+  [ ] Description set
+  [ ] Topics added (m5stack, sonic, esp32, etc.)
+  [ ] Website URL added (if any)
+  [ ] License file visible (LICENSE)
+
+Documentation:
+  [ ] README.md displays correctly
+  [ ] CHANGELOG.md visible
+  [ ] BUILDING.md accessible
+  [ ] releases/ folder with binaries
+
+Release:
+  [ ] v1.2.0 tag created
+  [ ] Release published
+  [ ] Binaries attached
+  [ ] Release notes complete
+
+Verification:
+  [ ] Clone and test build
+  [ ] Download binary and test flash
+  [ ] Check all links work
+  [ ] Verify LICENSE displays correctly
+
+───────────────────────────────────────────────────────────────────────────
+🌟 OPTIONAL ENHANCEMENTS
+───────────────────────────────────────────────────────────────────────────
+
+Make your repo stand out:
+
+1. Add Screenshots/GIFs
+   - Gameplay footage
+   - Controls diagram
+   - Hardware setup photo
+
+2. Create Wiki Pages
+   - Detailed hardware guide
+   - Physics explanation
+   - Troubleshooting FAQ
+
+3. Setup GitHub Actions
+   - Auto-build on commit
+   - Release automation
+   - Code quality checks
+
+4. Add Discussions
+   - User feedback
+   - Feature requests
+   - Showcase section
+
+5. Create Project Board
+   - Track bugs
+   - Plan features
+   - Community contributions
+
+───────────────────────────────────────────────────────────────────────────
+⚠️ IMPORTANT NOTES
+───────────────────────────────────────────────────────────────────────────
+
+LEGAL COMPLIANCE:
+  ✓ LICENSE file included (educational use only)
+  ✓ SEGA copyright notice prominent in README
+  ✓ "Not for commercial use" clearly stated
+  ✓ Attribution to original authors maintained
+
+DO NOT:
+  ✗ Claim ownership of Sonic characters/assets
+  ✗ Sell or monetize the project
+  ✗ Remove attribution to SEGA or original authors
+  ✗ Use SEGA trademarks inappropriately
+
+RECOMMENDED:
+  ✓ Include "Fan Project" in description
+  ✓ Link to official Sonic games
+  ✓ Credit all contributors
+  ✓ Keep educational focus
+
+───────────────────────────────────────────────────────────────────────────
+✅ READY TO UPLOAD!
+───────────────────────────────────────────────────────────────────────────
+
+Your github-release folder contains everything needed for a complete
+GitHub repository. Follow the steps above to upload and share your project!
+
+Package Location:
+  M5StickSonic-FINAL-v1.2/github-release/
+
+Good luck with your repository! 🚀
+
+───────────────────────────────────────────────────────────────────────────

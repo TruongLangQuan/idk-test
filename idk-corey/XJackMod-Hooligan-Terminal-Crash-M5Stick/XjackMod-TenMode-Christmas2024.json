@@ -1,0 +1,124 @@
+{
+  "name": "XJack Mod - Ten Mode Collection",
+  "version": "v2.0",
+  "description": "Complete XJack psychological screensaver collection with 10 unique experiences including revolutionary Crash Grammar system - Christmas 2024 Edition",
+  "author": "Coreymillia",
+  "created": "2024-12-24",
+  "category": "Entertainment/Digital Art",
+  "device": "M5StickC Plus2",
+  "platform": "ESP32",
+  "firmware": "XjackMod-TenMode-Christmas2024-MERGED.bin",
+  "modes": [
+    {
+      "id": 1,
+      "name": "Original XJack",
+      "description": "Classic Shining horror typewriter effect",
+      "color": "white"
+    },
+    {
+      "id": 2,
+      "name": "Back Room",
+      "description": "Dark atmospheric poetry by Jesus Hooligan",
+      "color": "blue"
+    },
+    {
+      "id": 3,
+      "name": "Dogs & Motorbikes",
+      "description": "Musical comedy anthem by Jesus Hooligan",
+      "color": "orange"
+    },
+    {
+      "id": 4,
+      "name": "System Error",
+      "description": "Cascading system failure simulation",
+      "color": "red"
+    },
+    {
+      "id": 5,
+      "name": "Symbol Storm",
+      "description": "Rainbow ASCII chaos with infinite variation",
+      "color": "rainbow"
+    },
+    {
+      "id": 6,
+      "name": "Terminal Hacker",
+      "description": "Authentic matrix coding session with C compilation",
+      "color": "green"
+    },
+    {
+      "id": 7,
+      "name": "Hacked Terminal",
+      "description": "Realistic cyber intrusion thriller",
+      "color": "red"
+    },
+    {
+      "id": 8,
+      "name": "Xtreme Hack",
+      "description": "7 psychological hacker scenarios with scene progression",
+      "color": "magenta"
+    },
+    {
+      "id": 9,
+      "name": "Kernel Panic",
+      "description": "Humanized system failure with dramatic freeze",
+      "color": "red"
+    },
+    {
+      "id": 10,
+      "name": "Crash Grammar",
+      "description": "Revolutionary finite-state system failure generator",
+      "color": "cyan"
+    }
+  ],
+  "controls": {
+    "Button A": "Cycle through all 10 modes",
+    "Button B": "Toggle auto-scroll (15s per mode)",
+    "Power Button": "Toggle bottom status titles on/off"
+  },
+  "features": [
+    "Ten unique psychological screensaver experiences",
+    "Revolutionary Crash Grammar finite-state machine",
+    "Authentic terminal simulations with real code",
+    "Dynamic visual effects and role-based color coding",
+    "Memory decay effects and escalation rules",
+    "4 different silence modes (Freeze, Hard Stop, Reboot, Corruption)",
+    "Procedural system failure dialogue generation",
+    "Beautiful colored credits screen on boot",
+    "Power button title toggle for clean presentation",
+    "XScreenSaver homage with modern AI-inspired twists"
+  ],
+  "technical": {
+    "flash_size": "4MB",
+    "ram_usage": "27.8KB (8.5%)",
+    "flash_usage": "483KB (36.9%)",
+    "compile_time": "2024-12-24T03:06:00Z",
+    "code_lines": "2400+"
+  },
+  "credits": {
+    "songs": "Jesus Hooligan (YouTube)",
+    "xscreensavers": "Jamie Zawinski",
+    "created_by": "Coreymillia",
+    "inspiration": "The Shining (Stanley Kubrick)"
+  },
+  "crash_grammar": {
+    "description": "AI-inspired procedural system failure generator",
+    "roles": ["SYS", "KERNEL", "SEC", "IO", "WATCHER", "HUMAN", "PANIC"],
+    "phases": ["BOOT", "NORMAL", "WARNING", "FAILURE", "PANIC", "SILENCE"],
+    "features": [
+      "Infinite variation through template system",
+      "Escalation rules prevent immersion breaks",
+      "Memory decay creates haunting repetition",
+      "Role-based color coding with psychological effects",
+      "4 unique silence endings"
+    ]
+  },
+  "notes": [
+    "The Crash Grammar mode represents breakthrough in procedural narrative",
+    "HUMAN role only appears after WARNING phase for psychological authenticity",
+    "Memory decay makes words 'leak' back: 'watchdog watchdog watchdog'",
+    "Created during Christmas Eve 2024 coding session",
+    "Complete project represents 20+ hours of development",
+    "Each screensaver has unique personality and progression system",
+    "Boot credits screen properly attributes all contributors"
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "name": "M5 Sarcastic Joke Scroller - Portal Hater Edition",
+  "version": "2.0.0",
+  "author": "coreymillia + GitHub Copilot CLI",
+  "description": "Complete sarcastic joke scroller with 3,542 hilariously brutal jokes, random auto-scroll, cycling font colors, and universal M5StickC compatibility. Perfect font size for maximum readability!",
+  "category": "Entertainment & Fun",
+  "device": "M5StickC Plus (Plus1.1 & Plus2)",
+  "homepage": "https://github.com/coreymillia/M5Jokes",
+  "preview": "",
+  "icon": "",
+  "features": [
+    "🎭 3,542 sarcastic 'Portal Hater' jokes - complete collection!",
+    "📱 Universal firmware works on Plus1.1 and Plus2",
+    "🎲 Random auto-scroll mode for endless entertainment",
+    "🌈 10 cycling font colors via power button",
+    "📖 Perfect size 2 font optimized for long jokes",
+    "💾 Position & color memory - remembers where you left off",
+    "⚡ Smart word wrapping for 240x135 displays",
+    "🔄 Sequential manual browsing (A/C buttons)",
+    "🎨 Colorful screen flash feedback effects",
+    "✨ Clean UI with joke counter and controls display",
+    "🎯 Professional M5Unified compatibility layer"
+  ],
+  "controls": {
+    "Button A": "Next joke (sequential browsing)",
+    "Button B": "Toggle random auto-scroll ON/OFF",
+    "Button C": "Previous joke (sequential browsing)", 
+    "Power Button": "Cycle through 10 font colors"
+  },
+  "joke_collection": {
+    "total_jokes": 3542,
+    "style": "Sarcastic AI responses and witty comebacks",
+    "themes": "Tech humor, social media satire, modern life commentary",
+    "tone": "Playfully brutal but family-friendly",
+    "source": "Curated Portal Hater collection",
+    "examples": [
+      "Your brain has buffering issues.",
+      "You're the human equivalent of a loading screen that never finishes.",
+      "I bet you ask GPS for confirmation even when you know the way."
+    ]
+  },
+  "color_cycling": {
+    "colors": ["White", "Cyan", "Yellow", "Green", "Magenta", "Red", "Orange", "Lime", "Purple", "Pink"],
+    "total_colors": 10,
+    "control": "Power button press (not hold)",
+    "memory": "Remembers favorite color between reboots",
+    "feedback": "Screen flashes in new color when changed"
+  },
+  "auto_scroll_features": {
+    "mode": "Random joke selection",
+    "interval": "5 seconds per joke",
+    "intelligence": "Never repeats same joke consecutively", 
+    "control": "Button B toggles ON/OFF",
+    "randomization": "True hardware-seeded randomness",
+    "manual_override": "A/C buttons reset auto-scroll timer"
+  },
+  "requirements": [
+    "1x M5StickC Plus device (Plus1.1 or Plus2)",
+    "No external hardware needed",
+    "Built-in display and buttons only",
+    "No WiFi or network required - works offline"
+  ],
+  "specifications": {
+    "screen_resolution": "240x135 pixels",
+    "font_size": "Size 2 (perfect for long jokes)",
+    "word_wrapping": "Smart 12px/char calculation",
+    "line_height": "16 pixels optimized spacing",
+    "memory_usage": "7.7% RAM (25KB), 49.9% Flash (654KB)",
+    "joke_storage": "PROGMEM for efficient flash usage"
+  },
+  "firmware": {
+    "bootloader": "0x1000",
+    "partitions": "0x8000",
+    "boot_app0": "0xe000", 
+    "app": "0x10000",
+    "merged": true,
+    "flash_offset": "0x0"
+  },
+  "flash_size": "4MB",
+  "chip": "ESP32-PICO (D4 & V3-02)",
+  "installation": {
+    "method": "M5Burner",
+    "file": "M5Jokes_Universal_M5StickC-v2.0-COMPLETE-MERGED.bin",
+    "size": "719568",
+    "md5": "3d5b0d8c8aa58eca983cf787e78be0aa",
+    "flash_address": "0x0",
+    "note": "Same firmware works on both Plus1.1 and Plus2!"
+  },
+  "setup_instructions": [
+    "1. Flash firmware to M5StickC using M5Burner",
+    "2. Device auto-detects Plus1.1 vs Plus2 on startup",
+    "3. Press Button A/C to browse jokes manually",
+    "4. Press Button B to enable random auto-scroll",
+    "5. Press Power Button to cycle font colors",
+    "6. Device remembers position and color on reboot",
+    "7. Enjoy 3,542 sarcastic jokes!"
+  ],
+  "how_to_use": [
+    "📖 Browse jokes with A (next) and C (previous) buttons",
+    "🎲 Enable auto-scroll with B button for hands-free entertainment", 
+    "🌈 Cycle colors with Power button to find your favorite",
+    "💾 Device remembers your last joke and color choice",
+    "⚡ Auto-scroll shows random jokes every 5 seconds",
+    "🎯 Perfect for coffee breaks, waiting rooms, or just laughs!"
+  ],
+  "technical_details": {
+    "device_detection": "Auto-identifies Plus1.1 vs Plus2 on startup",
+    "joke_access": "PROGMEM direct string access for efficiency",
+    "random_algorithm": "Hardware-seeded with analog noise + timing",
+    "color_storage": "Preferences system with NVS persistence", 
+    "word_wrapping": "Dynamic calculation based on screen width",
+    "memory_optimization": "Efficient PROGMEM usage for 3,542 jokes"
+  },
+  "entertainment_features": {
+    "reading_experience": "Optimized font size for comfortable reading",
+    "variety": "3,542 unique jokes - something for everyone",
+    "randomness": "True random selection prevents boredom",
+    "personalization": "10 colors to match your style",
+    "convenience": "Auto-scroll for passive entertainment"
+  },
+  "version_history": {
+    "2.0.0": "Complete joke collection with random auto-scroll, color cycling, perfect font sizing, and universal M5StickC support",
+    "1.3.0": "Final font optimization for long jokes",
+    "1.2.0": "Perfect font size testing", 
+    "1.1.0": "Double font size iteration",
+    "1.0.0": "Initial M5StickC port from CYD project"
+  },
+  "achievement": "First complete sarcastic joke collection with advanced features for M5StickC! Perfect blend of humor and technology. 🎭✨",
+  "fun_facts": {
+    "jokes_per_day": "If you read one joke per minute, this would last almost 60 hours!",
+    "randomness": "With 3,542 jokes, you have 12,545,922 possible joke pairs",
+    "colors": "10 colors mean 35,420 color-joke combinations!",
+    "storage": "All jokes stored efficiently in 654KB - that's ~0.18 bytes per character!"
+  }
+}

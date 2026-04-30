@@ -1,0 +1,23 @@
+# PlatformIO build directories
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Compiled binaries (except release)
+*.bin
+!FAST-Tetris-PERFECT-COMPLETE.bin
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+
+# Log files
+*.log

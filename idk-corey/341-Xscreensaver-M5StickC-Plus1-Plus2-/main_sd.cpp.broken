@@ -1,0 +1,544 @@
+// ESP32 XScreensaver with SD Card Loading System
+// Loads unlimited effects from SD card instead of firmware
+
+#include <Arduino_GFX_Library.h>
+#include <XPT2046_Touchscreen.h>
+#include <SD.h>
+#include <WiFi.h>
+#include <WebServer.h>
+#include <SPI.h>
+#include <ArduinoJson.h>
+
+// ===== HARDWARE PINS =====
+#define BL_PIN 21
+#define BOOT_PIN 0
+
+// Display pins (CYD standard)
+Arduino_ESP32SPI *bus = new Arduino_ESP32SPI(2, 15, 14, 13, 12);
+Arduino_ILI9341 *gfx = new Arduino_ILI9341(bus, 2, 1);
+
+// Touch screen pins - separate SPI bus
+#define XPT2046_IRQ 36
+#define XPT2046_MOSI 32
+#define XPT2046_MISO 39
+#define XPT2046_CLK 25
+#define XPT2046_CS 33
+
+SPIClass touchSPI = SPIClass(VSPI);
+XPT2046_Touchscreen ts(XPT2046_CS, XPT2046_IRQ);
+
+// RGB LED pins (active low)
+#define LED_RED_PIN 4
+#define LED_GREEN_PIN 16
+#define LED_BLUE_PIN 17
+
+// SD card on default SPI (GPIO 5 = CS)
+#define SD_CS_PIN 5
+
+// ===== SYSTEM VARIABLES =====
+int currentEffect = 0;
+int totalEffects = 0;
+unsigned long lastEffectChange = 0;
+unsigned long autoScrollInterval = 10000; // 10 seconds default
+bool autoScrollEnabled = true;
+bool showStatusBar = true;
+
+// Effect loading system
+struct EffectData {
+  String name;
+  String filename;
+  bool loaded;
+  JsonDocument config;
+};
+
+std::vector<EffectData> effects;
+JsonDocument currentEffectConfig;
+
+// Brightness control
+#define LEDC_CHANNEL_0 0
+#define LEDC_TIMER_12_BIT 12
+#define LEDC_BASE_FREQ 5000
+
+void ledcAnalogWrite(uint8_t channel, uint32_t value, uint32_t valueMax = 255) {
+    uint32_t duty = (4095 / valueMax) * min(value, valueMax);
+    ledcWrite(channel, duty);
+}
+
+// Color definitions  
+#define RGB565_BLACK   0x0000
+#define RGB565_RED     0xF800
+#define RGB565_GREEN   0x07E0
+#define RGB565_BLUE    0x001F
+#define RGB565_YELLOW  0xFFE0
+#define RGB565_CYAN    0x07FF
+#define RGB565_MAGENTA 0xF81F
+#define RGB565_WHITE   0xFFFF
+
+#define EXTRACT_RED(color)   (((color) >> 11) & 0x1F) << 3
+#define EXTRACT_GREEN(color) (((color) >> 5) & 0x3F) << 2  
+#define EXTRACT_BLUE(color)  ((color) & 0x1F) << 3
+
+// Web server for configuration
+WebServer server(80);
+
+// ===== UTILITY FUNCTIONS =====
+int getDisplayWidth() { return 320; }
+int getDisplayHeight() { return 240; }
+int getAnimationHeight() { return showStatusBar ? 220 : 240; }
+
+void fillScreenExceptStatus(uint16_t color) {
+  gfx->fillRect(0, 0, getDisplayWidth(), getAnimationHeight(), color);
+}
+
+// ===== SD CARD FUNCTIONS =====
+
+bool initSDCard() {
+  Serial.println("Initializing SD card...");
+  
+  if (!SD.begin(SD_CS_PIN)) {
+    Serial.println("SD Card initialization failed!");
+    return false;
+  }
+  
+  uint8_t cardType = SD.cardType();
+  if (cardType == CARD_NONE) {
+    Serial.println("No SD card attached!");
+    return false;
+  }
+  
+  Serial.printf("SD Card Type: %s\\n", 
+    cardType == CARD_MMC ? "MMC" :
+    cardType == CARD_SD ? "SDSC" :
+    cardType == CARD_SDHC ? "SDHC" : "UNKNOWN");
+  
+  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+  Serial.printf("SD Card Size: %lluMB\\n", cardSize);
+  
+  return true;
+}
+
+bool scanEffects() {
+  effects.clear();
+  
+  File root = SD.open("/screensavers");
+  if (!root) {
+    Serial.println("Failed to open /screensavers directory");
+    return false;
+  }
+  
+  if (!root.isDirectory()) {
+    Serial.println("/screensavers is not a directory");
+    return false;
+  }
+  
+  File file = root.openNextFile();
+  while (file) {
+    if (!file.isDirectory()) {
+      String filename = file.name();
+      if (filename.endsWith(".json")) {
+        // Load effect configuration
+        EffectData effect;
+        effect.filename = filename;
+        effect.loaded = false;
+        
+        // Read JSON config
+        String configData = "";
+        while (file.available()) {
+          configData += (char)file.read();
+        }
+        
+        DeserializationError error = deserializeJson(effect.config, configData);
+        if (!error) {
+          effect.name = effect.config["name"].as<String>();
+          effects.push_back(effect);
+          Serial.printf("Found effect: %s\\n", effect.name.c_str());
+        } else {
+          Serial.printf("Failed to parse JSON for %s\\n", filename.c_str());
+        }
+      }
+    }
+    file = root.openNextFile();
+  }
+  
+  totalEffects = effects.size();
+  Serial.printf("Total effects found: %d\\n", totalEffects);
+  return totalEffects > 0;
+}
+
+bool loadEffect(int index) {
+  if (index < 0 || index >= totalEffects) return false;
+  
+  EffectData &effect = effects[index];
+  if (effect.loaded) return true;
+  
+  Serial.printf("Loading effect: %s\\n", effect.name.c_str());
+  
+  // Copy config to current effect
+  currentEffectConfig = effect.config;
+  effect.loaded = true;
+  
+  return true;
+}
+
+// ===== EFFECT RENDERING ENGINE =====
+
+void drawParametricEffect() {
+  if (currentEffectConfig.isNull()) {
+    // Fallback test pattern
+    fillScreenExceptStatus(RGB565_RED);
+    gfx->setTextColor(RGB565_WHITE);
+    gfx->setTextSize(2);
+    gfx->setCursor(50, 100);
+    gfx->print("NO EFFECT LOADED");
+    return;
+  }
+  
+  String effectType = currentEffectConfig["type"].as<String>();
+  static unsigned long effectTime = 0;
+  effectTime += 20; // ~50fps
+  
+  if (effectType == "abstractile") {
+    drawAbstractileSD(effectTime);
+  } else if (effectType == "analogtv") {
+    drawAnalogTVSD(effectTime);
+  } else if (effectType == "anemone") {
+    drawAnemoneSD(effectTime);
+  } else if (effectType == "anemotaxis") {
+    drawAnemotaxisSD(effectTime);
+  } else if (effectType == "ant") {
+    drawAntSD(effectTime);
+  } else if (effectType == "apollonian") {
+    drawApollonianSD(effectTime);
+  } else if (effectType == "attraction") {
+    drawAttractionSD(effectTime);
+  } else if (effectType == "barcode") {
+    drawBarcodeSD(effectTime);
+  } else if (effectType == "binaryhorizon") {
+    drawBinaryHorizonSD(effectTime);
+  } else if (effectType == "binaryring") {
+    drawBinaryRingSD(effectTime);
+  } else if (effectType == "blaster") {
+    drawBlasterSD(effectTime);
+  } else if (effectType == "blitspin") {
+    drawBlitSpinSD(effectTime);
+  } else if (effectType == "bouboule") {
+    drawBoubouleSD(effectTime);
+  } else if (effectType == "boxfit") {
+    drawBoxFitSD(effectTime);
+  } else if (effectType == "braid") {
+    drawBraidSD(effectTime);
+  } else {
+    // Unknown effect type
+    fillScreenExceptStatus(RGB565_BLUE);
+    gfx->setTextColor(RGB565_WHITE);
+    gfx->setTextSize(1);
+    gfx->setCursor(10, 100);
+    gfx->printf("UNKNOWN: %s", effectType.c_str());
+  }
+}
+
+// ===== SD-BASED EFFECT IMPLEMENTATIONS =====
+
+void drawAbstractileSD(unsigned long t) {
+  JsonObject params = currentEffectConfig["params"];
+  int tileSize = params["tileSize"] | 20;
+  float speed = params["speed"] | 1.0f;
+  
+  fillScreenExceptStatus(RGB565_BLACK);
+  
+  float time = t * 0.01f * speed;
+  
+  for (int y = 0; y < getAnimationHeight(); y += tileSize) {
+    for (int x = 0; x < getDisplayWidth(); x += tileSize) {
+      float phase = sin(x * 0.1f + time) + cos(y * 0.1f + time);
+      
+      uint8_t r = 127 + sin(phase) * 127;
+      uint8_t g = 127 + sin(phase + 2) * 127;
+      uint8_t b = 127 + sin(phase + 4) * 127;
+      
+      uint16_t color = gfx->color565(r, g, b);
+      gfx->fillRect(x, y, tileSize-1, tileSize-1, color);
+    }
+  }
+}
+
+void drawAnalogTVSD(unsigned long t) {
+  JsonObject params = currentEffectConfig["params"];
+  int scanlines = params["scanlines"] | 100;
+  float noise = params["noise"] | 0.3f;
+  
+  fillScreenExceptStatus(RGB565_BLACK);
+  
+  // TV static effect
+  for (int i = 0; i < scanlines; i++) {
+    int y = random(getAnimationHeight());
+    int x = random(getDisplayWidth() - 50);
+    int len = 20 + random(30);
+    
+    uint8_t intensity = random(256 * noise);
+    uint16_t color = gfx->color565(intensity, intensity, intensity);
+    
+    gfx->drawFastHLine(x, y, len, color);
+  }
+  
+  // Scanlines
+  for (int y = 0; y < getAnimationHeight(); y += 4) {
+    gfx->drawFastHLine(0, y, getDisplayWidth(), RGB565_BLACK);
+  }
+}
+
+void drawAnemoneSD(unsigned long t) {
+  JsonObject params = currentEffectConfig["params"];
+  int tentacles = params["tentacles"] | 8;
+  float waveSpeed = params["waveSpeed"] | 1.0f;
+  
+  fillScreenExceptStatus(RGB565_BLACK);
+  
+  int centerX = getDisplayWidth() / 2;
+  int centerY = getAnimationHeight() / 2;
+  float time = t * 0.05f * waveSpeed;
+  
+  for (int i = 0; i < tentacles; i++) {
+    float angle = (i * 2 * PI / tentacles) + time * 0.1f;
+    
+    for (int r = 10; r < 100; r += 5) {
+      float wave = sin(time + r * 0.1f) * 20;
+      int x = centerX + cos(angle) * (r + wave);
+      int y = centerY + sin(angle) * (r + wave);
+      
+      uint8_t colorVal = 100 + sin(time + r * 0.05f) * 155;
+      uint16_t color = gfx->color565(colorVal, colorVal/2, colorVal);
+      
+      if (x >= 0 && x < getDisplayWidth() && y >= 0 && y < getAnimationHeight()) {
+        gfx->fillCircle(x, y, 3, color);
+      }
+    }
+  }
+}
+
+// Add more SD effect implementations...
+void drawAnemotaxisSD(unsigned long t) { drawAnemoneSD(t); } // Placeholder
+void drawAntSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder  
+void drawApollonianSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder
+void drawAttractionSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder
+void drawBarcodeSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder
+void drawBinaryHorizonSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder
+void drawBinaryRingSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder
+void drawBlasterSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder
+void drawBlitSpinSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder
+void drawBoubouleSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder
+void drawBoxFitSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder
+void drawBraidSD(unsigned long t) { drawAbstractileSD(t); } // Placeholder
+
+// ===== INPUT HANDLING =====
+
+void checkInputs() {
+  static unsigned long lastBootPress = 0;
+  static unsigned long lastTouchPress = 0;
+  
+  // Boot button
+  if (digitalRead(BOOT_PIN) == LOW && millis() - lastBootPress > 300) {
+    currentEffect = (currentEffect + 1) % totalEffects;
+    loadEffect(currentEffect);
+    lastBootPress = millis();
+    Serial.printf("Boot button: Effect %d/%d\\n", currentEffect + 1, totalEffects);
+  }
+  
+  // Touch screen
+  if (ts.tirqTouched() && ts.touched() && millis() - lastTouchPress > 300) {
+    TS_Point p = ts.getPoint();
+    if (p.z > 200) { // Valid touch
+      currentEffect = (currentEffect + 1) % totalEffects;
+      loadEffect(currentEffect);
+      lastTouchPress = millis();
+      Serial.printf("Touch: Effect %d/%d\\n", currentEffect + 1, totalEffects);
+    }
+  }
+}
+
+// ===== WEB SERVER =====
+
+void handleRoot() {
+  String html = "<!DOCTYPE html><html><head><title>XScreens ESP32</title>";
+  html += "<meta name='viewport' content='width=device-width, initial-scale=1'>";
+  html += "<style>body{background:#000;color:#0f0;font-family:monospace;text-align:center;padding:20px;}";
+  html += "button,input,select{background:#333;color:#0f0;border:1px solid #0f0;padding:10px;margin:5px;}";
+  html += "button:hover{background:#0f0;color:#000;}</style></head><body>";
+  
+  html += "<h1>🚀 XScreens ESP32 - SD Edition</h1>";
+  html += "<h2>📊 Status</h2>";
+  html += "<p>Effects Available: " + String(totalEffects) + "</p>";
+  html += "<p>Current Effect: " + (totalEffects > 0 ? effects[currentEffect].name : "None") + "</p>";
+  html += "<p>SD Card: " + (totalEffects > 0 ? "✅ Connected" : "❌ Not Found") + "</p>";
+  
+  html += "<h2>⚙️ Controls</h2>";
+  html += "<button onclick=\"fetch('/next')\">⏭️ Next Effect</button><br>";
+  html += "<button onclick=\"fetch('/toggle-status')\">📊 Toggle Status Bar</button><br>";
+  
+  html += "<h3>⏱️ Auto-Scroll Settings</h3>";
+  html += "<input type='checkbox' id='autoScroll' " + String(autoScrollEnabled ? "checked" : "") + " onchange='toggleAutoScroll()'> Enable Auto-Scroll<br>";
+  html += "<label>Interval (seconds): </label>";
+  html += "<input type='number' id='scrollInterval' min='1' max='60' value='" + String(autoScrollInterval/1000) + "' style='padding:10px;margin:5px;background:#333;color:#0f0;border:1px solid #0f0;'>";
+  html += "<button onclick='updateInterval()'>Update</button>";
+  
+  html += "<h2>📁 Available Effects</h2>";
+  html += "<select onchange='selectEffect(this.value)'>";
+  for (int i = 0; i < totalEffects; i++) {
+    html += "<option value='" + String(i) + "'" + (i == currentEffect ? " selected" : "") + ">";
+    html += effects[i].name + "</option>";
+  }
+  html += "</select>";
+  
+  html += "<script>";
+  html += "function toggleAutoScroll(){fetch('/auto-scroll?enabled='+document.getElementById('autoScroll').checked);}";
+  html += "function updateInterval(){fetch('/auto-scroll?interval='+document.getElementById('scrollInterval').value);}";
+  html += "function selectEffect(index){fetch('/effect?index='+index);}";
+  html += "</script></body></html>";
+  
+  server.send(200, "text/html", html);
+}
+
+void handleNext() {
+  currentEffect = (currentEffect + 1) % totalEffects;
+  loadEffect(currentEffect);
+  server.send(200, "text/plain", "OK");
+}
+
+void handleEffect() {
+  if (server.hasArg("index")) {
+    int index = server.arg("index").toInt();
+    if (index >= 0 && index < totalEffects) {
+      currentEffect = index;
+      loadEffect(currentEffect);
+    }
+  }
+  server.send(200, "text/plain", "OK");
+}
+
+void handleToggleStatus() {
+  showStatusBar = !showStatusBar;
+  server.send(200, "text/plain", showStatusBar ? "Status Bar ON" : "Status Bar OFF");
+}
+
+void handleAutoScroll() {
+  if (server.hasArg("enabled")) {
+    autoScrollEnabled = server.arg("enabled") == "true";
+  }
+  if (server.hasArg("interval")) {
+    int interval = server.arg("interval").toInt();
+    if (interval >= 1 && interval <= 60) {
+      autoScrollInterval = interval * 1000;
+    }
+  }
+  server.send(200, "text/plain", "OK");
+}
+
+void setupWebServer() {
+  server.on("/", handleRoot);
+  server.on("/next", handleNext);
+  server.on("/effect", handleEffect);
+  server.on("/toggle-status", handleToggleStatus);
+  server.on("/auto-scroll", handleAutoScroll);
+  server.begin();
+}
+
+// ===== MAIN SETUP & LOOP =====
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("🚀 XScreens ESP32 - SD Edition Starting...");
+  
+  // Initialize display
+  gfx->begin();
+  gfx->fillScreen(RGB565_BLACK);
+  
+  // Brightness control setup
+  ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
+  ledcAttachPin(BL_PIN, LEDC_CHANNEL_0);
+  ledcAnalogWrite(LEDC_CHANNEL_0, 255); // Nuclear brightness!
+  
+  // Initialize touch screen
+  touchSPI.begin(XPT2046_CLK, XPT2046_MISO, XPT2046_MOSI, XPT2046_CS);
+  ts.begin(touchSPI);
+  ts.setRotation(1);
+  
+  // Initialize RGB LED (set to off)
+  pinMode(LED_RED_PIN, OUTPUT);
+  pinMode(LED_GREEN_PIN, OUTPUT);
+  pinMode(LED_BLUE_PIN, OUTPUT);
+  digitalWrite(LED_RED_PIN, HIGH);   // OFF (active low)
+  digitalWrite(LED_GREEN_PIN, HIGH); // OFF
+  digitalWrite(LED_BLUE_PIN, HIGH);  // OFF
+  
+  // Initialize boot button
+  pinMode(BOOT_PIN, INPUT_PULLUP);
+  
+  // Initialize SD card
+  if (!initSDCard()) {
+    gfx->setTextColor(RGB565_RED);
+    gfx->setTextSize(2);
+    gfx->setCursor(10, 100);
+    gfx->print("SD CARD FAILED!");
+    gfx->setCursor(10, 130);
+    gfx->print("Insert SD card");
+    gfx->setCursor(10, 160);
+    gfx->print("and restart");
+    while(1) delay(1000); // Stop here
+  }
+  
+  // Scan for effects on SD card
+  if (!scanEffects()) {
+    gfx->setTextColor(RGB565_YELLOW);
+    gfx->setTextSize(2);
+    gfx->setCursor(10, 100);
+    gfx->print("NO EFFECTS");
+    gfx->setCursor(10, 130);
+    gfx->print("Copy effects to");
+    gfx->setCursor(10, 160);
+    gfx->print("/screensavers/");
+    while(1) delay(1000); // Stop here
+  }
+  
+  // Load first effect
+  loadEffect(0);
+  
+  // Start WiFi AP
+  WiFi.softAP("XScreensEsp", "xscreens2024");
+  Serial.println("WiFi AP Started: XScreensEsp / xscreens2024");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.softAPIP());
+  
+  // Start web server
+  setupWebServer();
+  
+  Serial.println("🎉 System ready! Found " + String(totalEffects) + " effects on SD card");
+}
+
+void loop() {
+  server.handleClient();
+  
+  // Auto-scroll timing
+  if (autoScrollEnabled && millis() - lastEffectChange > autoScrollInterval) {
+    currentEffect = (currentEffect + 1) % totalEffects;
+    loadEffect(currentEffect);
+    lastEffectChange = millis();
+  }
+  
+  // Handle inputs
+  checkInputs();
+  
+  // Draw current effect
+  drawParametricEffect();
+  
+  // Draw status bar
+  if (showStatusBar) {
+    gfx->fillRect(0, 220, 320, 20, RGB565_BLACK);
+    gfx->setTextSize(1);
+    gfx->setTextColor(RGB565_GREEN);
+    gfx->setCursor(5, 225);
+    gfx->printf("Effect %d/%d: %s", currentEffect + 1, totalEffects, 
+                totalEffects > 0 ? effects[currentEffect].name.c_str() : "None");
+  }
+  
+  delay(20); // ~50fps
+}

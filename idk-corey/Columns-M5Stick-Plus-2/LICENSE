@@ -1,0 +1,43 @@
+MIT License
+
+Copyright (c) 2024 coreymillia
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Third-Party Credits
+
+This project incorporates concepts and inspiration from various sources:
+
+### Core Tetris Implementation
+- Based on community examples and M5Stack documentation
+- Enhanced with modern Tetris guidelines and features
+
+### Libraries
+- M5StickCPlus2: Official M5Stack library (Apache 2.0 License)
+- ESP32 WiFi: Espressif Systems (Apache 2.0 License)  
+- M5GFX: M5Stack graphics library (MIT License)
+
+### Community Contributions
+- Original Tetris implementations from M5Stack community
+- Network protocol concepts from ESP32 examples
+- Battle system mechanics - original implementation
+
+All third-party components retain their original licenses and copyrights.

@@ -1,0 +1,207 @@
+{
+  "name": "1942 Tetrimino Edition",
+  "version": "2.3 FINAL",
+  "release_date": "2025-11-10",
+  "platform": "M5StickC Plus2",
+  "chip": "ESP32-PICO",
+  "framework": "Arduino",
+  
+  "description": "Classic 1942-style vertical scrolling shooter with Tetrimino-shaped enemies. Features animated title screen, endless waves with smooth progressive difficulty scaling, huge scaling bosses, power-up system with auto-fire, and detailed end-game statistics.",
+  
+  "features": [
+    "Animated title screen with shooting plane and flying formations",
+    "Endless wave-based gameplay with smooth difficulty progression",
+    "6 Tetrimino enemy types + TETRIS letters + 8 strange symbols (20 total)",
+    "Auto-fire toggle (Button A) - no more carpal tunnel!",
+    "Power-up system with stackable wing guns (max 3 levels)",
+    "Power-ups act as shields before losing lives",
+    "Boss battles every 60 seconds with scaling size (2x to 8x HUGE!)",
+    "Boss health scales infinitely (+5 HP per wave)",
+    "8-direction smooth movement with JoyC Hat",
+    "Particle effects and explosions",
+    "Lives system with invincibility frames",
+    "Detailed end-game statistics (Score, Wave, Shots, Kills, Accuracy%)",
+    "God mode for testing (Button B)",
+    "60 FPS smooth gameplay"
+  ],
+  
+  "waves": {
+    "wave_1_to_5": "Regular Tetriminos with progressive difficulty scaling",
+    "wave_6": "TETRIS letters (T-E-T-R-I-S) + strange symbols",
+    "wave_7_plus": "Mix of everything - Tetriminos, letters, and symbols with endless scaling"
+  },
+  
+  "difficulty_progression": {
+    "enemy_speed": {
+      "formula": "1.0 + (wave - 1) × 0.15",
+      "wave_1": "1.0x",
+      "wave_5": "1.6x",
+      "wave_10": "2.35x",
+      "max": "3.0x at Wave 14+"
+    },
+    "spawn_rate": {
+      "formula": "max(600, 1200 - (wave - 1) × 100) ms",
+      "wave_1": "1200ms (0.83/sec)",
+      "wave_5": "800ms (1.25/sec)",
+      "max": "600ms (1.67/sec) at Wave 7+"
+    },
+    "enemy_fire_rate": {
+      "formula": "max(400, 1000 - (wave - 1) × 50) ms",
+      "wave_1": "1000ms",
+      "wave_10": "550ms",
+      "max": "400ms at Wave 13+"
+    },
+    "boss_fire_rate": {
+      "formula": "max(200, 500 - (wave - 1) × 100) ms",
+      "wave_1": "500ms",
+      "wave_3": "300ms",
+      "max": "200ms (BULLET HELL!) at Wave 4+"
+    },
+    "boss_health": {
+      "formula": "20 + (wave - 1) × 5",
+      "wave_1": "20 HP",
+      "wave_10": "65 HP",
+      "wave_20": "115 HP",
+      "max": "NO CAP - Scales forever!"
+    },
+    "boss_size": {
+      "formula": "min(2.0 + (wave - 1) × 0.5, 8.0)",
+      "wave_1": "2.0x (8px blocks)",
+      "wave_5": "4.0x (16px blocks)",
+      "wave_10": "6.5x (26px blocks)",
+      "max": "8.0x (32px blocks - HUGE!) at Wave 13+"
+    }
+  },
+  
+  "max_difficulty_reached": {
+    "wave": "14-15",
+    "description": "All difficulty metrics maxed except boss health which scales infinitely",
+    "metrics": {
+      "enemy_speed": "3.0x",
+      "spawn_rate": "600ms",
+      "enemy_fire": "400ms",
+      "boss_fire": "200ms",
+      "boss_size": "8.0x"
+    }
+  },
+  
+  "controls": {
+    "joystick": "8-direction movement",
+    "joystick_button": "Fire bullets (or auto-fire if enabled)",
+    "button_a": "Toggle Auto-Fire on/off",
+    "button_b": "Toggle God Mode"
+  },
+  
+  "scoring": {
+    "regular_enemy": 10,
+    "large_enemy": 15,
+    "boss_hit": 5,
+    "boss_defeated": 100
+  },
+  
+  "statistics_tracking": {
+    "shots_fired": "Total bullets from main gun",
+    "enemies_destroyed": "Total kills including bosses",
+    "accuracy": "Calculated as (Kills / Shots) × 100%",
+    "displayed_on": "Game Over screen with Score and Wave"
+  },
+  
+  "hardware": {
+    "device": "M5StickC Plus2",
+    "controller": "Mini JoyC Hat (I2C address 0x54)",
+    "display": "135x240 pixels (portrait orientation)",
+    "pins": {
+      "sda": 0,
+      "scl": 26
+    }
+  },
+  
+  "memory_usage": {
+    "ram": "8.7% (28,500 bytes / 327,680 bytes)",
+    "flash": "34.5% (452,240 bytes / 1,310,720 bytes)",
+    "optimization": "Plenty of headroom for future features"
+  },
+  
+  "files": {
+    "merged_binary": "1942_Tetrimino-v2.3-MERGED.bin (506 KB)",
+    "firmware_only": "1942_Tetrimino_v2.3_FINAL_*.bin (442 KB)",
+    "source_code": "../src/main.cpp (1200+ lines)",
+    "documentation": [
+      "../README.md",
+      "../DIFFICULTY_PROGRESSION.md",
+      "../RELEASE_NOTES_v2.3.md",
+      "../QUICKSTART.md"
+    ]
+  },
+  
+  "flashing": {
+    "method_1_esptool": "esptool.py --chip esp32 --port /dev/ttyACM0 write_flash 0x0 1942_Tetrimino-v2.3-MERGED.bin",
+    "method_2_platformio": "pio run --target upload (from project root)",
+    "baud_rate": 1500000,
+    "note": "Merged binary includes bootloader, partitions, and firmware - ready to flash to blank ESP32"
+  },
+  
+  "credits": {
+    "inspired_by": [
+      "Capcom's 1942 (1984) - Classic vertical scrolling shooter gameplay",
+      "Tetris (1984) - Block-based visual style and shapes",
+      "Previous projects: Tetriminos, M5StickDodge4Wave, TetroidsM5"
+    ],
+    "development": {
+      "framework": "Arduino (PlatformIO)",
+      "graphics": "M5GFX library",
+      "controller": "Custom UNIT_MiniJoyC driver",
+      "sprites": "All procedurally generated from Tetrimino shapes"
+    },
+    "developer": "Built in a single night (11/9/2025 - 11/10/2025)",
+    "development_time": "~6 hours total"
+  },
+  
+  "version_history": {
+    "v2.3_FINAL": "Smooth difficulty progression across all waves, polished and ready for release",
+    "v2.2": "Progressive boss scaling - bosses grow up to 8x size",
+    "v2.1": "Animated title screen with shooting plane",
+    "v2.0": "Endless mode with progressive difficulty scaling, Wave 6 letters/symbols, Wave 7+ mixed enemies",
+    "v1.6": "Added TETRIS letter enemies and strange symbols for Wave 6",
+    "v1.5": "Five waves with progressive difficulty working",
+    "v1.4": "Wave progression with large enemies and scaling bosses",
+    "v1.3": "Fixed wing gun positioning",
+    "v1.2": "Added power-up system with wing guns and shield mechanic",
+    "v1.1": "Fixed controls for portrait mode, added score to game over",
+    "v1.0": "First working version with all core 1942 mechanics"
+  },
+  
+  "known_issues": "None - stable final release",
+  
+  "future_ideas": [
+    "Sound effects and music",
+    "High score persistence (EEPROM/NVS)",
+    "Multiple difficulty modes (Easy/Normal/Hard)",
+    "Different player ships with unique abilities",
+    "Special weapons (bombs, lasers, spread shot)",
+    "Achievement system",
+    "Multiplayer co-op",
+    "Boss pattern variety",
+    "Environmental hazards"
+  ],
+  
+  "testing_notes": {
+    "tested_waves": "Waves 1-10+ in God Mode",
+    "boss_scaling": "Confirmed up to Wave 10 (6.5x size)",
+    "difficulty_caps": "All caps verified working",
+    "statistics": "Accuracy calculation tested and working",
+    "auto_fire": "Confirmed toggle works smoothly",
+    "title_screen": "Animations smooth, shooting random",
+    "stability": "No crashes or memory issues observed"
+  },
+  
+  "gameplay_tips": [
+    "Use Auto-Fire (Button A) to save your thumb!",
+    "Collect power-ups early - they're shields AND firepower",
+    "Focus on dodging over shooting - bullets are infinite",
+    "Boss patterns: Learn the side-to-side movement timing",
+    "Later waves: Stay mobile, don't camp in corners",
+    "Accuracy matters for high scores - make shots count",
+    "God Mode (Button B) is great for practicing patterns"
+  ]
+}

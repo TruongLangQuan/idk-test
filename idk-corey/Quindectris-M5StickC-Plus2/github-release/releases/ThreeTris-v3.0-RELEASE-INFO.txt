@@ -1,0 +1,129 @@
+
+╔═══════════════════════════════════════════════════════════════╗
+║          🎮 ThreeTris v3.0 - FINAL RELEASE! 🎮               ║
+║                  The Ultimate Triomino Game                   ║
+╚═══════════════════════════════════════════════════════════════╝
+
+✨ COMPLETE MODERNIZED GAME - FAR BEYOND THE ORIGINAL! ✨
+
+═══════════════════════════════════════════════════════════════
+
+📦 ALL 8 UNIQUE TRIOMINO PIECES:
+   1. I-Triomino (cyan) - 3-block line
+   2. L-Triomino (blue) - corner right
+   3. J-Triomino (orange) - corner left  
+   4. Single Block (yellow) - 1 block
+   5. Double Block (green) - 2 blocks
+   6. Diagonal Double (red) - 2 diagonal blocks
+   7. Diagonal Triple (purple) - 3 diagonal blocks
+   8. T-minus-one (white) - T-shape with missing center
+
+═══════════════════════════════════════════════════════════════
+
+🎯 MODERN TETRIS FEATURES:
+   ✓ Hold piece system with preview box
+   ✓ Next piece preview box
+   ✓ Ghost piece (shows landing position)
+   ✓ Progressive lock delay system
+   ✓ ALL pieces rotate CLOCKWISE perfectly
+   ✓ Score tracking with high score display
+   ✓ Level progression system
+   ✓ Lines cleared counter
+
+═══════════════════════════════════════════════════════════════
+
+⚡ PROGRESSIVE DIFFICULTY SYSTEM:
+   
+   Lock Delay (gets HARDER as you level up):
+   • Levels 1-5:   300ms - Quick reactions
+   • Levels 6-10:  400ms - Getting challenging
+   • Levels 11-15: 500ms - Expert territory
+   • Levels 16-20+: 600ms - Master level
+   
+   Drop Speed:
+   • Progressively faster from levels 1-20
+   • Speed starts at 500ms, reaches 50ms at level 20
+   • After level 20: speed stays maxed at 50ms
+   • Game is ENDLESS - keep scoring forever!
+
+═══════════════════════════════════════════════════════════════
+
+🖥️ PROFESSIONAL TITLE SCREEN:
+   ✓ Beautiful colored background with border
+   ✓ "THREETRIS" in vertical block letters
+   ✓ 3 animated falling triomino pieces
+   ✓ Smooth cascade animation effect
+   ✓ Version badge display
+
+═══════════════════════════════════════════════════════════════
+
+📊 COMPLETE HUD DISPLAY:
+   • Score (S:) - Track your points
+   • Level (LV:) - See your progress
+   • Lines cleared (L:) - Count your clears
+   • Hold piece preview box (left side)
+   • Next piece preview box (right side)
+
+═══════════════════════════════════════════════════════════════
+
+🎮 CONTROLS:
+   • JoyC Hat D-Pad: Move pieces left/right
+   • JoyC Hat Button: Rotate clockwise / Start game
+   • Button A (M5): Soft drop (faster fall)
+   • Button B (M5): Hold piece / Restart game
+
+═══════════════════════════════════════════════════════════════
+
+🎨 PERFECT SCREEN LAYOUT:
+   ✓ Extended playfield (23 rows x 10 columns)
+   ✓ Clean aligned borders
+   ✓ No pixel artifacts
+   ✓ Stacked "GAME OVER" text
+   ✓ Perfect positioning for M5StickC Plus2 display
+
+═══════════════════════════════════════════════════════════════
+
+📁 RELEASE FILES:
+   • ThreeTris-v3.0-FINAL.bin (431K)
+     → Firmware only for OTA/direct upload
+   
+   • ThreeTris-v3.0-MERGED.bin (495K) ⭐ RECOMMENDED
+     → Complete package with bootloader for M5Burner
+     → Includes partitions and boot_app0
+     → Ready to flash at offset 0x0
+
+═══════════════════════════════════════════════════════════════
+
+🔧 DEVICE REQUIREMENTS:
+   • M5StickC Plus2
+   • Mini JoyC Hat (I2C address 0x54)
+   • Screen: 135x240 portrait mode
+
+═══════════════════════════════════════════════════════════════
+
+🎉 WHAT'S NEW IN v3.0:
+   ✓ Professional animated title screen
+   ✓ All 8 triomino pieces from actual gameplay
+   ✓ Cascade animation effect
+   ✓ Better visual polish
+   ✓ Final optimizations
+
+═══════════════════════════════════════════════════════════════
+
+🏆 PROJECT ACHIEVEMENTS:
+   • First modern implementation of ThreeTris
+   • 8 unique pieces (more than original!)
+   • Modern Tetris mechanics
+   • Professional presentation
+   • Endless gameplay
+   • Perfect rotation system
+
+═══════════════════════════════════════════════════════════════
+
+           This is the DEFINITIVE ThreeTris experience!
+                    Built November 2024
+                  
+           From concept to polished game in one session!
+
+═══════════════════════════════════════════════════════════════
+

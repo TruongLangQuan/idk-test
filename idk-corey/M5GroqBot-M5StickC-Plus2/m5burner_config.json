@@ -1,0 +1,52 @@
+{
+  "version": "1.4.0",
+  "name": "M5GroqBot Voice Chatbot",
+  "category": "AI/Tools",
+  "author": "Coreymillia",
+  "github": "https://github.com/Coreymillia",
+  "description": "Voice-activated AI chatbot powered by Groq. Speak your questions and get instant AI responses with word-wrapped text and customizable colors.",
+  "boards": ["M5StickC Plus2"],
+  "language": "en",
+  "created": "2025-11-12",
+  "updated": "2025-11-13",
+  "features": [
+    "Voice-to-text transcription via Groq Whisper",
+    "AI chat responses via Groq LLM",
+    "WiFi setup via captive portal",
+    "Word-wrapped scrollable response viewing",
+    "Manual color cycling (hold Button B)",
+    "Fixed button controls - tap to scroll, hold to color",
+    "Standalone operation (no PC required)"
+  ],
+  "requirements": [
+    "Groq API key (get free at groq.com)",
+    "WiFi connection",
+    "M5StickC Plus2 device"
+  ],
+  "instructions": [
+    "1. On first boot, device creates WiFi AP 'M5GroqBot-Setup'",
+    "2. Connect to AP and enter your WiFi credentials",
+    "3. Enter your Groq API key in the setup page",
+    "4. Device will connect to WiFi and show READY screen",
+    "5. Press Button A to record your question (speak for 2 seconds)",
+    "6. View transcription and AI response on screen",
+    "7. Tap Button B to scroll up, hold to cycle colors",
+    "8. Use PWR button to scroll down",
+    "9. Press PWR at end of message to reset for next question"
+  ],
+  "controls": {
+    "Button A": "Record voice question",
+    "Button B (tap)": "Scroll up through response",
+    "Button B (hold 0.8s)": "Cycle through text colors (8 colors)",
+    "Power Button": "Scroll down / Reset for next question"
+  },
+  "firmware": {
+    "file": "M5GroqBot-v1.4-MERGED.bin",
+    "offset": "0x0",
+    "size": "1.3MB"
+  },
+  "links": {
+    "groq_signup": "https://console.groq.com/keys",
+    "documentation": "https://github.com/Coreymillia"
+  }
+}

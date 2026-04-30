@@ -1,0 +1,227 @@
+════════════════════════════════════════════════════════════════════════════
+    🦔 M5STICKC PLUS2 SONIC THE HEDGEHOG - FINAL RELEASE v1.2 🦔
+════════════════════════════════════════════════════════════════════════════
+
+Release Date: November 6, 2024
+Package: M5StickSonic-FINAL-v1.2
+Device: M5StickC Plus 2 with Mini Joy C Hat
+
+THIS IS THE FINAL RELEASE WITH ALL FEATURES COMPLETE!
+
+────────────────────────────────────────────────────────────────────────────
+🆕 WHAT'S NEW IN v1.2 - DOWN-TO-ROLL MECHANIC!
+────────────────────────────────────────────────────────────────────────────
+
+The most requested feature is here!
+
+✨ DOWN-TO-ROLL MECHANIC:
+  • Press DOWN on joystick while moving → Sonic rolls into ball
+  • Release DOWN → Sonic stands back up immediately
+  • Perfect control over rolling state
+  • Just like the original Sonic games!
+
+🎮 WHY THIS IS AWESOME:
+  • Roll down slopes to gain speed
+  • Roll through enemies to defeat them
+  • Roll to fit through tight spaces
+  • Stand up when you need better control
+  • Feel like playing the real Sonic!
+
+📝 TECHNICAL IMPLEMENTATION:
+  • Added isKeyPressedDown() to detect joystick down
+  • Triggers ACT_ROLL when down pressed and gsp >= 0.5
+  • Returns to ACT_NORMAL when down released
+  • Maintains momentum during roll/unroll
+  • Uses X-axis of joystick (ADC 0) for down detection
+
+────────────────────────────────────────────────────────────────────────────
+🎯 COMPLETE CONTROL SCHEME (v1.2)
+────────────────────────────────────────────────────────────────────────────
+
+Joystick Left       → Move Sonic left
+Joystick Right      → Move Sonic right
+Joystick DOWN       → Roll (press to roll, release to stand) 🆕
+Joystick Button     → Jump
+BtnA + Joy Button   → Spindash (standing) / Roll (moving)
+
+NOW YOU HAVE 2 WAYS TO ROLL:
+  1. Press DOWN (can toggle on/off) 🆕
+  2. Hold BtnA + Joy Button (continuous hold)
+
+────────────────────────────────────────────────────────────────────────────
+✨ ALL FEATURES (v1.2)
+────────────────────────────────────────────────────────────────────────────
+
+✅ DOWN-TO-ROLL mechanic (v1.2) 🆕
+✅ Full Green Hill Zone Act 1
+✅ Authentic Sonic physics
+✅ Mini Joy C analog joystick support
+✅ 211x119 resolution (88% screen coverage)
+✅ 27-30 FPS smooth gameplay
+✅ All classic moves: run, jump, roll, spindash
+✅ Ring collection system
+✅ Enemy AI (Motobug, Crabmeat, Chopper)
+✅ Terrain system (loops, slopes, springs)
+✅ Animated backgrounds
+✅ Clean UI (no overlays)
+✅ Optimized rendering (pushPixels API)
+
+────────────────────────────────────────────────────────────────────────────
+📦 PACKAGE CONTENTS
+────────────────────────────────────────────────────────────────────────────
+
+BINARY FILES:
+  ✓ M5StickSonic-v1.2-FINAL-MERGED.bin (919 KB)  ← USE THIS FOR M5BURNER
+  ✓ M5StickSonic-v1.2-FINAL.bin        (855 KB)
+  ✓ bootloader.bin                      (17 KB)
+  ✓ partitions.bin                      (3 KB)
+
+DOCUMENTATION:
+  ✓ README.md               - Full documentation
+  ✓ RELEASE_NOTES_v1.2.txt  - This file
+  ✓ m5burner_config.json    - M5Burner configuration
+
+────────────────────────────────────────────────────────────────────────────
+🚀 QUICK START
+────────────────────────────────────────────────────────────────────────────
+
+1. Flash M5StickSonic-v1.2-FINAL-MERGED.bin using M5Burner
+2. Connect Mini Joy C hat to Grove port
+3. Power on and wait for "Ready!" message
+4. Run and press DOWN to roll - release to stand!
+5. Collect rings and reach the end!
+
+────────────────────────────────────────────────────────────────────────────
+📊 PERFORMANCE
+────────────────────────────────────────────────────────────────────────────
+
+Display:       211x119 pixels (centered on 240x135)
+Frame Rate:    27-30 FPS average
+Memory:        855KB flash (66.7%), 65KB RAM (20.1%)
+Controls:      Mini Joy C Hat (I2C 0x54)
+Orientation:   Landscape
+Level:         Green Hill Zone Act 1
+
+────────────────────────────────────────────────────────────────────────────
+📝 VERSION HISTORY
+────────────────────────────────────────────────────────────────────────────
+
+v1.2.0 (November 6, 2024) - FINAL RELEASE
+  🆕 Added DOWN-TO-ROLL mechanic
+     - Press down while moving to roll
+     - Release down to stand up
+     - Perfect control over rolling
+     - Just like original Sonic!
+  ✅ Game now feels complete!
+
+v1.1.0 (November 6, 2024)
+  • Increased screen size to 211x119 (20% larger)
+  • Fixed joystick axis mapping (Y-axis for left/right)
+  • Optimized rendering (pushPixels instead of pushColors)
+  • Removed StickCP2.update() from game loop for speed
+
+v1.0.0 (November 6, 2024)
+  • Initial M5StickC Plus2 port
+  • Mini Joy C Hat support
+  • Custom UNIT_JOYC driver
+  • 160x90 resolution
+  • Removed FPS overlay
+  • Fixed controls
+
+────────────────────────────────────────────────────────────────────────────
+🎮 GAMEPLAY TIPS
+────────────────────────────────────────────────────────────────────────────
+
+BEGINNER:
+  • Run and jump to explore
+  • Collect rings for protection
+  • Press DOWN to roll down slopes (faster!)
+
+INTERMEDIATE:
+  • Use roll to defeat enemies
+  • Time your jumps for maximum height
+  • Hold DOWN on slopes to maintain speed
+
+ADVANCED:
+  • Spindash from standing (BtnA + Joy Button)
+  • Toggle roll strategically for tight control
+  • Master the physics for speedruns!
+
+────────────────────────────────────────────────────────────────────────────
+🛠️ BUILD INFORMATION
+────────────────────────────────────────────────────────────────────────────
+
+Build Date:     November 6, 2024
+Build Tool:     PlatformIO 6.x
+Platform:       espressif32 v5.3.0
+Framework:      Arduino 2.0.6
+Libraries:
+  • M5StickCPlus2 v1.0.2
+  • M5Unified v0.2.10
+  • M5GFX v0.2.17
+  • Wire v2.0.0
+Compiler:       gcc 8.4.0 (xtensa-esp32)
+Optimization:   Release mode (-Os)
+
+────────────────────────────────────────────────────────────────────────────
+👥 CREDITS
+────────────────────────────────────────────────────────────────────────────
+
+Original M5Stack Port:
+  • GalaxyShad (2020)
+  • GitHub: https://github.com/GalaxyShad
+
+M5StickC Plus2 Adaptation:
+  • coreymillia with GitHub Copilot CLI
+  • Display scaling and optimization
+  • Mini Joy C Hat integration
+  • Custom UNIT_JOYC driver
+  • DOWN-TO-ROLL mechanic
+
+Resources:
+  • Sonic Physics Guide - Sonic Retro
+  • Sprites - The Spriters Resource
+  • Characters & Graphics - © SEGA
+
+────────────────────────────────────────────────────────────────────────────
+⚖️ LEGAL
+────────────────────────────────────────────────────────────────────────────
+
+This is an UNOFFICIAL fan-made educational project.
+
+All Sonic the Hedgehog characters, graphics, names, and related assets
+are © SEGA Corporation. All rights reserved.
+
+This project is:
+  ✓ For educational and personal use only
+  ✓ Not affiliated with or endorsed by SEGA
+  ✗ Not for commercial use or sale
+  ✗ Not intended to infringe on SEGA's copyrights
+
+────────────────────────────────────────────────────────────────────────────
+🎉 FINAL THOUGHTS
+────────────────────────────────────────────────────────────────────────────
+
+This project started as a port and evolved into something special!
+
+The DOWN-TO-ROLL mechanic was the final piece to make this feel like
+playing the real Sonic game. The combination of:
+  • Large display (211x119)
+  • Smooth performance (27-30 FPS)
+  • Authentic physics
+  • Full joystick control
+  • DOWN-TO-ROLL mechanic
+
+...makes this one of the best M5StickC Plus2 games available!
+
+Thank you for playing and providing feedback. This was a labor of love
+bringing Sonic to the M5StickC Plus2 platform.
+
+                            🦔💨 GOTTA GO FAST! 💨🦔
+
+════════════════════════════════════════════════════════════════════════════
+
+                    THIS IS THE FINAL RELEASE - v1.2
+                       ALL FEATURES IMPLEMENTED!
+
+════════════════════════════════════════════════════════════════════════════

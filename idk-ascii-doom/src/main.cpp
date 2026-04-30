@@ -44,6 +44,7 @@ static int g_level = 1;
 static int g_kills = 0;
 static uint32_t g_last_shot = 0;
 static uint32_t g_frame = 0;
+static bool g_needs_redraw = true;  // Dirty flag to avoid full redraws
 
 // ─── Dungeon Map (16x16 grid, 0=open, 1=wall, 2=exit) ─────────
 static constexpr int kMapSize = 16;
@@ -104,8 +105,10 @@ void spawnEnemies(int count) {
 
 // ─── DDA Raycasting ────────────────────────────────────────────
 void castRays() {
-  // We don't draw in a loop anymore, we draw the whole screen frame
-  M5.Display.fillScreen(TFT_BLACK);
+  if (!g_needs_redraw) return;
+  g_needs_redraw = false;
+  
+  M5.Display.startWrite();  // Reduce SPI overhead
   
   // Draw floor and ceiling
   M5.Display.fillRect(0, 0, kScreenW, kHalfH, M5.Display.color565(20, 20, 20));
@@ -291,6 +294,8 @@ void castRays() {
   M5.Display.printf("HP:%d AMO:%d LV:%d", g_player.hp, g_player.ammo, g_level);
   M5.Display.setCursor(4, 120);
   M5.Display.printf("W:%d K:%d FPS:30", g_player.weapon, g_kills);
+
+  M5.Display.endWrite();  // End SPI transaction
 }
 
 void updateEnemies() {
@@ -333,24 +338,30 @@ void updateEnemies() {
 void handleGameInput() {
   const float moveSpeed = 0.12f;
   const float turnSpeed = 0.08f;
+  bool input_received = false;
 
   if (readPressed(kPinUp)) {
     float nx = g_player.x + cosf(g_player.angle) * moveSpeed;
     float ny = g_player.y + sinf(g_player.angle) * moveSpeed;
     if (g_map[(int)ny][(int)g_player.x] == 0 || g_map[(int)ny][(int)g_player.x] == 2) g_player.y = ny;
     if (g_map[(int)g_player.y][(int)nx] == 0 || g_map[(int)g_player.y][(int)nx] == 2) g_player.x = nx;
+    input_received = true;
   }
   if (readPressed(kPinDown)) {
     float nx = g_player.x - cosf(g_player.angle) * moveSpeed;
     float ny = g_player.y - sinf(g_player.angle) * moveSpeed;
     if (g_map[(int)ny][(int)g_player.x] == 0) g_player.y = ny;
     if (g_map[(int)g_player.y][(int)nx] == 0) g_player.x = nx;
+    input_received = true;
   }
+  // FIXED: Swapped LEFT/RIGHT rotation direction
   if (readPressed(kPinLeft)) {
-    g_player.angle -= turnSpeed;
+    g_player.angle += turnSpeed;  // was -= turnSpeed
+    input_received = true;
   }
   if (readPressed(kPinRight)) {
-    g_player.angle += turnSpeed;
+    g_player.angle -= turnSpeed;  // was += turnSpeed
+    input_received = true;
   }
 
   // Handle Exit
@@ -390,9 +401,11 @@ void handleGameInput() {
         }
       }
       g_last_shot = now;
+      input_received = true;
     }
   }
 
+  if (input_received) g_needs_redraw = true;
   if (M5.BtnPWR.wasPressed()) {
     g_state = MENU;
   }

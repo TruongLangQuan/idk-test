@@ -1,0 +1,48 @@
+{
+  "name": "Matrix101 M5StickC Plus",
+  "description": "101 Matrix Rain Effects for M5StickC Plus/Plus2",
+  "version": "1.0.1",
+  "compatible": ["M5StickC-Plus", "M5StickC-Plus2"],
+  "author": "CheapYellowProjects",
+  "created": "2026-01-06",
+  "firmware": "Matrix101_M5StickC-v1.0-MERGED.bin",
+  "flash_size": "4MB",
+  "flash_mode": "dio",
+  "flash_freq": "80m",
+  "bootloader": "0x1000",
+  "partition": "0x8000", 
+  "app": "0x10000",
+  "features": [
+    "101 unique matrix rain effects",
+    "Auto-advance modes every 30 seconds",
+    "Power button: Previous mode",
+    "Button B: Next mode", 
+    "Button A: Toggle auto-advance (30s/1m/10m/1h/off)",
+    "Full screen matrix effects",
+    "Optimized for M5StickC Plus displays"
+  ],
+  "modes": {
+    "1-30": "Classic Matrix variations (green, blue, red, white, rainbow, etc.)",
+    "31-45": "Advanced physics (wind, ripple, fragment, cascade, etc.)",
+    "46-59": "Special effects (fireworks, quantum, signal, etc.)",
+    "60": "Entropy (chaotic color variations)", 
+    "61-65": "Tide breathing effects (green, fire, ice, storm, deep)",
+    "66-85": "Complex systems (drift, relic, pattern, signal variations)",
+    "86-90": "History weight effects (spacetime influence)",
+    "91-95": "Ripple-wind combinations",
+    "96-100": "Fireworks combinations",
+    "101": "Ultimate Matrix effect"
+  },
+  "controls": {
+    "Power Button": "Previous effect",
+    "Button B": "Next effect", 
+    "Button A": "Toggle auto-advance timing",
+    "Auto-advance": "30 seconds → 1 minute → 10 minutes → 1 hour → off"
+  },
+  "notes": [
+    "Some advanced effects simplified for M5StickC hardware",
+    "Effects optimized for 135x240 display resolution",
+    "Matrix characters scaled for readability",
+    "Full compatibility with M5StickC Plus and Plus2"
+  ]
+}

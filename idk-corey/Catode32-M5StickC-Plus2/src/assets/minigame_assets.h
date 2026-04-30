@@ -1,0 +1,39 @@
+#pragma once
+// minigame_assets.h - Auto-converted from minigame_assets.py
+#include "Renderer.h"
+
+static const uint8_t PAW_SMALL1_F0[] PROGMEM = { 0x28, 0xaa, 0x82, 0x38, 0x7c, 0x7c, 0x28 };
+static const Sprite PAW_SMALL1 = {
+  7, 7, 3, 6,
+  1.0f, 0,
+  makeStatic(0), makeStatic(0),
+  makeStatic(0), makeStatic(0),
+  makeStatic(0),  makeStatic(0),
+  false,
+  1, { PAW_SMALL1_F0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr },
+  0, { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr }
+};
+
+static const uint8_t PAW_LARGE1_F0[] PROGMEM = { 0x04, 0x40, 0x0c, 0x60, 0x0e, 0xe0, 0x1e, 0xf0, 0x5c, 0x74, 0x5c, 0x74, 0xe8, 0x2e, 0xe0, 0x0e, 0xe7, 0xce, 0x4f, 0xe4, 0x1f, 0xf0, 0x1f, 0xf0, 0x3f, 0xf8, 0x3f, 0xf8, 0x3f, 0xf8, 0x1f, 0xf0, 0x0c, 0x60 };
+static const Sprite PAW_LARGE1 = {
+  15, 17, 7, 16,
+  1.0f, 0,
+  makeStatic(0), makeStatic(0),
+  makeStatic(0), makeStatic(0),
+  makeStatic(0),  makeStatic(0),
+  false,
+  1, { PAW_LARGE1_F0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr },
+  0, { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr }
+};
+
+static const uint8_t RING_17_F0[] PROGMEM = { 0x03, 0xe0, 0x00, 0x0f, 0xf8, 0x00, 0x1f, 0xfc, 0x00, 0x3c, 0x1e, 0x00, 0x78, 0x0f, 0x00, 0x70, 0x07, 0x00, 0xe0, 0x03, 0x80, 0xe0, 0x03, 0x80, 0xe0, 0x03, 0x80, 0xe0, 0x03, 0x80, 0xe0, 0x03, 0x80, 0x70, 0x07, 0x00, 0x78, 0x0f, 0x00, 0x3c, 0x1e, 0x00, 0x1f, 0xfc, 0x00, 0x0f, 0xf8, 0x00, 0x03, 0xe0, 0x00 };
+static const Sprite RING_17 = {
+  17, 17, 8, 16,
+  1.0f, 0,
+  makeStatic(0), makeStatic(0),
+  makeStatic(0), makeStatic(0),
+  makeStatic(0),  makeStatic(0),
+  false,
+  1, { RING_17_F0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr },
+  0, { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr }
+};

@@ -1,0 +1,185 @@
+{
+  "name": "Columns Match-3 for M5StickC Plus2",
+  "version": "1.0.0",
+  "author": "coreymillia + GitHub Copilot CLI",
+  "description": "Classic Sega Columns match-3 puzzle game with 5 colorblind-friendly colors, ghost piece preview, 400ms lock delay, and all-direction matching. Features smooth 3% progressive difficulty and chain reaction scoring.",
+  "category": "Games & Entertainment",
+  "device": "M5StickC Plus 2",
+  "homepage": "",
+  "preview": "",
+  "icon": "",
+  "features": [
+    "🎮 Classic Columns Gameplay",
+    "🎨 5 Colorblind-Friendly Colors with Visual Markers",
+    "👻 Ghost Piece Preview (shows landing position)",
+    "🔒 400ms Lock Delay (like Tetris - smooth placement)",
+    "✨ Match-3 in All Directions (horizontal, vertical, diagonal)",
+    "⛓️ Chain Reactions with Score Multipliers",
+    "📈 Progressive Difficulty (3% speed increase per level)",
+    "🕹️ Mini Joy C Hat Required",
+    "🎯 Smooth Controls with Lock Delay Reset on Movement",
+    "💯 Score Tracking and Level Progression"
+  ],
+  "gameplay": {
+    "objective": "Match 3 or more gems of the same color in any direction",
+    "piece_type": "3-gem vertical column (falls from top)",
+    "gem_cycling": "Rotate colors within the column (not piece orientation)",
+    "matching": "Horizontal, vertical, and both diagonal directions",
+    "chain_reactions": "Gems fall after matches, creating new combos",
+    "game_over": "When new piece can't spawn at top"
+  },
+  "colors": {
+    "total": 5,
+    "palette": [
+      "Red - Solid red block",
+      "Yellow - Solid yellow block",
+      "Blue - Solid blue block",
+      "White - White block with black dot + X",
+      "Green - Green block with black X"
+    ],
+    "ghost_markers": [
+      "White ghost gems have white dot",
+      "Green ghost gems have white X"
+    ],
+    "colorblind_friendly": true,
+    "reasoning": "High contrast colors with unique visual markers to distinguish white and green"
+  },
+  "controls": {
+    "Joystick_Left_Right": "Move piece horizontally (resets lock delay)",
+    "Joystick_Button": "Cycle gem colors in column",
+    "Joystick_Up": "Cycle gem colors (alternative)",
+    "Joystick_Down": "Soft drop (piece falls faster)",
+    "BtnA": "Cycle gem colors (alternative)",
+    "BtnB": "Hard drop (piece drops instantly)",
+    "Power_Button": "Reset game on game over"
+  },
+  "mechanics": {
+    "lock_delay": "400ms delay before piece locks when landing",
+    "lock_reset": "Moving left/right resets the 400ms timer",
+    "ghost_piece": "Colored outline shows exact landing position",
+    "fall_speed": "Starts at 500ms, decreases 3% per level",
+    "min_speed": "100ms (fastest possible)",
+    "max_level": 20
+  },
+  "scoring": {
+    "match_base": "100 points per match",
+    "chain_multiplier": "100 × chain_number (2nd match = 200pts, 3rd = 300pts, etc)",
+    "level_up": "Every 1000 points",
+    "progression": "3% speed increase each level (exponential decay)"
+  },
+  "speed_progression": {
+    "level_1": "500ms",
+    "level_2": "485ms",
+    "level_5": "444ms",
+    "level_10": "372ms",
+    "level_15": "311ms",
+    "level_20": "261ms",
+    "formula": "500 * (0.97 ^ (level-1))"
+  },
+  "match_detection": {
+    "minimum": "3 gems in a line",
+    "horizontal": "Left to right across row",
+    "vertical": "Top to bottom in column",
+    "diagonal_down_right": "Top-left to bottom-right (\\)",
+    "diagonal_down_left": "Top-right to bottom-left (/)",
+    "multi_direction": "One match can trigger multiple directions simultaneously"
+  },
+  "requirements": [
+    "M5StickC Plus 2",
+    "Mini Joy C Hat (REQUIRED for gameplay)",
+    "I2C connection: SDA=0, SCL=26"
+  ],
+  "specifications": {
+    "orientation": "Portrait",
+    "grid_size": "10 columns × 20 rows",
+    "block_size": "11 pixels",
+    "screen_resolution": "135x240 pixels",
+    "color_depth": "16-bit RGB565",
+    "memory_usage": "RAM: ~8.5%, Flash: 33.2% (441KB)",
+    "gem_colors": 5,
+    "chain_detection": "Recursive until no matches found"
+  },
+  "firmware": {
+    "bootloader": "0x1000",
+    "partitions": "0x8000",
+    "app": "0x10000",
+    "merged": true,
+    "flash_offset": "0x0"
+  },
+  "flash_size": "4MB",
+  "chip": "ESP32-PICO-V3-02",
+  "installation": {
+    "method": "M5Burner",
+    "file": "ColumnsM5-v1.0-MERGED.bin",
+    "flash_address": "0x0",
+    "note": "Single file contains bootloader, partitions, and firmware"
+  },
+  "usage_instructions": [
+    "1. Connect Mini Joy C hat to M5StickC Plus2",
+    "2. Flash firmware using M5Burner with MERGED.bin",
+    "3. Power on - game starts immediately",
+    "4. Use joystick button or BtnA to cycle gem colors",
+    "5. Move left/right to position pieces",
+    "6. Ghost piece shows where it will land",
+    "7. Match 3+ gems in any direction for points",
+    "8. Create chains for bonus multipliers",
+    "9. Press BtnB for instant hard drop",
+    "10. Game over when top is blocked - press any button to restart"
+  ],
+  "tips_and_strategies": [
+    "Use lock delay to slide pieces into tight spots",
+    "Watch ghost piece for perfect placement",
+    "Set up chain reactions for higher scores",
+    "Moving horizontally resets lock delay timer",
+    "Plan ahead - next pieces spawn randomly",
+    "Diagonal matches are just as valuable",
+    "Green X and white dot help quick identification",
+    "Ghost markers match real piece patterns",
+    "Level up every 1000 points for faster speed",
+    "Maximum speed at level 20 is very challenging"
+  ],
+  "technical_details": {
+    "joystick_adc_threshold": "Left: <1350, Right: >2950, Up: >2950, Down: <1600",
+    "joystick_polling": "I2C at 0x54 (JoyC standard)",
+    "collision_detection": "Per-gem boundary testing",
+    "match_algorithm": "4-direction sweep with length counting",
+    "gravity_system": "Column-by-column downward packing",
+    "chain_detection": "Loop until no matches (recursive)",
+    "render_system": "Full field redraw per frame",
+    "ghost_calculation": "Predictive drop simulation",
+    "input_debouncing": "150ms horizontal, 100ms soft drop"
+  },
+  "differences_from_tetris": {
+    "piece_shape": "Always 3-gem vertical column (no rotation shapes)",
+    "rotation_mechanic": "Cycle gem colors inside column (not orientation)",
+    "line_clearing": "Match 3+ colors in any direction (not full rows)",
+    "gravity": "Individual gems fall after matches (not whole pieces)",
+    "chains": "Gravity triggers new matches recursively",
+    "scoring": "Match-based with chain multipliers (not line count)",
+    "level_progression": "Every 1000 points (not every 10 lines)"
+  },
+  "based_on": {
+    "original_game": "Sega Columns (1990)",
+    "architecture": "Tetris-2P-Battle-M5StickC-Plus2 foundation",
+    "improvements": [
+      "Colorblind-friendly palette with markers",
+      "Ghost piece with matching markers",
+      "Tetris-style lock delay mechanics",
+      "Progressive 3% difficulty curve",
+      "All-direction match detection"
+    ]
+  },
+  "version_history": {
+    "1.0.0": "Initial release: Full Columns gameplay with ghost piece, lock delay, 5-color palette, chain reactions, progressive difficulty"
+  },
+  "credits": {
+    "developer": "coreymillia with GitHub Copilot CLI",
+    "inspired_by": "Sega Columns (1990)",
+    "based_on_architecture": "Tetris-2P-Battle-M5StickC-Plus2",
+    "libraries": [
+      "M5StickCPlus2 SDK",
+      "M5Unified Framework",
+      "Mini Joy C Hat Library"
+    ]
+  }
+}

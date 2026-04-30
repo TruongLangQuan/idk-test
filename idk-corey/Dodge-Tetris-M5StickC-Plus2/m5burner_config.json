@@ -1,0 +1,99 @@
+{
+  "name": "M5Stick Dodge - 4 Wave Challenge",
+  "version": "1.0.0",
+  "author": "coreymillia + GitHub Copilot CLI",
+  "description": "Fun dodge game with 4 progressive difficulty waves! Control a rotating T-piece and dodge falling Tetris pieces, colorful TETRIS letters, and creative block patterns. Features sequential letter spelling (T-E-T-R-I-S with backwards R!), unique shapes like hearts, arrows, and diamonds, and endless mixed chaos in wave 4+.",
+  "category": "Games & Entertainment",
+  "device": "M5StickC Plus 2",
+  "homepage": "",
+  "preview": "",
+  "icon": "",
+  "features": [
+    "🎮 4 unique difficulty waves with different obstacle types",
+    "🔤 Sequential TETRIS letters spell T-E-T-R-I-S with retro backwards R",
+    "🎨 Colorful Tetris pieces (I, O, T, S, Z, L, J)",
+    "💎 Creative block patterns: hearts, arrows, diamonds, stairs, crosses",
+    "🎯 Precise pixel-perfect collision detection",
+    "🔄 Rotate player piece with joystick button",
+    "📊 Progressive difficulty - faster spawning and movement",
+    "🏆 Score tracking and level system",
+    "⚡ Smooth 60 FPS gameplay",
+    "♾️ Endless gameplay with wave 4+ mixed chaos"
+  ],
+  "wave_system": {
+    "wave_1": "Tetris Pieces (0-30s) - Classic falling tetrominos with 7 different shapes",
+    "wave_2": "TETRIS Letters (30-60s) - Sequential colorful letters T→E→T→R→I→S repeating",
+    "wave_3": "Pattern Shapes (60-90s) - 8 creative block patterns (plus, diamond, arrow, heart, zig-zag, cross, stairs, dot)",
+    "wave_4_plus": "Mixed Chaos (90s+) - Random mix of all three types with increasing speed"
+  },
+  "controls": {
+    "Joystick": "Move player in all directions (portrait mode: Up=right, Down=left, Left=up, Right=down)",
+    "Joystick Button": "Rotate player piece (T-piece)",
+    "BtnA": "Select game in menu",
+    "BtnB": "Return to menu from game",
+    "Up/Down": "Navigate menu selection"
+  },
+  "requirements": [
+    "M5StickC Plus 2",
+    "Mini Joy C Hat (required for joystick control)",
+    "I2C connection: SDA=0, SCL=26"
+  ],
+  "specifications": {
+    "display_mode": "Portrait (135x240 pixels)",
+    "update_rate": "60 FPS (~16ms per frame)",
+    "obstacle_types": "3 categories: 7 Tetris pieces, 6 letters, 8 patterns",
+    "collision_system": "Pixel-perfect block-to-block detection",
+    "wave_duration": "30 seconds per wave",
+    "scoring": "+10 points per survived obstacle, level up every 100 points",
+    "memory_usage": "8.3% RAM (27KB), 33.8% Flash (443KB)"
+  },
+  "firmware": {
+    "bootloader": "0x1000",
+    "partitions": "0x8000",
+    "app": "0x10000",
+    "merged": true,
+    "flash_offset": "0x0"
+  },
+  "flash_size": "4MB",
+  "chip": "ESP32-PICO-V3-02",
+  "installation": {
+    "method": "M5Burner or esptool",
+    "file": "M5StickDodge4Wave-v1.0-MERGED.bin",
+    "flash_address": "0x0"
+  },
+  "games_included": [
+    {
+      "name": "Dodge",
+      "description": "The main 4-wave dodge challenge with Tetris pieces, letters, and patterns"
+    },
+    {
+      "name": "Tetris",
+      "description": "Classic Tetris implementation (portrait mode)"
+    }
+  ],
+  "gameplay_tips": [
+    "1. Watch the wave indicator (W:1, W:2, W:3, W:4+) in top-right corner",
+    "2. Wave 2 letters spell TETRIS in order - predict the sequence!",
+    "3. Rotate your player piece to fit through tight gaps",
+    "4. Stay near the center for more escape routes",
+    "5. Each level increases speed - prepare for the chaos!",
+    "6. Wave 4+ mixes everything - stay alert for all types"
+  ],
+  "technical_details": {
+    "tetris_pieces": "7 types (I, O, T, S, Z, L, J) with 4 rotation states",
+    "letter_system": "5x7 bitmap grid scaled 4x, sequential spawning",
+    "pattern_shapes": "5x5 bitmap grid scaled 4x (plus, diamond, arrow, heart, zig, cross, stairs, dot)",
+    "collision_method": "Per-pixel overlap detection for all block types",
+    "spawn_interval": "Starts at 1500ms, reduces by 15-20% per level",
+    "speed_scaling": "1.0 + (level * 0.15-0.2) multiplier",
+    "drawing_style": "Retro pixel art with outline borders"
+  },
+  "version_history": {
+    "1.0.0": "Initial release - 4 wave system with Tetris pieces, sequential TETRIS letters (with backwards R!), and 8 creative block patterns. Fixed menu graphics with scattered pieces and letters."
+  },
+  "credits": {
+    "development": "Built collaboratively with GitHub Copilot CLI",
+    "concept": "Inspired by Tetris dodge mechanics",
+    "special_features": "Backwards R in TETRIS letters for retro arcade style"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "name": "Paint Program for M5StickC Plus2",
+  "version": "1.3.0",
+  "author": "coreymillia + GitHub Copilot CLI",
+  "description": "Professional paint program with Mini Joy C hat featuring full analog joystick control, 12 colors, 6 brush sizes, and smooth line drawing. Perfect for digital art creation on M5StickC Plus2.",
+  "category": "Art & Entertainment",
+  "device": "M5StickC Plus 2",
+  "homepage": "https://github.com/coreymillia/Paint-Program-M5StickCPlus2",
+  "preview": "",
+  "icon": "",
+  "features": [
+    "🎨 Professional paint program with smooth analog joystick control",
+    "🌈 12 vibrant colors with instant LED feedback",
+    "🖌️ 6 brush sizes (1, 2, 3, 4, 5, 8 pixels)",
+    "✏️ Smooth line drawing with no gaps or artifacts",
+    "🎮 Hold-to-draw system for precise control",
+    "🔄 Quick color cycling with joystick button",
+    "🎯 Thin crosshair cursor for accuracy",
+    "💾 Canvas preservation when accessing menus",
+    "🎨 6 background color options",
+    "🔋 Battery level monitoring",
+    "✨ Demo artwork on welcome screen"
+  ],
+  "controls": {
+    "Joystick": "Full analog movement (360°)",
+    "Joy Press (Short)": "Cycle through 12 colors",
+    "Joy Hold (Long)": "Toggle draw mode (DRAW/MOVE)",
+    "BtnA": "Change brush size (cycles 1→2→3→4→5→8)",
+    "BtnB": "Open color palette menu",
+    "PWR Button": "Clear canvas"
+  },
+  "requirements": [
+    "M5StickC Plus 2",
+    "Mini Joy C Hat (required for joystick control)",
+    "I2C connection: SDA=0, SCL=26"
+  ],
+  "specifications": {
+    "canvas_size": "135x240 pixels",
+    "color_depth": "16-bit RGB565",
+    "brush_types": "Smooth filled circles",
+    "drawing_method": "Interpolated line segments",
+    "response_time": "30ms update cycle",
+    "memory_usage": "7.7% RAM (25KB), 35% Flash (458KB)"
+  },
+  "firmware": {
+    "bootloader": "0x1000",
+    "partitions": "0x8000",
+    "app": "0x10000",
+    "merged": true,
+    "flash_offset": "0x0"
+  },
+  "flash_size": "4MB",
+  "chip": "ESP32-PICO-V3-02",
+  "installation": {
+    "method": "M5Burner",
+    "file": "Paint-Program-M5StickCPlus2-v1.3-MERGED.bin",
+    "size": "524448",
+    "md5": "814608ecf5173cd1e35fc05d2a9d5202",
+    "flash_address": "0x0"
+  },
+  "usage_instructions": [
+    "1. Connect Mini Joy C hat to M5StickC Plus2",
+    "2. Flash firmware using M5Burner",
+    "3. Power on - enjoy the demo flower artwork!",
+    "4. Press M5 button to start painting",
+    "5. Use joystick for smooth cursor movement",
+    "6. Quick press joystick to cycle colors",
+    "7. Hold joystick (1 sec) to enable drawing",
+    "8. Press BtnA to change brush size",
+    "9. Press BtnB for color menu",
+    "10. Press PWR to clear canvas"
+  ],
+  "technical_details": {
+    "joystick_range": "12-bit ADC (0-4095)",
+    "dead_zone": "150 units for stability",
+    "sensitivity": "0.04 for precision control",
+    "color_format": "RGB565 16-bit",
+    "led_feedback": "Real-time brush color on Joy C",
+    "drawing_algorithm": "Interpolated filled circles",
+    "ui_areas": "Top 18px status, bottom 20px brush info"
+  },
+  "version_history": {
+    "1.3.0": "Perfect control scheme: BtnA=brush size, Joy press=colors, Joy hold=draw mode",
+    "1.2.0": "Added hold-to-draw system and demo artwork",
+    "1.1.0": "Fixed cursor trails and improved analog control",
+    "1.0.0": "Initial release with basic paint functionality"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "CASCADE TETRIS v1.0 - FINAL EDITION",
+  "description": "Revolutionary CASCADE TETRIS BATTLE with breakaway physics! Features: Toggle CASCADE mode with Button B, Fixed button controls (A=Hold, Power=Pause), Clockwise rotation for all pieces, 2-Player WiFi Battle Mode, Hold system, Ghost piece preview, Level selection. The ultimate Tetris experience for M5StickC Plus2!",
+  "version": "1.0.0",
+  "author": "CASCADE TETRIS Team", 
+  "firmware": "CASCADE_TETRIS_v1.0_FINAL_MERGED_20251121_211335.bin",
+  "device": "M5StickC-Plus2",
+  "category": "Games",
+  "tags": ["tetris", "cascade", "battle", "multiplayer", "wifi", "physics", "m5stickc"],
+  "hardware": {
+    "required": ["M5StickC Plus2", "MiniJoyC Unit"],
+    "optional": ["Second M5StickC Plus2 for battle mode"]
+  },
+  "features": [
+    "CASCADE Physics System",
+    "Toggle CASCADE Mode (Button B)", 
+    "2-Player WiFi Battle",
+    "Fixed Button Controls",
+    "Clockwise Rotation Only",
+    "Hold System",
+    "Ghost Piece Preview",
+    "Level Selection (1-10)",
+    "Wall Kicks",
+    "Lock Delay System"
+  ]
+}

@@ -1,0 +1,42 @@
+EDUCATIONAL USE LICENSE
+
+This project is a fan-made port for educational purposes only.
+
+SONIC THE HEDGEHOG COPYRIGHT NOTICE:
+All Sonic the Hedgehog characters, graphics, names, and related assets are
+© SEGA Corporation. All rights reserved.
+
+This project is NOT affiliated with, endorsed by, or sponsored by SEGA.
+
+SOURCE CODE:
+The source code for this port (excluding Sonic assets) is provided for
+educational and personal use. You may:
+  - Use the code for personal, non-commercial projects
+  - Modify and adapt the code for learning
+  - Share the code with proper attribution
+
+You may NOT:
+  - Use this project or SEGA's assets for commercial purposes
+  - Sell or profit from this software
+  - Remove attribution to original authors
+  - Claim ownership of Sonic characters or assets
+
+ATTRIBUTION REQUIRED:
+- Original M5Stack Port: GalaxyShad (2020)
+- M5StickC Plus2 Port: coreymillia with GitHub Copilot CLI
+- Sonic Physics Guide: Sonic Retro
+- Sprites: The Spriters Resource
+- Characters & Assets: © SEGA Corporation
+
+DISCLAIMER:
+This software is provided "as is" without warranty of any kind. The authors
+are not responsible for any damages or legal issues arising from use of this
+software.
+
+By using this software, you agree to:
+1. Use it for educational/personal purposes only
+2. Respect SEGA's copyrights
+3. Not use it for commercial gain
+4. Provide proper attribution when sharing
+
+For commercial use of Sonic the Hedgehog, please contact SEGA directly.

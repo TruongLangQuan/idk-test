@@ -1,0 +1,186 @@
+╔═══════════════════════════════════════════════════════════════╗
+║          🎮 ThreeTris v3.3 - FINAL RELEASE! 🎮               ║
+║            The Ultimate Triomino Game - Complete!             ║
+╚═══════════════════════════════════════════════════════════════╝
+
+✨ NEW IN v3.3 - WALL KICKS ADDED! ✨
+
+═══════════════════════════════════════════════════════════════
+
+🆕 WHAT'S NEW:
+
+✅ COMPLETE WALL KICK SYSTEM
+   - Pieces now rotate next to walls automatically!
+   - 6-step kick algorithm tries:
+     1. Direct rotation
+     2. Kick right (+1)
+     3. Kick left (-1)
+     4. Kick up (-1 Y)
+     5. Kick right 2 (+2) - for left wall
+     6. Kick left 2 (-2) - for right wall
+   
+   This means ALL pieces can rotate in tight spaces!
+
+═══════════════════════════════════════════════════════════════
+
+🎯 COMPLETE FEATURE SET:
+
+Game Mechanics:
+  ✓ 8 unique triomino pieces (1-3 blocks each)
+  ✓ Perfect clockwise rotation system
+  ✓ WALL KICKS for all pieces! (NEW in v3.3)
+  ✓ Hold piece system with preview
+  ✓ Next piece preview
+  ✓ Ghost piece (landing position indicator)
+  ✓ Progressive lock delay system
+  ✓ Endless gameplay
+
+Presentation:
+  ✓ Professional animated title screen
+  ✓ "THREETRIS" in colorful block letters
+  ✓ 3 cascading animated pieces
+  ✓ Complete HUD with stats
+  ✓ Clean graphics, no artifacts
+
+Difficulty:
+  ✓ Progressive lock delay (300ms → 600ms)
+  ✓ Speed progression (levels 1-20)
+  ✓ Level system (every 10 lines)
+  ✓ Score tracking with high score
+  ✓ Line counter
+
+═══════════════════════════════════════════════════════════════
+
+📦 ALL 8 PIECES:
+
+1. I-Triomino (cyan) - 3-block line
+2. L-Triomino (blue) - corner right
+3. J-Triomino (orange) - corner left
+4. Single Block (yellow) - 1 block
+5. Double Block (green) - 2 blocks
+6. Diagonal Double (red) - 2 diagonal blocks
+7. Diagonal Triple (purple) - 3 diagonal blocks
+8. T-minus-one (white) - T-shape with missing center
+
+═══════════════════════════════════════════════════════════════
+
+🎮 CONTROLS:
+
+Title Screen:
+  • JoyC Button - Start game
+
+In-Game:
+  • JoyC D-Pad Left/Right - Move piece
+  • JoyC Button - Rotate clockwise (with wall kicks!)
+  • M5 Button A - Soft drop (faster fall)
+  • M5 Button B - Hold piece / Restart
+
+═══════════════════════════════════════════════════════════════
+
+📁 RELEASE FILES:
+
+  • ThreeTris-v3.3-FINAL.bin (431KB)
+    → Firmware only for OTA/direct upload
+
+  • ThreeTris-v3.3-MERGED.bin (495KB) ⭐ RECOMMENDED
+    → Complete package with bootloader for M5Burner
+    → Includes partitions and boot_app0
+    → Ready to flash at offset 0x0
+
+═══════════════════════════════════════════════════════════════
+
+🔧 HARDWARE REQUIREMENTS:
+
+  • M5StickC Plus2 (ESP32-PICO-D4)
+  • Mini JoyC Hat (I2C address 0x54)
+  • Display: 135x240 portrait mode
+  • 320KB RAM, 4MB Flash
+
+═══════════════════════════════════════════════════════════════
+
+📊 DIFFICULTY PROGRESSION:
+
+Lock Delay (gets HARDER):
+  • Levels 1-5:   300ms - Quick reactions
+  • Levels 6-10:  400ms - Getting challenging
+  • Levels 11-15: 500ms - Expert territory
+  • Levels 16-20+: 600ms - Master level
+
+Drop Speed:
+  • Progressively faster from level 1 to 20
+  • Starts at 500ms, reaches 50ms at level 20
+  • After level 20: speed locked at 50ms
+  • Game continues FOREVER!
+
+═══════════════════════════════════════════════════════════════
+
+🏆 VERSION HISTORY:
+
+v3.3 (2024-11-09)
+  • Added complete wall kick system for all pieces
+  • Pieces now rotate smoothly against walls
+  • 6-step kick algorithm for maximum flexibility
+
+v3.0 (2024-11-09)
+  • Professional animated title screen
+  • All 8 triomino pieces in animations
+  • Cascade effects and polish
+
+v2.5 (2024-11-09)
+  • Score tracking system
+  • Next piece preview
+  • Level and lines display
+  • High score tracking
+
+v2.0 (2024-11-09)
+  • All 8 unique triomino pieces
+  • Perfect clockwise rotation
+  • Hold system and ghost piece
+  • Progressive difficulty
+
+v1.0 (2024-11-09)
+  • Initial release
+  • Basic gameplay
+
+═══════════════════════════════════════════════════════════════
+
+🎉 THIS IS THE COMPLETE GAME!
+
+ThreeTris v3.3 includes:
+  ✅ All features fully implemented
+  ✅ Perfect rotation with wall kicks
+  ✅ Professional presentation
+  ✅ Endless replayability
+  ✅ Modern Tetris mechanics
+  ✅ Complete HUD and stats
+
+Ready to share with the world! 🌍
+
+═══════════════════════════════════════════════════════════════
+
+📥 INSTALLATION:
+
+M5Burner (Recommended):
+  1. Download M5Burner
+  2. Load ThreeTris-v3.3-MERGED.bin
+  3. Select COM port
+  4. Click "Burn"
+  5. Play!
+
+esptool.py:
+  esptool.py --chip esp32 --port /dev/ttyUSB0 \
+    write_flash 0x0 ThreeTris-v3.3-MERGED.bin
+
+═══════════════════════════════════════════════════════════════
+
+           This is the DEFINITIVE ThreeTris experience!
+                    Built November 2024
+                  
+              From concept to perfection! 🎮✨
+
+═══════════════════════════════════════════════════════════════
+
+Questions? Check README.md or open a GitHub issue!
+
+Have fun and aim for that high score! 🏆
+

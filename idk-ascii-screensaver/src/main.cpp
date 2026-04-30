@@ -32,11 +32,16 @@ static const char* kNames[] = {
 static Saver g_saver = AsciiMatrix;
 static uint32_t g_last_tick = 0;
 static int g_frame = 0;
+static uint32_t g_last_fire_update = 0;
+static constexpr uint32_t kFireInterval = 50;  // ~20 FPS for fire effect
 
 // ─── State arrays ──────────────────────────────────────────────
 static uint8_t g_fire[30][16];
+static uint8_t g_fire_next[30][16];  // Double buffer for smooth transitions
 static uint8_t g_life[30][16];
 static uint8_t g_life_next[30][16];
+static char g_fire_char[30][16];      // Cached character display
+static uint16_t g_fire_color[30][16];  // Cached color display
 static int g_rain_y[30];
 static int g_rain_speed[30];
 static char g_rain_char[30];
@@ -61,6 +66,9 @@ void initRain() {
 
 void initFire() {
   memset(g_fire, 0, sizeof(g_fire));
+  memset(g_fire_next, 0, sizeof(g_fire_next));
+  memset(g_fire_char, 0, sizeof(g_fire_char));
+  memset(g_fire_color, 0, sizeof(g_fire_color));
 }
 
 void initLife() {
@@ -102,17 +110,22 @@ void drawMatrix() {
 
 // ─── Fire effect ────────────────────────────────────────────────
 void drawFire() {
-  M5.Display.fillScreen(TFT_BLACK);
+  const uint32_t now = millis();
+  if (now - g_last_fire_update < kFireInterval) return;
+  g_last_fire_update = now;
+
   M5.Display.setTextSize(1);
   const char* heat = " .:-=+*#%@";
   int hlen = strlen(heat);
 
-  // Seed bottom row
+  // Clear top bar (only on mode switch, not every frame)
+  M5.Display.fillRect(0, 14, 240, 121, TFT_BLACK);
+
+  // Propagate upward with cooling - update model
   for (int x = 0; x < 30; ++x) {
     g_fire[x][15] = 60 + (esp_random() % 40);
   }
 
-  // Propagate upward with cooling
   for (int y = 0; y < 15; ++y) {
     for (int x = 0; x < 30; ++x) {
       int sum = 0;
@@ -130,6 +143,7 @@ void drawFire() {
     }
   }
 
+  // Render with double buffering - only update changed cells
   for (int y = 0; y < 16; ++y) {
     for (int x = 0; x < 30; ++x) {
       int v = g_fire[x][y];
@@ -144,9 +158,16 @@ void drawFire() {
       else if (v > 10) color = M5.Display.color565(100, 20, 0);
       else color = M5.Display.color565(30, 5, 0);
 
-      M5.Display.setTextColor(color, TFT_BLACK);
-      M5.Display.setCursor(x * 8, 14 + y * 7);
-      M5.Display.print(heat[ci]);
+      char new_char = heat[ci];
+
+      // Only redraw if character or color changed
+      if (g_fire_char[x][y] != new_char || g_fire_color[x][y] != color) {
+        g_fire_char[x][y] = new_char;
+        g_fire_color[x][y] = color;
+        M5.Display.setTextColor(color, TFT_BLACK);
+        M5.Display.setCursor(x * 8, 14 + y * 7);
+        M5.Display.print(new_char);
+      }
     }
   }
 }

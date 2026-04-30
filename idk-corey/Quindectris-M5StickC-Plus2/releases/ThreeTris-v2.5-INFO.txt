@@ -1,0 +1,66 @@
+
+═══════════════════════════════════════════════════════════
+🎉 ThreeTris v2.5 - FINAL COMPLETE RELEASE! 🎉
+═══════════════════════════════════════════════════════════
+
+✅ COMPLETE MODERNIZED GAME - FAR BEYOND ORIGINAL!
+
+✅ ALL 8 UNIQUE TRIOMINO PIECES:
+   1. I-Triomino (cyan) - 3-block line
+   2. L-Triomino (blue) - corner right
+   3. J-Triomino (orange) - corner left  
+   4. Single Block (yellow) - 1 block
+   5. Double Block (green) - 2 blocks
+   6. Diagonal Double (red) - 2 diagonal blocks
+   7. Diagonal Triple (purple) - 3 diagonal blocks
+   8. T-minus-one (white) - T-shape with missing block
+
+✅ MODERN TETRIS FEATURES:
+   • Hold piece system with preview
+   • Next piece preview
+   • Ghost piece (shows landing position)
+   • Progressive lock delay system
+   • ALL pieces rotate CLOCKWISE perfectly
+
+✅ PROGRESSIVE DIFFICULTY SYSTEM:
+   Lock Delay (gets HARDER as you level up):
+   • Levels 1-5: 300ms
+   • Levels 6-10: 400ms
+   • Levels 11-15: 500ms
+   • Levels 16-20+: 600ms
+   
+   Drop Speed:
+   • Progressively faster levels 1-20
+   • Speed caps at level 20 (50ms)
+   • Game is ENDLESS after level 20
+
+✅ COMPLETE HUD DISPLAY:
+   • Score (S:)
+   • Level (LV:)
+   • Lines cleared (L:)
+   • Hold piece preview box
+   • Next piece preview box
+
+✅ PERFECT SCREEN LAYOUT:
+   • Extended playfield (23 rows)
+   • Clean aligned borders
+   • No pixel artifacts
+   • Stacked "GAME OVER" text
+   • Perfect positioning for M5StickC Plus2
+
+✅ CONTROLS:
+   • JoyC Hat D-Pad: Move left/right
+   • JoyC Hat Button: Rotate (clockwise)
+   • Button A (M5): Soft drop
+   • Button B (M5): Hold piece / Restart
+
+✅ RELEASE FILES:
+   • ThreeTris-v2.5-FINAL.bin (428K) - Firmware only
+   • ThreeTris-v2.5-MERGED.bin (492K) - Complete for M5Burner
+
+✅ DEVICE: M5StickC Plus2 with Mini JoyC Hat
+
+═══════════════════════════════════════════════════════════
+This is the DEFINITIVE modernized ThreeTris experience!
+Built November 2024
+═══════════════════════════════════════════════════════════

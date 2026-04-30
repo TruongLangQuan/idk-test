@@ -1,0 +1,49 @@
+screen 1:
+
+// [BEGIN lopaka generated]
+tft.drawBitmap(5, 5, image_wifi_full_bits, 19, 16, 0xFFFF);
+tft.pushImage(214, 119, 102, 120, image_ellenjoenobr_pixels);
+tft.drawBitmap(289, 5, image_battery_full_bits, 24, 16, 0xFFFF);
+tft.drawBitmap(30, 8, image_SDcardMounted_bits, 11, 8, 0xFFFF);
+tft.setTextColor(0xFFFF);
+tft.setTextSize(2);
+tft.setFreeFont(NULL);
+tft.drawString("Time", 56, 80);
+tft.drawString("Date", 76, 104);
+tft.setTextSize(1);
+tft.drawString("Weather", 90, 128);
+tft.drawRect(22, 160, 176, 72, 0xFFFF);
+tft.drawString("note", 89, 193);
+// [END lopaka generated]
+
+screen 2:
+
+// [BEGIN lopaka generated]
+tft.drawRect(1, 1, 317, 30, 0xFFFF);
+tft.setTextColor(0xFFFF);
+tft.setTextSize(1);
+tft.setFreeFont(NULL);
+tft.drawString("Monday  Tuesday Wednesday Thursday Friday Saturnday", 8, 12);
+tft.drawRect(1, 1, 317, 234, 0xFFFF);
+tft.drawRect(214, 1, 43, 234, 0xFFFF);
+tft.drawRect(50, 1, 50, 234, 0xFFFF);
+tft.drawRect(99, 1, 63, 234, 0xFFFF);
+tft.drawRect(161, 1, 54, 234, 0xFFFF);
+tft.drawRect(1, 30, 317, 30, 0xFFFF);
+tft.drawRect(1, 59, 317, 30, 0xFFFF);
+tft.drawRect(1, 1, 317, 30, 0xFFFF);
+tft.drawRect(1, 88, 317, 30, 0xFFFF);
+tft.drawRect(1, 117, 317, 30, 0xFFFF);
+tft.drawRect(1, 146, 317, 30, 0xFFFF);
+tft.drawRect(1, 175, 317, 30, 0xFFFF);
+// [END lopaka generated]
+
+screen 3:
+
+// [BEGIN lopaka generated]
+tft.setTextColor(0xFFFF);
+tft.setTextSize(1);
+tft.setFreeFont(NULL);
+tft.drawString("gif playing/ascii(2d or 3d) playing/screensaver", 22, 112);
+// [END lopaka generated]
+

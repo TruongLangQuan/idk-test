@@ -1,0 +1,37 @@
+{
+  "information": [
+    {
+      "version": "2.2.0",
+      "title": "Quindectris",
+      "category": "Games",
+      "author": "CoReMiLLiA Games",
+      "created": "2024-12-01",
+      "modified": "2024-12-01",
+      "description": "🎮 QUINDECTRIS - The Ultimate 15-Piece Mixed-Block Tetris Experience! Features 8 precision triominoes (1-3 blocks) + 7 complete classic tetrominoes (4 blocks) with perfect clockwise rotation mechanics. No morphing, advanced wall kicks, hold system, ghost pieces. From tiny single blocks to massive 4-block power moves!",
+      "arduinoIDE": "1.8.19",
+      "hardware": [
+        "M5StickC Plus2"
+      ],
+      "dependencies": [
+        "M5StickCPlus2",
+        "M5GFX",
+        "M5Unified",
+        "Wire"
+      ],
+      "image": "https://raw.githubusercontent.com/coreymillia/quindectris/main/assets/screenshot.png",
+      "website": "https://github.com/coreymillia/quindectris",
+      "tutorial": "https://github.com/coreymillia/quindectris#readme",
+      "code": "https://github.com/coreymillia/quindectris"
+    }
+  ],
+  "width": 160,
+  "height": 80,
+  "baudrate": "1500000",
+  "firmware": [
+    {
+      "path": "Quindectris-v2.2-M5BURNER-MERGED-20251201.bin",
+      "address": "0x0",
+      "label": "Firmware"
+    }
+  ]
+}

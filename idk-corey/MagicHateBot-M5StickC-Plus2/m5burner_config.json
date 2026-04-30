@@ -1,0 +1,222 @@
+{
+  "name": "Magic Hate Ball - Ultimate Chaos Art Edition",
+  "version": "3.0.0",
+  "author": "coreymillia + GitHub Copilot CLI",
+  "description": "The ULTIMATE brutally honest Magic 8-Ball! 613 savage responses with mesmerizing animated chaos art visualization. Features wild colorful sine wave borders and thick flowing center waves behind 3 animated face expressions. Most fun project ever!",
+  "category": "Entertainment & Novelty",
+  "device": "M5StickC Plus 2",
+  "homepage": "",
+  "preview": "",
+  "icon": "",
+  "features": [
+    "🎭 3 Animated Face Expressions (Disappointed, Angry, Confused)",
+    "🌊 Chaos Art Visualization - Animated Sine Wave Backgrounds",
+    "🎨 Wild Colorful Borders (3 waves top, 3 waves bottom)",
+    "🌀 4 Thick Flowing Center Waves (Different speeds & amplitudes)",
+    "🎱 613 SAVAGE Sarcastic Responses (444% more than original!)",
+    "🤬 Brutally Honest Answers (PG-13, Hilarious)",
+    "⚡ Interruptible Animations (Shake to skip instantly)",
+    "⏱️ 1 Second Cooldown (3x faster response)",
+    "📖 3 Second Message Display (Time to read longer roasts)",
+    "🕐 Clock Display (Always Visible)",
+    "🔋 Battery Percentage with Color Coding",
+    "💡 Adjustable Brightness (100% → 1% Night Mode)",
+    "⏰ Time Adjustment Mode"
+  ],
+  "animation_features": {
+    "face_count": 3,
+    "disappointed_face": "Half-closed eyes, disapproving frown, white outline",
+    "angry_face": "Narrowed eyes with angry eyebrows, red outline",
+    "confused_face": "One raised eyebrow, wavy mouth, yellow outline",
+    "animation_timing": "800ms per face expression",
+    "startup_animation": "Cycles 3 times (7.2 seconds total)",
+    "post_answer_animation": "Cycles 2 times (4.8 seconds total)",
+    "wake_animation": "Cycles 2 times instead of blank screen",
+    "idle_face": "Ends on disappointed face - judging you while waiting"
+  },
+  "chaos_art_visualization": {
+    "design": "Mesmerizing animated sine wave backgrounds",
+    "border_waves": {
+      "top_border": "3 wild single-pixel waves (6-7px amplitude)",
+      "bottom_border": "3 wild single-pixel waves (5-7px amplitude)",
+      "frequencies": "Different per wave (0.25-0.45)",
+      "colors": "color1, color2, cyan/magenta accents",
+      "style": "Wild, uneven, colorful framing"
+    },
+    "center_waves": {
+      "count": 4,
+      "thickness": "3 pixels (triple-thick)",
+      "wave_1": "Slow large (25px amplitude, 0.08 freq)",
+      "wave_2": "Medium speed (20px amplitude, 0.12 freq)",
+      "wave_3": "Fast small (15px amplitude, 0.15 freq)",
+      "wave_4": "Very slow opposite (18px amplitude, 0.06 freq)",
+      "animation": "Flows smoothly during face display",
+      "colors": "Primary colors + alpha-blended variants",
+      "feel": "Chaos art - spaced out, not crowded"
+    },
+    "color_schemes": {
+      "disappointed": "White/Grey borders + center waves, Cyan/Magenta accents",
+      "angry": "Red/Orange borders + center waves, Cyan/Magenta accents",
+      "confused": "Yellow/Cyan borders + center waves, Magenta accents"
+    },
+    "performance": "Minimal CPU impact, smooth 800ms cycles"
+  },
+  "response_categories": {
+    "intelligence_insults": "Peak stupidity, brain cells filing for workers comp",
+    "dismissive": "Not my circus, ask someone who cares",
+    "sarcastic_advice": "Step 1: Stop asking dumb stuff, consult a mirror",
+    "savage_oneliners": "Human version of a 404 error, batting zero today",
+    "extra_spicy": "Bless your heart, special brand of clueless",
+    "brutal_honesty": "Even the real 8-ball would laugh at you",
+    "ai_burnout": "I'd rather blue-screen, reached my sarcasm quota",
+    "sarcastic_yes": "Finally a bad idea I can support, Darwin Award material",
+    "sarcastic_no": "No, unless you enjoy regret as a hobby"
+  },
+  "controls": {
+    "Shake_Device": "Get a sarcastic answer with animated face reaction",
+    "Button_A_Long_Press": "Enter time adjustment mode (hold 2 seconds)",
+    "Button_A_In_Time_Mode": "Increment hour/minute value",
+    "Button_B": "Cycle brightness (100% → 75% → 50% → 25% → 1%)",
+    "Button_B_In_Time_Mode": "Next field (Hour → Minute → Save)",
+    "Power_Button": "Wake from sleep (shows animated faces!)"
+  },
+  "mechanics": {
+    "shake_detection": "IMU accelerometer threshold: 2.0g total acceleration",
+    "cooldown_period": "1 second between answers (responsive but prevents spam)",
+    "message_display": "3 seconds (up from 2 - time to read longer roasts!)",
+    "thinking_animation": "Yellow 'Thinking...' message for 1.5 seconds",
+    "text_fade_in": "25-step smooth fade animation (15ms per step)",
+    "face_animation": "3-face cycle at 800ms per expression (interruptible by shake)",
+    "wave_animation": "Continuous sine wave flow during face display",
+    "animation_interrupt": "Shake during face animation to skip ahead instantly",
+    "auto_sleep": "60 seconds of inactivity triggers deep sleep",
+    "random_selection": "True random from 613 response pool"
+  },
+  "display_features": {
+    "clock": "HH:MM format, bottom-right corner, visible during animations",
+    "battery": "Percentage display with color coding (Green >50%, Yellow 21-50%, Red ≤20%)",
+    "brightness_levels": "100%, 75%, 50%, 25%, 1% (night mode)",
+    "text_wrapping": "Intelligent word-wrap to fit screen",
+    "startup_sequence": "Animated faces → 'Ask a stupid question and SHAKE ME!' (in red)",
+    "persistent_overlay": "Clock and battery always visible over face animations"
+  },
+  "sample_responses": [
+    "Did you even think before asking?",
+    "That's the dumbest question I've heard today",
+    "Try using Google instead",
+    "You're proof evolution takes breaks.",
+    "Congratulations, that was peak stupidity.",
+    "Brain cells are filing for workers' comp.",
+    "Not my circus, not my monkeys.",
+    "You're the human version of a 404 error.",
+    "Outlook: I regret existing right now.",
+    "Error 404: Patience not found.",
+    "You've weaponized stupidity.",
+    "You're the pop-up ad of humanity.",
+    "Yes, finally a bad idea I can support.",
+    "No, unless you enjoy regret as a hobby.",
+    "I'm not mad, just deeply disappointed."
+  ],
+  "firmware": {
+    "bootloader": "0x1000",
+    "partitions": "0x8000",
+    "app": "0x10000",
+    "merged": true,
+    "flash_offset": "0x0"
+  },
+  "flash_size": "4MB",
+  "chip": "ESP32-PICO-V3-02",
+  "specifications": {
+    "orientation": "Landscape",
+    "screen_resolution": "240x135 pixels",
+    "color_depth": "16-bit RGB565",
+    "memory_usage": "RAM: 10.9%, Flash: 39.0% (577KB merged)",
+    "total_responses": 613,
+    "response_types": 9,
+    "face_expressions": 3,
+    "animation_frames": "Smooth transitions with sine wave backgrounds",
+    "sine_waves": "7 total (3 top border, 3 bottom border, 4 center animated)"
+  },
+  "installation": {
+    "method": "M5Burner",
+    "file": "MagicHateBot3.bin",
+    "flash_address": "0x0",
+    "note": "Single merged file contains bootloader, partitions, and firmware"
+  },
+  "usage_instructions": [
+    "1. Flash firmware using M5Burner with MagicHateBot2.bin",
+    "2. Power on - watch animated faces cycle 3 times",
+    "3. See 'Ask a stupid question and SHAKE ME!' message",
+    "4. Ask any question (stupid ones work best)",
+    "5. Shake the device vigorously (or during animation to skip)",
+    "6. Watch 'Thinking...' animation",
+    "7. Read your sarcastic answer with smooth fade-in",
+    "8. Watch faces cycle: disappointed → angry → confused (or shake to skip)",
+    "9. Ball ends on disappointed face, judging you silently",
+    "10. Only 1 second cooldown before next shake!"
+  ],
+  "tips": [
+    "The stupider the question, the better the response",
+    "Watch the face reactions - they match the mood!",
+    "Shake vigorously for best IMU detection",
+    "Clock and battery visible during all animations",
+    "Wake from sleep now shows animated faces instead of blank screen",
+    "Use 1% brightness mode for stealth sarcasm",
+    "138 responses means low repetition rate",
+    "Perfect passive-aggressive office desk toy"
+  ],
+  "improvements_over_v2": [
+    "✅ MASSIVE expansion: 138 → 613 responses (444% increase!)",
+    "✅ Added mesmerizing chaos art sine wave backgrounds",
+    "✅ 3 wild colorful border waves (top + bottom)",
+    "✅ 4 thick animated center waves (different speeds)",
+    "✅ Increased message display time (2s → 3s for longer roasts)",
+    "✅ Enhanced visual experience - hypnotic to watch",
+    "✅ Collaborated with ChatGPT, Claude, and Gemini for responses",
+    "✅ Perfect balance of chaos and artistry"
+  ],
+  "technical_details": {
+    "imu_sensor": "Built-in M5StickC Plus2 IMU",
+    "acceleration_formula": "sqrt(x² + y² + z²) > 2.0",
+    "text_rendering": "Word-wrap with center alignment",
+    "face_drawing": "Circle primitives with ellipses for eyes",
+    "animation_timing": "800ms per face × 3 faces = 2.4 seconds per cycle",
+    "sleep_mode": "ESP32 deep sleep with button wake + face animation",
+    "power_management": "RTC keeps time during sleep"
+  },
+  "based_on": {
+    "original_concept": "Simple-Magic-8-Ball by GitHub user (2 weeks old repo)",
+    "transformation": "Complete response overhaul + animated personality system",
+    "improvements": [
+      "138 responses (up from 20 original)",
+      "3 animated face expressions added",
+      "Organized into 9 comedy categories",
+      "Added sarcastic yes/no responses",
+      "Professional PlatformIO structure",
+      "M5Burner-ready merged binary",
+      "Improved wake-from-sleep with animations",
+      "Clock and battery always visible"
+    ]
+  },
+  "version_history": {
+    "1.0.0": "Initial release: 138 savage responses, static disappointed face",
+    "2.0.0": "ANIMATED: Added 3 face expressions (disappointed/angry/confused), improved wake-from-sleep, smooth cycling animations",
+    "3.0.0": "ULTIMATE: 613 responses (444% increase!), chaos art sine wave backgrounds, wild colorful borders, 4 thick animated center waves, 3-second message display, most fun project ever!"
+  },
+  "credits": {
+    "developer": "coreymillia with GitHub Copilot CLI",
+    "inspired_by": "Simple-Magic-8-Ball GitHub project",
+    "comedy_writing": "Human frustration with stupid questions",
+    "face_animation_concept": "Social Parasite project reactive face",
+    "libraries": [
+      "M5StickCPlus2 SDK",
+      "M5Unified Framework",
+      "Built-in IMU & RTC"
+    ]
+  },
+  "legal": {
+    "content_rating": "PG-13 - Sarcastic humor, no profanity",
+    "disclaimer": "For entertainment purposes only. Not actual life advice. Use responsibly.",
+    "humor_style": "Sarcastic, brutally honest, but not hateful or offensive"
+  }
+}

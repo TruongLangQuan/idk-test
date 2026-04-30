@@ -1,0 +1,10 @@
+{
+  "name": "ScorchedM5",
+  "version": "1.0",
+  "author": "CoreyMillia",
+  "description": "Tetris-themed artillery game - Two tanks battle on destructible terrain",
+  "category": "Game",
+  "requires": [
+    "M5StickCPlus2"
+  ]
+}

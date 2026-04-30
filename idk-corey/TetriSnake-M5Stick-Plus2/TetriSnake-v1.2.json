@@ -1,0 +1,70 @@
+{
+  "name": "TetriSnake",
+  "version": "1.2",
+  "description": "Snake game with Tetris-themed obstacles for M5StickC Plus2",
+  "author": "CoreyMillia",
+  "date": "2025-11-08",
+  "category": "Game",
+  "device": "M5StickC Plus2",
+  "chip": "ESP32-PICO",
+  "flash_mode": "dio",
+  "flash_freq": "80m",
+  "flash_size": "4MB",
+  "merged_bin": "TetriSnake-v1.2-MERGED.bin",
+  "firmware": {
+    "bootloader": {
+      "address": "0x1000",
+      "file": "bootloader.bin"
+    },
+    "partition": {
+      "address": "0x8000",
+      "file": "partitions.bin"
+    },
+    "app": {
+      "address": "0x10000",
+      "file": "firmware.bin"
+    }
+  },
+  "features": [
+    "Classic Snake gameplay",
+    "7 Tetris tetriminos as obstacles",
+    "Random tetrimino placement each game",
+    "Colored tetriminos (I, O, T, L, J, S, Z)",
+    "Progressive speed increase",
+    "White food for high visibility",
+    "Smooth rendering (no flicker)",
+    "Blue border around play area",
+    "Score tracking",
+    "High score memory",
+    "God Mode toggle",
+    "Joystick controls"
+  ],
+  "controls": {
+    "joystick": "Move snake (4 directions)",
+    "btnB": "Toggle God Mode",
+    "btnA": "Restart (game over)"
+  },
+  "game_mechanics": {
+    "objective": "Navigate snake around tetrimino obstacles to eat food",
+    "obstacles": "One of each tetrimino type (7 total) placed randomly",
+    "scoring": {
+      "food": 10,
+      "speed_increase": "Every food eaten (down to 80ms minimum)"
+    },
+    "difficulty": "Progressive - speed increases as snake grows"
+  },
+  "visual": {
+    "snake": "Green blocks",
+    "food": "White blocks",
+    "tetriminos": "Colored by type (Cyan, Yellow, Magenta, Orange, Blue, Green, Red)",
+    "border": "Blue outline",
+    "grid": "22 x 35 blocks",
+    "block_size": "6x6 pixels"
+  },
+  "requirements": [
+    "M5StickC Plus2",
+    "Mini JoyC Hat (I2C)"
+  ],
+  "github": "",
+  "license": "MIT"
+}

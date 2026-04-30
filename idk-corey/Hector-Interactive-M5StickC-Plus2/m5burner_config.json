@@ -1,0 +1,60 @@
+{
+  "name": "Hector Interactive v4.0 - Mathematical Visualization",
+  "version": "4.0.0",
+  "description": "Complete interactive 3D mathematical visualization with I2S audio, IMU motion control, and 10 pattern modes",
+  "author": "Assistant (adapted from ESP32-Hector by tobozo)",
+  "category": "Art & Entertainment",
+  "device": "M5StickC Plus2",
+  "firmware": "Hector-Interactive-M5StickCPlus2-v4.0-FINAL.bin",
+  "size": 532880,
+  "md5": "922d68f783af85db36b8112d59b12961",
+  "website": "https://github.com/tobozo/ESP32-Hector",
+  "documentation": "README.md",
+  "requires": ["M5StickC Plus2 with built-in IMU and I2S microphone"],
+  "features": [
+    "10 interactive visualization modes (FLAT/TILT/SOUND/SPIRAL/INTERFERENCE/MOUNTAIN/RIPPLE/PLASMA/SINE/DRIP)",
+    "Professional I2S digital microphone audio processing",
+    "Real-time IMU motion control (6-axis accelerometer + gyroscope)",
+    "4 display rendering styles (Grid/Solid/Zebra/Checkboard)",
+    "Advanced mathematical wave equations and algorithms",
+    "Smooth 30-60 FPS performance with optimized rendering",
+    "Landscape orientation optimized for M5StickC Plus2",
+    "Professional audio analysis with RMS, noise gate, and DC filtering",
+    "Visual debugging with real-time audio level indicators",
+    "Interactive mode switching with instant response"
+  ],
+  "instructions": [
+    "Power on M5StickC Plus2",
+    "Device starts in FLAT grid baseline mode", 
+    "Press Button A repeatedly to cycle display styles: Grid → Solid → Zebra → Checkboard",
+    "Press Button B repeatedly to cycle interactive modes:",
+    "  - FLAT: Baseline reference grid (static)",
+    "  - TILT: Surface responds to device movement and rotation",
+    "  - SOUND: Creates waves from microphone input (speak, clap, play music)",
+    "  - SPIRAL: Beautiful rotating spiral mathematical patterns",
+    "  - INTERFERENCE: Multiple wave sources creating complex patterns",
+    "  - MOUNTAIN: Dynamic mountain landscape terrain generation",
+    "  - RIPPLE: Multi-source water ripple tank simulation", 
+    "  - PLASMA: Energy field visualization with flowing patterns",
+    "  - SINE: Classic mathematical sine wave beauty",
+    "  - DRIP: Water droplet ripple effects",
+    "Current mode name shown in top-right corner",
+    "Audio debug info shown during SOUND mode (level + power)",
+    "Combine any mode with any display style for 40 total experiences!"
+  ],
+  "controls": {
+    "Button A": "Cycle display rendering styles (Grid → Solid → Zebra → Checkboard)",
+    "Button B": "Cycle interactive modes (10 total modes in sequence)",
+    "Device Tilt/Movement": "Controls surface shape and rotation in TILT mode",
+    "Microphone Input": "Creates reactive waves in SOUND mode (I2S digital audio)",
+    "Visual Indicators": "Mode name (top-right), FPS counter (top-left), audio levels (SOUND mode)"
+  },
+  "technical_specs": {
+    "platform": "ESP32-PICO-V3-02 (M5StickC Plus2)",
+    "display": "135x240 TFT LCD (landscape optimized)",
+    "audio": "I2S digital PDM microphone (44.1kHz, 16-bit)",
+    "motion": "MPU6886 6-axis IMU (accelerometer + gyroscope)",
+    "performance": "30-60 FPS, 35.6% flash usage, 9.4% RAM usage",
+    "math_engine": "Real-time 3D projection with multiple wave algorithms"
+  }
+}

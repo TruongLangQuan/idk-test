@@ -1,0 +1,10 @@
+THIS IS THE WORKING VERSION OF THE KILLER PORTAL
+
+- Buttons work perfectly
+- Portal killer finds ANY open network as targets
+- Successfully connects and spams 192.168.4.1
+- NEVER MODIFY THIS VERSION
+
+If you need changes, copy this folder first, then modify the copy.
+
+Date saved: Working version after fixing target detection

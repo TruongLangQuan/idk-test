@@ -1,0 +1,127 @@
+{
+  "name": "Sonic The Hedgehog for M5StickC Plus2",
+  "version": "1.2.0",
+  "author": "GalaxyShad (original), coreymillia + GitHub Copilot CLI (port)",
+  "description": "Play Sonic the Hedgehog Green Hill Zone Act 1 on M5StickC Plus2 with Mini Joy C hat. Now with DOWN-TO-ROLL mechanic! Press down while moving to roll, release to stand up - just like the original game!",
+  "category": "Games & Entertainment",
+  "device": "M5StickC Plus 2",
+  "homepage": "https://github.com/GalaxyShad/M5Stack-ESP32-ILI9341-Sonic-The-Hedgehog-Port",
+  "preview": "",
+  "icon": "",
+  "features": [
+    "🦔 Sonic The Hedgehog - Green Hill Zone Act 1",
+    "🎮 Full analog joystick support with Mini Joy C",
+    "🆕 DOWN-TO-ROLL mechanic - Press down to roll, release to stand!",
+    "⚡ Authentic Sonic physics from original Physics Guide",
+    "🎨 Custom palette-based renderer optimized for ESP32",
+    "📱 211x119 resolution scaled for M5StickC Plus2",
+    "🏃 Smooth gameplay at 27-30 FPS",
+    "💨 All classic moves: run, jump, roll, spindash",
+    "🔊 Silent mode (no audio to save resources)",
+    "🎯 Pixel-perfect collision detection",
+    "⭕ Ring counter and level progression"
+  ],
+  "gameplay": {
+    "level": "Green Hill Zone Act 1",
+    "features": [
+      "360-degree movement and physics",
+      "Down-to-roll mechanic (NEW!)",
+      "Objects: springs, rings, platforms",
+      "Enemies: Motobug, Crabmeat, Chopper",
+      "Animated background layers",
+      "Visual effects and character animations",
+      "Original terrain and tile system"
+    ],
+    "missing_features": [
+      "Monitors/power-ups",
+      "Some enemies from original",
+      "Background music/SFX",
+      "Spikes"
+    ]
+  },
+  "controls": {
+    "Left": "Move Sonic left (Joystick left)",
+    "Right": "Move Sonic right (Joystick right)",
+    "Down": "Roll into ball while moving (NEW!) - Release to stand up",
+    "Jump": "Jump (Joystick button)",
+    "Spindash": "Hold BtnA + Joy Button while standing",
+    "Roll_Alt": "Hold BtnA + Joy Button while moving"
+  },
+  "requirements": [
+    "M5StickC Plus 2",
+    "Mini Joy C Hat (required)",
+    "I2C connection: SDA=0, SCL=26",
+    "JoyCHat I2C address: 0x54"
+  ],
+  "specifications": {
+    "screen_resolution": "211x119 (on 240x135 display)",
+    "color_depth": "16-bit RGB565 palette-based",
+    "frame_rate": "27-30 FPS optimized",
+    "response_time": "Real-time physics at 60Hz logic",
+    "memory_usage": "RAM: 20.1% (65KB), Flash: 66.7% (855KB)",
+    "orientation": "Landscape (rotation 1)"
+  },
+  "firmware": {
+    "bootloader": "0x1000",
+    "partitions": "0x8000",
+    "app": "0x10000",
+    "merged": true,
+    "flash_offset": "0x0"
+  },
+  "flash_size": "4MB",
+  "chip": "ESP32-PICO-V3-02",
+  "installation": {
+    "method": "M5Burner",
+    "file": "M5StickSonic-v1.2-FINAL-MERGED.bin",
+    "size": "941504",
+    "flash_address": "0x0"
+  },
+  "usage_instructions": [
+    "1. Connect Mini Joy C hat to M5StickC Plus2 (Grove port)",
+    "2. Flash firmware using M5Burner with MERGED.bin",
+    "3. Power on - will show 'M5Stick Sonic' splash",
+    "4. Wait for 'Init JoyC...' to complete",
+    "5. Once 'Ready!' appears, game will load",
+    "6. Use joystick to move Sonic left/right",
+    "7. Press DOWN while moving to roll into ball",
+    "8. Release DOWN to stand back up",
+    "9. Press joystick button to jump",
+    "10. Hold BtnA + Joy Button for spindash (standing) or roll (moving)",
+    "11. Collect rings and reach the end!"
+  ],
+  "technical_details": {
+    "rendering": "Custom palette/index buffer system",
+    "buffer_size": "20-line partial buffer for memory efficiency",
+    "physics_engine": "Based on Sonic Retro Physics Guide",
+    "joystick_polling": "I2C ADC 12-bit (0-4095, center ~2048)",
+    "input_thresholds": "Left Y>3000, Right Y<1600, Down X<1200",
+    "display_api": "M5GFX pushPixels for optimal speed",
+    "collision": "Tile-based terrain + sprite collision",
+    "animation_system": "Frame-based sprite animation manager",
+    "roll_mechanic": "Down press triggers ACT_ROLL, release returns to ACT_NORMAL"
+  },
+  "performance": {
+    "optimal_resolution": "211x119 @ 27-30 FPS (default)",
+    "full_resolution": "240x135 @ 8-10 FPS (change in GameSettings.h)",
+    "max_fps_mode": "120x68 @ 47-60 FPS (change in GameSettings.h)",
+    "double_update": "Auto-enabled when FPS drops below 36"
+  },
+  "version_history": {
+    "1.2.0": "Added DOWN-TO-ROLL mechanic: Press down while moving to roll, release to stand up. Just like original Sonic!",
+    "1.1.0": "Increased screen size to 211x119, optimized rendering, fixed joystick axes",
+    "1.0.0": "Initial M5StickC Plus2 port: Mini Joy C support, removed FPS overlay, fixed controls"
+  },
+  "credits": {
+    "original_port": "GalaxyShad (M5Stack port, 2020)",
+    "m5stick_port": "coreymillia with GitHub Copilot CLI",
+    "physics_guide": "Sonic Retro (http://info.sonicretro.org/Sonic_Physics_Guide)",
+    "sprites": "The Spriters Resource (https://www.spriters-resource.com/)",
+    "characters": "© SEGA - All Sonic characters and graphics",
+    "license": "Educational/fan project - Not for commercial use"
+  },
+  "disclaimer": "This is an unofficial fan-made educational port. All Sonic the Hedgehog characters, graphics, and assets are © SEGA. This project is not affiliated with or endorsed by SEGA. Not for commercial use.",
+  "repository": {
+    "original": "https://github.com/GalaxyShad/M5Stack-ESP32-ILI9341-Sonic-The-Hedgehog-Port",
+    "archived_fork": "https://github.com/GalaxyShad/Open-Sonic-1-Recreation"
+  }
+}

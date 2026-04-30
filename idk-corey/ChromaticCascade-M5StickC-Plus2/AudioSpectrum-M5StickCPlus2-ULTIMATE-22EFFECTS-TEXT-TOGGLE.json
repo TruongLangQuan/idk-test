@@ -1,0 +1,42 @@
+{
+  "category": "Audio",
+  "name": "AudioSpectrum M5StickC Plus2 - Ultimate 22 Effects",
+  "description": "Advanced audio spectrum analyzer with 22 visual effects including Aurora Borealis, Matrix Rain, Plasma effects, Fireworks, and more. Features Button B text toggle and fixed Aurora bounds.",
+  "author": "KIRA Ryouta (original), Enhanced by GitHub Copilot CLI",
+  "version": "v8.1-FINAL-TEXT-TOGGLE",
+  "build_date": "2024-11-20",
+  "file_name": "AudioSpectrum-M5StickCPlus2-ULTIMATE-22EFFECTS-TEXT-TOGGLE-MERGED.bin",
+  "file_size": 587920,
+  "device": "M5StickC Plus2",
+  "flash_size": "4MB",
+  "flash_mode": "dio",
+  "flash_freq": "80MHz",
+  "description_long": "The ultimate audio visualization experience for M5StickC Plus2. Features 22 stunning visual effects that react to sound in real-time:\n\n• Audio Spectrum Analyzer\n• Matrix Digital Rain\n• Aurora Borealis\n• Plasma Fields\n• Audio Fireworks\n• Lightning Storm\n• Snow Effect\n• Lava Lamp\n• Kaleidoscope\n• Particle Tornado\n• And 12 more!\n\nControls:\n• Button A: Cycle through effect categories\n• Button B: Toggle text display on/off\n• Built-in microphone for audio input\n\nFixed Issues:\n• Aurora Borealis now stays within screen bounds\n• Text toggle (Button B) now works properly\n• All 22 effects stable and optimized",
+  "dependencies": [
+    "M5StickCPlus2 Library v1.0.2+",
+    "Built-in I2S microphone (pins 0 and 34)"
+  ],
+  "features": [
+    "Real-time FFT audio analysis",
+    "22 different visual effects",
+    "Audio-reactive animations",
+    "Button controls",
+    "Text display toggle",
+    "Optimized for voice and music",
+    "Full-screen 240x135 display"
+  ],
+  "instructions": "Flash to M5StickC Plus2 at address 0x0. Use buttons to navigate effects and toggle display. Microphone automatically detects audio.",
+  "github_url": "https://github.com/KKQ-KKQ/m5stickc-audiospectrum",
+  "license": "MIT",
+  "changelog": [
+    "v8.1: Fixed Aurora Borealis bounds, working Button B text toggle",
+    "v8.0: Ultimate 22 effects version with all visual modes",
+    "v7.0: Added Aurora Borealis and Kaleidoscope effects",
+    "v6.0: Added Snow and Lava Lamp effects",
+    "v5.0: Added Matrix Rain and Lightning Storm",
+    "v4.0: Enhanced with rain effects",
+    "v3.0: Multiple plasma variations",
+    "v2.0: Psychedelic effects added",
+    "v1.0: Basic spectrum analyzer for M5StickC Plus2"
+  ]
+}

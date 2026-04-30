@@ -1,0 +1,111 @@
+{
+  "name": "XJack Mod - 13 Effects Christmas Edition",
+  "version": "3.0.0",
+  "build": "20251224_135830",
+  "description": "XJack screensaver collection with 13 terminal-based effects including original XJack typing horror, Jesus Hooligan song lyrics (Back Room, Dogs & Motorbikes), system failure scenarios (System Error, Kernel Panic, BIOS Catastrophe, Network Apocalypse), hacker scenarios (Terminal Hacker, Hacked Terminal, Xtreme Hack), AI coding disaster (Vibe Code Fail), visual chaos (Symbol Storm), and role-based system failure (Crash Grammar). Features auto-scroll mode, title display toggle, and escalating visual effects.",
+  "platform": "M5StickC Plus2",
+  "chip": "ESP32-PICO-V3-02",
+  "features": [
+    "13 unique screensaver effects",
+    "Original XJack typing horror",
+    "Jesus Hooligan song lyrics (2 songs)", 
+    "Fast escalating system failures",
+    "Network infrastructure collapse",
+    "Hardware meltdown with visual glitching",
+    "AI coding disaster with 6 fix attempts",
+    "Hacker invasion scenarios",
+    "ASCII symbol chaos",
+    "Auto-scroll mode (15s intervals)",
+    "Title display toggle",
+    "Color-coded phase progression",
+    "Realistic terminal simulations"
+  ],
+  "effects": [
+    {
+      "id": 0,
+      "name": "Original XJack",
+      "description": "Classic 'All work and no play makes Jack a dull boy' typing with psychological tension"
+    },
+    {
+      "id": 1, 
+      "name": "Back Room",
+      "description": "Jesus Hooligan's haunting song about death and the back room"
+    },
+    {
+      "id": 2,
+      "name": "Dogs & Motorbikes", 
+      "description": "Jesus Hooligan's anthem about dogs, motorbikes, and three people"
+    },
+    {
+      "id": 3,
+      "name": "System Error",
+      "description": "Fast escalating system failure: Warning -> Critical -> Cascade -> Meltdown -> Reboot"
+    },
+    {
+      "id": 4,
+      "name": "Symbol Storm",
+      "description": "ASCII character chaos with rainbow colors and typing animation"
+    },
+    {
+      "id": 5,
+      "name": "Terminal Hacker",
+      "description": "Realistic coding session with matrix rain execution phase"
+    },
+    {
+      "id": 6,
+      "name": "Hacked Terminal", 
+      "description": "Normal work session gets hijacked by hacker with system destruction"
+    },
+    {
+      "id": 7,
+      "name": "Xtreme Hack",
+      "description": "7 different hacker scenarios cycling every 30 seconds"
+    },
+    {
+      "id": 8,
+      "name": "Kernel Panic",
+      "description": "System attempts recovery, fails, shows human panic, then freezes forever"
+    },
+    {
+      "id": 9,
+      "name": "Crash Grammar", 
+      "description": "Role-based system failure with escalating phases and memory decay"
+    },
+    {
+      "id": 10,
+      "name": "Vibe Code Fail",
+      "description": "AI coding assistant creates flight simulator that progressively gets worse through 6 fix attempts, ending in OS deletion"
+    },
+    {
+      "id": 11,
+      "name": "Net Apocalypse",
+      "description": "XScreensNet infrastructure collapse from normal monitoring to complete network apocalypse"
+    },
+    {
+      "id": 12,
+      "name": "BIOS Catastrophe", 
+      "description": "Hardware failure from normal POST to complete motherboard meltdown with maximum screen corruption"
+    }
+  ],
+  "controls": {
+    "button_a": "Cycle through effects",
+    "button_b": "Toggle auto-scroll (15s intervals)", 
+    "power_button": "Toggle title display"
+  },
+  "technical": {
+    "flash_size": "4MB",
+    "firmware_size": "498880 bytes",
+    "bootloader": "0x1000",
+    "partitions": "0x8000", 
+    "app": "0x10000",
+    "merged_size": "563392 bytes",
+    "arduino_framework": "ESP32 Arduino 2.0.17",
+    "platformio": "6.1.13"
+  },
+  "credits": {
+    "songs": "Jesus Hooligan",
+    "xscreensaver_inspiration": "Jamie Zawinski", 
+    "creator": "Coreymillia",
+    "date": "Christmas Eve 2024"
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "name": "TheraminM5 - Tilt-Reactive Theremin",
+  "version": "1.3.0",
+  "author": "coreymillia + GitHub Copilot CLI",
+  "description": "Motion-controlled theremin with psychedelic Hector 3D visuals. Tilt left/right for pitch, forward/back for volume. Features real-time frequency synthesis and reactive waveform animations. v1.3: Smooth continuous audio with 50ms tone bursts.",
+  "category": "Music & Sound",
+  "device": "M5StickC Plus 2",
+  "homepage": "",
+  "preview": "",
+  "icon": "",
+  "features": [
+    "🎵 Real-time Theremin Synthesis",
+    "🎶 SMOOTH AUDIO - v1.3 continuous tone improvement",
+    "📐 IMU-based Tilt Controls (6-axis motion)",
+    "🌈 Psychedelic Hector 3D Visuals",
+    "🎨 Frequency-reactive Color Mapping",
+    "🔊 Volume Control via Pitch Tilt",
+    "📊 Real-time Frequency & Angle Display",
+    "🎭 3 Visual Display Modes (Grid/Solid/Zebra)",
+    "🎚️ Smooth Value Interpolation",
+    "🔇 Toggle Sound On/Off",
+    "✨ Theremin-reactive Wave Function"
+  ],
+  "controls": {
+    "Roll_Left_Right": "Frequency/Pitch control (200-1200Hz)",
+    "Pitch_Forward_Back": "Volume control (0-255)",
+    "BtnA": "Toggle theremin sound ON/OFF",
+    "BtnB": "Cycle visual modes (Grid → Solid → Zebra)",
+    "Power_Button_Hold": "Show help screen (hold 1 second)"
+  },
+  "tilt_mapping": {
+    "frequency": {
+      "axis": "Roll (left/right tilt)",
+      "range": "±45 degrees",
+      "output": "200Hz to 1200Hz",
+      "tilt_left": "Lower frequency",
+      "tilt_right": "Higher frequency"
+    },
+    "volume": {
+      "axis": "Pitch (forward/back tilt)",
+      "range": "±30 degrees",
+      "output": "0 to 255",
+      "tilt_forward": "Lower volume",
+      "tilt_backward": "Higher volume (toward you)"
+    }
+  },
+  "visual_modes": {
+    "GRID": "Wireframe mesh - classic Hector look",
+    "SOLID": "Filled triangles - solid psychedelic surface",
+    "ZEBRA": "Alternating pattern - checkerboard mesh"
+  },
+  "audio_specs": {
+    "frequency_range": "200-1200Hz",
+    "volume_range": "0-255",
+    "synthesis_method": "PWM tone generation with 50ms bursts",
+    "speaker_pin": "GPIO 2 (built-in)",
+    "update_rate": "10ms (100Hz tone updates for smooth audio)",
+    "smoothing": "Exponential moving average (frequency: 0.9, volume: 0.8)",
+    "v1.3_improvement": "Continuous 50ms tone bursts eliminate audio stuttering"
+  },
+  "visual_specs": {
+    "display_size": "240x135 pixels (landscape)",
+    "render_style": "3D mesh projection with rotation",
+    "grid_size": "50x50 unit space, 2-step increments",
+    "color_mapping": "Frequency → HSV hue (0-240°)",
+    "animation_speed": "0.15 units per frame",
+    "wave_function": "Theremin-reactive cosine waves with tilt warping"
+  },
+  "gameplay": {
+    "objective": "Create music by tilting the device",
+    "learning_curve": "Intuitive - tilt to play",
+    "visual_feedback": "Colors change with frequency, waves respond to volume",
+    "practice_mode": "Turn sound off to practice movements with visual feedback only"
+  },
+  "requirements": [
+    "M5StickC Plus 2",
+    "No additional hardware required",
+    "Built-in IMU (6-axis accelerometer/gyroscope)",
+    "Built-in speaker"
+  ],
+  "specifications": {
+    "orientation": "Landscape",
+    "screen_resolution": "240x135 pixels",
+    "color_depth": "16-bit RGB565",
+    "memory_usage": "RAM: 9.7% (31KB), Flash: 15.4% (483KB)",
+    "imu_update_rate": "20ms (50Hz sensor polling)",
+    "display_brightness": "128/255 (50%)"
+  },
+  "firmware": {
+    "bootloader": "0x1000",
+    "partitions": "0x8000",
+    "app": "0x10000",
+    "merged": true,
+    "flash_offset": "0x0"
+  },
+  "flash_size": "4MB",
+  "chip": "ESP32-PICO-V3-02",
+  "installation": {
+    "method": "M5Burner or esptool",
+    "file": "TheraminM5-v1.3-SMOOTH-AUDIO.bin",
+    "flash_address": "0x0",
+    "note": "Single file contains bootloader, partitions, and firmware"
+  },
+  "usage_instructions": [
+    "1. Flash firmware using M5Burner with MERGED.bin",
+    "2. Power on - visual animation starts immediately",
+    "3. Press BtnA to turn sound ON (shows green 'ON' indicator)",
+    "4. Tilt left/right to control pitch/frequency",
+    "5. Tilt forward/back to control volume",
+    "6. Watch on-screen display for real-time values",
+    "7. Press BtnB to cycle through visual styles",
+    "8. Hold power button to see help screen",
+    "9. Press BtnA again to turn sound OFF"
+  ],
+  "tips_and_strategies": [
+    "Start with device flat to find center pitch",
+    "Tilt slowly for smooth frequency changes",
+    "Tilt backward (toward you) for maximum volume",
+    "Use visual feedback to learn tilt ranges",
+    "Practice with sound off to master movements",
+    "Grid mode shows wave structure best",
+    "Solid mode is most psychedelic",
+    "Zebra mode creates unique patterns",
+    "Hold device steady for sustained notes",
+    "Gentle tilts create subtle effects"
+  ],
+  "technical_details": {
+    "imu_sensor": "MPU6886 (6-axis)",
+    "angle_calculation": "atan2 from accelerometer X/Y/Z",
+    "smoothing_algorithm": "Exponential moving average (EMA)",
+    "frequency_smoothing": "0.9 old + 0.1 new",
+    "volume_smoothing": "0.8 old + 0.2 new",
+    "pwm_resolution": "8-bit",
+    "pwm_channel": "0",
+    "tone_duration": "50ms bursts for smooth continuous audio",
+    "wave_equation": "50 * cos(-k*freqScale + r*0.1) / (2 + r*0.05)",
+    "projection": "3D perspective with zoom and rotation"
+  },
+  "inspired_by": {
+    "original_instrument": "Theremin (Leon Theremin, 1920)",
+    "control_method": "Motion sensing (modern adaptation)",
+    "visual_style": "Hector 3D mesh animation",
+    "color_theory": "HSV color space for frequency mapping"
+  },
+  "version_history": {
+    "1.3.0": "SMOOTH AUDIO - Fixed audio stuttering with 50ms continuous tone bursts, removed frequency change threshold for seamless playback",
+    "1.2.0": "Improved frequency mapping and visual feedback",
+    "1.1.0": "Enhanced IMU smoothing and volume control",
+    "1.0.0": "Initial release: Full theremin controls with tilt sensing, 3 visual modes, real-time synthesis, psychedelic Hector visuals"
+  },
+  "credits": {
+    "developer": "coreymillia with GitHub Copilot CLI",
+    "inspired_by": "Theremin (Leon Theremin, 1920)",
+    "visual_style": "Hector 3D animation techniques",
+    "libraries": [
+      "M5StickCPlus2 SDK",
+      "M5Unified Framework",
+      "ESP32 Arduino Framework"
+    ]
+  }
+}

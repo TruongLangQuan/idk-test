@@ -1,0 +1,35 @@
+Processing m5stickc_plus2 (platform: espressif32@6.9.0; board: m5stick-c; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/m5stick-c.html
+PLATFORM: Espressif 32 (6.9.0) > M5Stick-C
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 36 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- M5StickCPlus2 @ 1.0.2
+Building in release mode
+Building .pio/build/m5stickc_plus2/bootloader.bin
+Generating partitions .pio/build/m5stickc_plus2/partitions.bin
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 1 ELF section
+Successfully created esp32 image.
+Retrieving maximum program size .pio/build/m5stickc_plus2/firmware.elf
+Checking size .pio/build/m5stickc_plus2/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]  10.4% (used 34088 bytes from 327680 bytes)
+Flash: [====      ]  38.0% (used 497621 bytes from 1310720 bytes)
+Building .pio/build/m5stickc_plus2/firmware.bin
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 2 ELF sections
+Successfully created esp32 image.
+========================= [SUCCESS] Took 11.90 seconds =========================

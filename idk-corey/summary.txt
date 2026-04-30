@@ -1,0 +1,1155 @@
+[01] BUILD 1942-Tetrimino-M5StickC-Plus2
+[01] OK    1942-Tetrimino-M5StickC-Plus2
+[02] BUILD 341-Xscreensaver-M5StickC-Plus1-Plus2-
+[02] OK    341-Xscreensaver-M5StickC-Plus1-Plus2-
+[03] BUILD 7-Games-For-M5StickC-Plus2
+[09] OK    Columns-M5Stick-Plus-2
+[10] BUILD Dodge-Tetris-M5StickC-Plus2
+[03] OK    7-Games-For-M5StickC-Plus2
+[04] BUILD ArduinoGotchi-M5Stick-esp32-Tamagotchi
+[04] OK    ArduinoGotchi-M5Stick-esp32-Tamagotchi
+[05] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/BlynkIrRemote
+[05] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/BlynkIrRemote log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_BlynkIrRemote.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[06] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/CommonAcControl
+[06] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/CommonAcControl log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_CommonAcControl.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2, shakedown_all_protocols'
+[07] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/ControlSamsungAC
+[07] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/ControlSamsungAC log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_ControlSamsungAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[08] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/DumbIRRepeater
+[08] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/DumbIRRepeater log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_DumbIRRepeater.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[09] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRGCSendDemo
+[09] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRGCSendDemo log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRGCSendDemo.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[10] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRGCTCPServer
+[10] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRGCTCPServer log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRGCTCPServer.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[11] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRMQTTServer
+[11] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRMQTTServer log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRMQTTServer.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'd1_mini, d1_mini_no_mqtt, nodemcuv2, esp01_1m, d1_mini_noMDNS, esp32dev, esp8266_1m_OTA_minimal'
+[12] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDemo
+[12] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDemo log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRrecvDemo.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[13] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDump
+[13] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDump log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRrecvDump.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[14] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDumpV2
+[14] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDumpV2 log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRrecvDumpV2.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'fr-FR, en-US, ru-RU, sv-SE, es-ES, de-CH, de-DE, en-IE, en-UK, nodemcuv2, en-AU, pt-BR, zh-CN, shakedown_no_protocols, it-IT, esp32dev'
+[15] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDumpV3
+[15] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDumpV3 log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRrecvDumpV3.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'ru-RU, fr-FR, pt-BR, esp32dev, en-AU, en-US, en-IE, sv-SE, nodemcuv2, es-ES, en-UK, zh-CN, it-IT, de-DE, de-CH'
+[16] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRsendDemo
+[16] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRsendDemo log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRsendDemo.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[17] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRsendProntoDemo
+[17] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRsendProntoDemo log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRsendProntoDemo.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[18] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRServer
+[18] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRServer log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRServer.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[19] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/JVCPanasonicSendDemo
+[19] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/JVCPanasonicSendDemo log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_JVCPanasonicSendDemo.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[20] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/LGACSend
+[20] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/LGACSend log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_LGACSend.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[21] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/SmartIRRepeater
+[21] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/SmartIRRepeater log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_SmartIRRepeater.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'shakedown_all_protocols, esp32dev, nodemcuv2, shakedown_no_protocols'
+[22] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnArgoAC
+[22] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnArgoAC log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnArgoAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[23] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnDaikinAC
+[23] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnDaikinAC log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnDaikinAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[24] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnFujitsuAC
+[24] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnFujitsuAC log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnFujitsuAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[25] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnGreeAC
+[25] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnGreeAC log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnGreeAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[26] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnKelvinatorAC
+[26] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnKelvinatorAC log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnKelvinatorAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[27] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnMitsubishiAC
+[27] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnMitsubishiAC log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnMitsubishiAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[28] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnMitsubishiHeavyAc
+[28] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnMitsubishiHeavyAc log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnMitsubishiHeavyAc.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[29] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnPanasonicAC
+[29] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnPanasonicAC log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnPanasonicAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[30] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnToshibaAC
+[30] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnToshibaAC log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnToshibaAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[31] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnTrotecAC
+[31] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnTrotecAC log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnTrotecAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[32] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/Web-AC-control
+[32] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/Web-AC-control log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_Web-AC-control.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[33] BUILD Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266
+[33] FAIL  Biorhythm-Calculator---M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266 log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'd1_mini, esp32devIDF5x, esp32dev, nodemcuv2'
+[34] BUILD Biorhythm-Calculator---M5StickC-Plus2
+[10] OK    Dodge-Tetris-M5StickC-Plus2
+[11] BUILD Evil-Portal-Hater-Watch-M5StickC-Plus2
+[11] FAIL  Evil-Portal-Hater-Watch-M5StickC-Plus2 rc=1 log=/tmp/idk-corey-build-logs/Evil-Portal-Hater-Watch-M5StickC-Plus2.log
+                             ~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Evil-Portal-Hater-Watch-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Evil-Portal-Hater-Watch-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7f5e44d2b7f0>:
+    Traceback (most recent call last):
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/usr/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Evil-Portal-Hater-Watch-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Evil-Portal-Hater-Watch-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[12] BUILD Halloween-Tetris-M5Stick-Plus-2-With-Treats-or-Tricks
+[34] FAIL  Biorhythm-Calculator---M5StickC-Plus2 log=/tmp/idk-corey-build-logs/Biorhythm-Calculator---M5StickC-Plus2.log
+    In file included from /home/truonglangquan/idk-code/idk-test/idk-corey/_libs/M5GFX/src/M5GFX.h:50,
+                     from /home/truonglangquan/idk-code/idk-test/idk-corey/_libs/M5Unified/src/M5Unified.hpp:19,
+                     from /home/truonglangquan/idk-code/idk-test/idk-corey/_libs/M5Unified/src/M5Unified.h:5,
+                     from /home/truonglangquan/idk-code/idk-test/idk-corey/_libs/M5StickCPlus2/src/M5StickCPlus2.h:4,
+                     from src/main.cpp:1:
+    /home/truonglangquan/idk-code/idk-test/idk-corey/_libs/M5GFX/src/lgfx/v1/LGFXBase.hpp:708:19: note: declared here
+         inline size_t drawString(const char *string, int32_t x, int32_t y, uint8_t      font) { return draw_string(string, x, y, _text_style.datum, fontdata[font]); }
+                       ^~~~~~~~~~
+    src/main.cpp:478:50: warning: 'size_t lgfx::v1::LGFXBase::drawString(const char*, int32_t, int32_t, uint8_t)' is deprecated: use IFont [-Wdeprecated-declarations]
+       Disp.drawString("M5: Next  B: Back", 15, 220, 1);
+                                                      ^
+    In file included from /home/truonglangquan/idk-code/idk-test/idk-corey/_libs/M5GFX/src/M5GFX.h:50,
+                     from /home/truonglangquan/idk-code/idk-test/idk-corey/_libs/M5Unified/src/M5Unified.hpp:19,
+                     from /home/truonglangquan/idk-code/idk-test/idk-corey/_libs/M5Unified/src/M5Unified.h:5,
+                     from /home/truonglangquan/idk-code/idk-test/idk-corey/_libs/M5StickCPlus2/src/M5StickCPlus2.h:4,
+                     from src/main.cpp:1:
+    /home/truonglangquan/idk-code/idk-test/idk-corey/_libs/M5GFX/src/lgfx/v1/LGFXBase.hpp:708:19: note: declared here
+         inline size_t drawString(const char *string, int32_t x, int32_t y, uint8_t      font) { return draw_string(string, x, y, _text_style.datum, fontdata[font]); }
+                       ^~~~~~~~~~
+    src/main.cpp:481:27: error: a function-definition is not allowed here before '{' token
+     void drawBirthDateInput() {
+                               ^
+    src/main.cpp:529:28: error: a function-definition is not allowed here before '{' token
+     void drawBiorhythmScreen() {
+                                ^
+    src/main.cpp:579:30: error: a function-definition is not allowed here before '{' token
+     void drawSingleGraphScreen() {
+                                  ^
+    src/main.cpp:646:109: error: a function-definition is not allowed here before '{' token
+     void drawLargeBiorhythmCurve(int x, int y, int width, int height, int centerDay, int cycle, uint16_t color) {
+                                                                                                                 ^
+    src/main.cpp:703:66: error: a function-definition is not allowed here before '{' token
+     void drawMiniBiorhythmGraph(int x, int y, int width, int height) {
+                                                                      ^
+    src/main.cpp:730:104: error: a function-definition is not allowed here before '{' token
+     void drawBiorhythmCurve(int x, int y, int width, int height, int centerDay, int cycle, uint16_t color) {
+                                                                                                            ^
+    src/main.cpp:754:26: error: a function-definition is not allowed here before '{' token
+     void drawColoredBorder() {
+                              ^
+    src/main.cpp:782:99: error: a function-definition is not allowed here before '{' token
+     void drawSineWave(int startX, int startY, int width, int height, float frequency, uint16_t color) {
+                                                                                                       ^
+    src/main.cpp:795:73: error: a function-definition is not allowed here before '{' token
+     void drawCenteredText(String text, int y, uint16_t color, int size = 1) {
+                                                                             ^
+    src/main.cpp:804:31: error: a function-definition is not allowed here before '{' token
+     bool isButtonPressed(int pin) {
+                                   ^
+    src/main.cpp:808:27: error: a function-definition is not allowed here before '{' token
+     void waitForButtonPress() {
+                               ^
+    src/main.cpp:815:1: error: expected '}' at end of input
+     }
+     ^
+    src/main.cpp:448:23: note: to match this '{'
+     void drawInfoScreen() {
+                           ^
+    *** [.pio/build/m5stickc_plus2/src/main.cpp.o] Error 1
+    ========================= [FAILED] Took 10.07 seconds =========================
+[35] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/BlynkIrRemote
+[35] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/BlynkIrRemote log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_BlynkIrRemote.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[36] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/CommonAcControl
+[36] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/CommonAcControl log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_CommonAcControl.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'shakedown_all_protocols, nodemcuv2, esp32dev'
+[37] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/ControlSamsungAC
+[37] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/ControlSamsungAC log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_ControlSamsungAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[38] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/DumbIRRepeater
+[38] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/DumbIRRepeater log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_DumbIRRepeater.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[39] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRGCSendDemo
+[39] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRGCSendDemo log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRGCSendDemo.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[40] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRGCTCPServer
+[40] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRGCTCPServer log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRGCTCPServer.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[41] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRMQTTServer
+[41] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRMQTTServer log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRMQTTServer.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, d1_mini_no_mqtt, nodemcuv2, esp01_1m, esp8266_1m_OTA_minimal, d1_mini_noMDNS, d1_mini'
+[42] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDemo
+[42] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDemo log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRrecvDemo.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[43] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDump
+[43] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDump log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRrecvDump.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[44] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDumpV2
+[44] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDumpV2 log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRrecvDumpV2.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'en-UK, de-DE, en-US, es-ES, it-IT, en-IE, de-CH, fr-FR, ru-RU, sv-SE, pt-BR, esp32dev, shakedown_no_protocols, en-AU, zh-CN, nodemcuv2'
+[45] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDumpV3
+[45] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRrecvDumpV3 log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRrecvDumpV3.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, en-UK, de-DE, en-AU, en-IE, es-ES, en-US, fr-FR, it-IT, nodemcuv2, de-CH, ru-RU, zh-CN, sv-SE, pt-BR'
+[46] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRsendDemo
+[46] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRsendDemo log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRsendDemo.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[47] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRsendProntoDemo
+[47] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRsendProntoDemo log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRsendProntoDemo.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[48] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRServer
+[48] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/IRServer log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_IRServer.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[49] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/JVCPanasonicSendDemo
+[49] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/JVCPanasonicSendDemo log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_JVCPanasonicSendDemo.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[50] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/LGACSend
+[50] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/LGACSend log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_LGACSend.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[51] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/SmartIRRepeater
+[51] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/SmartIRRepeater log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_SmartIRRepeater.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'shakedown_all_protocols, esp32dev, shakedown_no_protocols, nodemcuv2'
+[52] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnArgoAC
+[52] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnArgoAC log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnArgoAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[53] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnDaikinAC
+[53] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnDaikinAC log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnDaikinAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[54] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnFujitsuAC
+[54] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnFujitsuAC log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnFujitsuAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[55] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnGreeAC
+[55] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnGreeAC log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnGreeAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[56] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnKelvinatorAC
+[56] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnKelvinatorAC log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnKelvinatorAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[57] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnMitsubishiAC
+[57] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnMitsubishiAC log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnMitsubishiAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[58] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnMitsubishiHeavyAc
+[58] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnMitsubishiHeavyAc log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnMitsubishiHeavyAc.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[59] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnPanasonicAC
+[59] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnPanasonicAC log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnPanasonicAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'esp32dev, nodemcuv2'
+[60] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnToshibaAC
+[60] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnToshibaAC log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnToshibaAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[61] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnTrotecAC
+[61] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/TurnOnTrotecAC log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_TurnOnTrotecAC.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[62] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/Web-AC-control
+[62] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266/examples/Web-AC-control log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266_examples_Web-AC-control.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, esp32dev'
+[63] BUILD Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266
+[63] FAIL  Cascade-Tetris-M5StickC-Plus2/.pio/libdeps/m5stickc_plus2/IRremoteESP8266 log=/tmp/idk-corey-build-logs/Cascade-Tetris-M5StickC-Plus2_.pio_libdeps_m5stickc_plus2_IRremoteESP8266.log
+    UnknownEnvNamesError: Unknown environment names 'm5stickc_plus2'. Valid names are 'nodemcuv2, d1_mini, esp32dev, esp32devIDF5x'
+[64] BUILD Cascade-Tetris-M5StickC-Plus2
+[64] OK    Cascade-Tetris-M5StickC-Plus2
+[65] BUILD Catode32-M5StickC-Plus2
+[65] OK    Catode32-M5StickC-Plus2
+[66] BUILD ChromaticCascade-M5StickC-Plus2
+[66] OK    ChromaticCascade-M5StickC-Plus2
+[67] BUILD Columns-M5Stick-Plus-2
+[67] OK    Columns-M5Stick-Plus-2
+[68] BUILD Dodge-Tetris-M5StickC-Plus2
+[68] OK    Dodge-Tetris-M5StickC-Plus2
+[69] BUILD Evil-Portal-Hater-Watch-M5StickC-Plus2
+[69] FAIL  Evil-Portal-Hater-Watch-M5StickC-Plus2 log=/tmp/idk-corey-build-logs/Evil-Portal-Hater-Watch-M5StickC-Plus2.log
+        telemetry.on_exit()
+        ~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 177, in on_exit
+        TelemetryLogger().send()
+        ~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+                          ~~~^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+                             ~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Evil-Portal-Hater-Watch-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Evil-Portal-Hater-Watch-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7fd08fa2ac40>:
+    Traceback (most recent call last):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Evil-Portal-Hater-Watch-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Evil-Portal-Hater-Watch-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[70] BUILD Halloween-Tetris-M5Stick-Plus-2-With-Treats-or-Tricks
+[12] OK    Halloween-Tetris-M5Stick-Plus-2-With-Treats-or-Tricks
+[13] BUILD Hector-Interactive-M5StickC-Plus2
+[13] FAIL  Hector-Interactive-M5StickC-Plus2 rc=1 log=/tmp/idk-corey-build-logs/Hector-Interactive-M5StickC-Plus2.log
+                             ~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Hector-Interactive-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Hector-Interactive-M5StickC-Plus2/platformio.ini' [line 20]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7fc51a4e77f0>:
+    Traceback (most recent call last):
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/usr/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Hector-Interactive-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Hector-Interactive-M5StickC-Plus2/platformio.ini' [line 20]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[14] BUILD JousTris-M5StickC-Plus2
+[14] OK    JousTris-M5StickC-Plus2
+[15] BUILD M5GroqBot-M5StickC-Plus2
+[70] OK    Halloween-Tetris-M5Stick-Plus-2-With-Treats-or-Tricks
+[71] BUILD Hector-Interactive-M5StickC-Plus2
+[71] FAIL  Hector-Interactive-M5StickC-Plus2 log=/tmp/idk-corey-build-logs/Hector-Interactive-M5StickC-Plus2.log
+        telemetry.on_exit()
+        ~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 177, in on_exit
+        TelemetryLogger().send()
+        ~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+                          ~~~^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+                             ~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Hector-Interactive-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Hector-Interactive-M5StickC-Plus2/platformio.ini' [line 20]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7f1aaa872c40>:
+    Traceback (most recent call last):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Hector-Interactive-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Hector-Interactive-M5StickC-Plus2/platformio.ini' [line 20]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[72] BUILD JousTris-M5StickC-Plus2
+[72] OK    JousTris-M5StickC-Plus2
+[73] BUILD M5GroqBot-M5StickC-Plus2
+[15] OK    M5GroqBot-M5StickC-Plus2
+[16] BUILD M5StickC-Plus-Joke-scroller
+[73] OK    M5GroqBot-M5StickC-Plus2
+[74] BUILD M5StickC-Plus-Joke-scroller
+[16] FAIL  M5StickC-Plus-Joke-scroller rc=1 log=/tmp/idk-corey-build-logs/M5StickC-Plus-Joke-scroller.log
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/Fonts/efont/lgfx_efont_cn.c.o
+    Archiving .pio/build/m5stickc_plus2/lib3ec/libWire.a
+    Indexing .pio/build/m5stickc_plus2/lib3ec/libWire.a
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/Fonts/efont/lgfx_efont_ja.c.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/Fonts/efont/lgfx_efont_kr.c.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/Fonts/efont/lgfx_efont_tw.c.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/utility/lgfx_miniz.c.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/utility/lgfx_pngle.c.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/utility/lgfx_qoi.c.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/utility/lgfx_qrcode.c.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/utility/lgfx_tjpgd.c.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/LGFXBase.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/LGFX_Button.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/LGFX_Sprite.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/lgfx_fonts.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/misc/DividedFrameBuffer.cpp.o
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/panel/Panel_M5UnitGLASS.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/panel/Panel_M5UnitLCD.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/panel/Panel_SSD1306.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32/Bus_EPD.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32/Bus_I2C.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32/Bus_Parallel8.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32/Bus_SPI.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32/Light_PWM.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32/Panel_CVBS.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32/Panel_EPD.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32/common.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32c3/Bus_Parallel8.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32p4/Bus_DSI.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32p4/Panel_DSI.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32p4/Touch_ST7123.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32s2/Bus_Parallel16.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32s2/Bus_Parallel8.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32s3/Bus_Parallel16.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/esp32s3/Bus_Parallel8.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/framebuffer/Panel_fb.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/framebuffer/common.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/sdl/Panel_sdl.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/platforms/sdl/common.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/touch/Touch_CSTxxx.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/touch/Touch_FT5x06.cpp.o
+    Compiling .pio/build/m5stickc_plus2/lib3a7/M5GFX/lgfx/v1/touch/Touch_GT911.cpp.o
+    Compiling .pio/build/m5stickc_plus2/libfd6/M5Unified/M5Unified.cpp.o
+    Compiling .pio/build/m5stickc_plus2/libfd6/M5Unified/utility/Button_Class.cpp.o
+    Compiling .pio/build/m5stickc_plus2/libfd6/M5Unified/utility/I2C_Class.cpp.o
+    Compiling .pio/build/m5stickc_plus2/libfd6/M5Unified/utility/IMU_Class.cpp.o
+    Archiving .pio/build/m5stickc_plus2/lib3a7/libM5GFX.a
+    /home/truonglangquan/.platformio/packages/toolchain-xtensa-esp32/bin/../lib/gcc/xtensa-esp32-elf/8.4.0/../../../../xtensa-esp32-elf/bin/ar: .pio/build/m5stickc_plus2/lib3a7/M5GFX/M5GFX.cpp.o: No such file or directory
+    *** [.pio/build/m5stickc_plus2/lib3a7/libM5GFX.a] Error 1
+    ========================= [FAILED] Took 57.30 seconds =========================
+[17] BUILD M5StickC-Plus-Matrix-Engine-101-Code-Rain
+[74] OK    M5StickC-Plus-Joke-scroller
+[75] BUILD M5StickC-Plus-Matrix-Engine-101-Code-Rain
+[17] OK    M5StickC-Plus-Matrix-Engine-101-Code-Rain
+[18] BUILD MagicHateBot-M5StickC-Plus2
+[75] OK    M5StickC-Plus-Matrix-Engine-101-Code-Rain
+[76] BUILD MagicHateBot-M5StickC-Plus2
+[18] OK    MagicHateBot-M5StickC-Plus2
+[19] BUILD Paint-With-M5StickC-Plus2
+[19] FAIL  Paint-With-M5StickC-Plus2 rc=1 log=/tmp/idk-corey-build-logs/Paint-With-M5StickC-Plus2.log
+                             ~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Paint-With-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Paint-With-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7f40f12eb7f0>:
+    Traceback (most recent call last):
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/usr/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Paint-With-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Paint-With-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[20] BUILD Portal-Killer-M5StickC-Plus2
+[20] FAIL  Portal-Killer-M5StickC-Plus2 rc=1 log=/tmp/idk-corey-build-logs/Portal-Killer-M5StickC-Plus2.log
+                             ~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Portal-Killer-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Portal-Killer-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7fb3536377f0>:
+    Traceback (most recent call last):
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/usr/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Portal-Killer-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Portal-Killer-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[21] BUILD Psychedelic-M5StickC-Plus2
+[76] OK    MagicHateBot-M5StickC-Plus2
+[77] BUILD Paint-With-M5StickC-Plus2
+[77] FAIL  Paint-With-M5StickC-Plus2 log=/tmp/idk-corey-build-logs/Paint-With-M5StickC-Plus2.log
+        telemetry.on_exit()
+        ~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 177, in on_exit
+        TelemetryLogger().send()
+        ~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+                          ~~~^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+                             ~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Paint-With-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Paint-With-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7fe62006ec40>:
+    Traceback (most recent call last):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Paint-With-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Paint-With-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[78] BUILD Portal-Killer-M5StickC-Plus2
+[78] FAIL  Portal-Killer-M5StickC-Plus2 log=/tmp/idk-corey-build-logs/Portal-Killer-M5StickC-Plus2.log
+        telemetry.on_exit()
+        ~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 177, in on_exit
+        TelemetryLogger().send()
+        ~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+                          ~~~^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+                             ~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Portal-Killer-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Portal-Killer-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7fb99e636c40>:
+    Traceback (most recent call last):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Portal-Killer-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Portal-Killer-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[79] BUILD Psychedelic-M5StickC-Plus2
+[21] OK    Psychedelic-M5StickC-Plus2
+[22] BUILD Psychedelic-Theramin-M5StickC-Plus2
+[79] OK    Psychedelic-M5StickC-Plus2
+[80] BUILD Psychedelic-Theramin-M5StickC-Plus2
+[22] OK    Psychedelic-Theramin-M5StickC-Plus2
+[23] BUILD Quindectris-M5StickC-Plus2
+[80] OK    Psychedelic-Theramin-M5StickC-Plus2
+[81] BUILD Quindectris-M5StickC-Plus2/github-release
+[23] OK    Quindectris-M5StickC-Plus2
+[24] BUILD Scorched-Earth-M5StickC-Plus2
+[81] OK    Quindectris-M5StickC-Plus2/github-release
+[82] BUILD Quindectris-M5StickC-Plus2
+[82] OK    Quindectris-M5StickC-Plus2
+[83] BUILD Scorched-Earth-M5StickC-Plus2
+[24] OK    Scorched-Earth-M5StickC-Plus2
+[25] BUILD SonicTheHedgeHog-M5StickC-Plus2
+[25] FAIL  SonicTheHedgeHog-M5StickC-Plus2 rc=1 log=/tmp/idk-corey-build-logs/SonicTheHedgeHog-M5StickC-Plus2.log
+    Processing m5stickc_plus2 (platform: espressif32@6.9.0; board: m5stick-c; framework: arduino)
+    --------------------------------------------------------------------------------
+    Verbose mode can be enabled via `-v, --verbose` option
+    CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/m5stick-c.html
+    PLATFORM: Espressif 32 (6.9.0) > M5Stick-C
+    HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+    DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+    PACKAGES: 
+     - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+     - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+     - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+    LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+    LDF Modes: Finder ~ chain, Compatibility ~ soft
+    Found 36 compatible libraries
+    Scanning dependencies...
+    Dependency Graph
+    |-- Wire @ 2.0.0
+    |-- M5StickCPlus2 @ 1.0.2
+    Building in release mode
+    Compiling .pio/build/m5stickc_plus2/src/AnimMgr.cpp.o
+    Compiling .pio/build/m5stickc_plus2/src/Camera.cpp.o
+    Compiling .pio/build/m5stickc_plus2/src/EnemiesGHZ.cpp.o
+    Compiling .pio/build/m5stickc_plus2/src/Enemy.cpp.o
+    src/EnemiesGHZ.cpp:1:10: fatal error: entities/EnemiesGHZ.h: No such file or directory
+     #include "entities/EnemiesGHZ.h"
+              ^~~~~~~~~~~~~~~~~~~~~~~
+    src/Enemy.cpp:1:10: fatal error: entities/Enemy.h: No such file or directory
+     #include "entities/Enemy.h"
+              ^~~~~~~~~~~~~~~~~~
+    compilation terminated.
+    compilation terminated.
+    *** [.pio/build/m5stickc_plus2/src/EnemiesGHZ.cpp.o] Error 1
+    *** [.pio/build/m5stickc_plus2/src/Enemy.cpp.o] Error 1
+    In file included from src/AnimMgr.cpp:1:
+    include/AnimMgr.h:3:10: fatal error: structs/Geometry.h: No such file or directory
+     #include "structs/Geometry.h"
+              ^~~~~~~~~~~~~~~~~~~~
+    compilation terminated.
+    *** [.pio/build/m5stickc_plus2/src/AnimMgr.cpp.o] Error 1
+    In file included from src/Camera.cpp:1:
+    include/Camera.h:3:10: fatal error: structs/Geometry.h: No such file or directory
+     #include "structs/Geometry.h"
+              ^~~~~~~~~~~~~~~~~~~~
+    compilation terminated.
+    *** [.pio/build/m5stickc_plus2/src/Camera.cpp.o] Error 1
+    ========================== [FAILED] Took 9.69 seconds ==========================
+[26] BUILD Spamtastic-M5StickC-Plus2-Beacon
+[26] FAIL  Spamtastic-M5StickC-Plus2-Beacon rc=1 log=/tmp/idk-corey-build-logs/Spamtastic-M5StickC-Plus2-Beacon.log
+                             ~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Spamtastic-M5StickC-Plus2-Beacon/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Spamtastic-M5StickC-Plus2-Beacon/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7f6b21d1f7f0>:
+    Traceback (most recent call last):
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/usr/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Spamtastic-M5StickC-Plus2-Beacon/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Spamtastic-M5StickC-Plus2-Beacon/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[27] BUILD TETROIDS-M5StickC-Plus2
+[83] OK    Scorched-Earth-M5StickC-Plus2
+[84] BUILD SonicTheHedgeHog-M5StickC-Plus2
+[84] FAIL  SonicTheHedgeHog-M5StickC-Plus2 log=/tmp/idk-corey-build-logs/SonicTheHedgeHog-M5StickC-Plus2.log
+    Processing m5stickc_plus2 (platform: espressif32@6.9.0; board: m5stick-c; framework: arduino)
+    --------------------------------------------------------------------------------
+    Verbose mode can be enabled via `-v, --verbose` option
+    CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/m5stick-c.html
+    PLATFORM: Espressif 32 (6.9.0) > M5Stick-C
+    HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+    DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+    PACKAGES: 
+     - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+     - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+     - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+    LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+    LDF Modes: Finder ~ chain, Compatibility ~ soft
+    Found 36 compatible libraries
+    Scanning dependencies...
+    Dependency Graph
+    |-- Wire @ 2.0.0
+    |-- M5StickCPlus2 @ 1.0.2
+    Building in release mode
+    Compiling .pio/build/m5stickc_plus2/src/AnimMgr.cpp.o
+    Compiling .pio/build/m5stickc_plus2/src/Camera.cpp.o
+    Compiling .pio/build/m5stickc_plus2/src/EnemiesGHZ.cpp.o
+    Compiling .pio/build/m5stickc_plus2/src/Enemy.cpp.o
+    src/Enemy.cpp:1:10: fatal error: entities/Enemy.h: No such file or directory
+     #include "entities/Enemy.h"
+              ^~~~~~~~~~~~~~~~~~
+    compilation terminated.
+    src/EnemiesGHZ.cpp:1:10: fatal error: entities/EnemiesGHZ.h: No such file or directory
+     #include "entities/EnemiesGHZ.h"
+              ^~~~~~~~~~~~~~~~~~~~~~~
+    compilation terminated.
+    *** [.pio/build/m5stickc_plus2/src/EnemiesGHZ.cpp.o] Error 1
+    *** [.pio/build/m5stickc_plus2/src/Enemy.cpp.o] Error 1
+    In file included from src/AnimMgr.cpp:1:
+    include/AnimMgr.h:3:10: fatal error: structs/Geometry.h: No such file or directory
+     #include "structs/Geometry.h"
+              ^~~~~~~~~~~~~~~~~~~~
+    compilation terminated.
+    *** [.pio/build/m5stickc_plus2/src/AnimMgr.cpp.o] Error 1
+    In file included from src/Camera.cpp:1:
+    include/Camera.h:3:10: fatal error: structs/Geometry.h: No such file or directory
+     #include "structs/Geometry.h"
+              ^~~~~~~~~~~~~~~~~~~~
+    compilation terminated.
+    *** [.pio/build/m5stickc_plus2/src/Camera.cpp.o] Error 1
+    ========================== [FAILED] Took 7.69 seconds ==========================
+[85] BUILD Spamtastic-M5StickC-Plus2-Beacon
+[85] FAIL  Spamtastic-M5StickC-Plus2-Beacon log=/tmp/idk-corey-build-logs/Spamtastic-M5StickC-Plus2-Beacon.log
+        telemetry.on_exit()
+        ~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 177, in on_exit
+        TelemetryLogger().send()
+        ~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+                          ~~~^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+                             ~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Spamtastic-M5StickC-Plus2-Beacon/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Spamtastic-M5StickC-Plus2-Beacon/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7fb761f66c40>:
+    Traceback (most recent call last):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Spamtastic-M5StickC-Plus2-Beacon/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Spamtastic-M5StickC-Plus2-Beacon/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[86] BUILD Tetrimino-Space-Invaders-M5StickC-Plus2
+[27] OK    TETROIDS-M5StickC-Plus2
+[28] BUILD TetriSnake-M5Stick-Plus2
+[86] OK    Tetrimino-Space-Invaders-M5StickC-Plus2
+[87] BUILD Tetris-for-M5StickCPlus2-FastGhost
+[28] OK    TetriSnake-M5Stick-Plus2
+[29] BUILD Tetrimino-Space-Invaders-M5StickC-Plus2
+[29] OK    Tetrimino-Space-Invaders-M5StickC-Plus2
+[30] BUILD Tetris-for-M5StickCPlus2-FastGhost
+[87] OK    Tetris-for-M5StickCPlus2-FastGhost
+[88] BUILD TetriSnake-M5Stick-Plus2
+[88] OK    TetriSnake-M5Stick-Plus2
+[89] BUILD TETROIDS-M5StickC-Plus2
+[89] OK    TETROIDS-M5StickC-Plus2
+[90] BUILD ThreeTris-M5StickC-Plus2
+[30] OK    Tetris-for-M5StickCPlus2-FastGhost
+[31] BUILD ThreeTris-M5StickC-Plus2
+[90] OK    ThreeTris-M5StickC-Plus2
+[91] BUILD Vectrex-M5StickC-Plus2
+[91] FAIL  Vectrex-M5StickC-Plus2 log=/tmp/idk-corey-build-logs/Vectrex-M5StickC-Plus2.log
+        telemetry.on_exit()
+        ~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 177, in on_exit
+        TelemetryLogger().send()
+        ~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+                          ~~~^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+                             ~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Vectrex-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Vectrex-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7f5b447e6c40>:
+    Traceback (most recent call last):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/home/truonglangquan/.local/share/pipx/venvs/platformio/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Vectrex-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Vectrex-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[92] BUILD XJackMod-Hooligan-Terminal-Crash-M5Stick
+[31] OK    ThreeTris-M5StickC-Plus2
+[32] BUILD Vectrex-M5StickC-Plus2
+[32] FAIL  Vectrex-M5StickC-Plus2 rc=1 log=/tmp/idk-corey-build-logs/Vectrex-M5StickC-Plus2.log
+                             ~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+                                           ~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+             ~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+                                              ~~~~~~~~~~~~~^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Vectrex-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Vectrex-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+    Exception ignored in atexit callback <function _finalize at 0x7f38031a37f0>:
+    Traceback (most recent call last):
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 313, in _finalize
+        telemetry = TelemetryLogger()
+      File "/usr/lib/python3.14/site-packages/platformio/util.py", line 133, in get_instance
+        _instances[cls] = cls(*args, **kwargs)
+      File "/usr/lib/python3.14/site-packages/platformio/telemetry.py", line 78, in __init__
+        self._http_session = HTTPSession()
+      File "/usr/lib/python3.14/site-packages/platformio/http.py", line 52, in __init__
+        self.headers.update({"User-Agent": app.get_user_agent()})
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 277, in get_user_agent
+        if not get_setting("enable_telemetry"):
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 208, in get_setting
+        with State() as state:
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 88, in __init__
+        self.path = resolve_state_path("core_dir", "appstate.json")
+      File "/usr/lib/python3.14/site-packages/platformio/app.py", line 77, in resolve_state_path
+        state_dir = ProjectConfig.get_instance().get("platformio", conf_option_dir)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 524, in get_instance
+        instance = {"mtime": mtime, "config": ProjectConfig(path)}
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 99, in __init__
+        self.read(path, parse_extra)
+      File "/usr/lib/python3.14/site-packages/platformio/project/config.py", line 113, in read
+        raise exception.InvalidProjectConfError(path, str(exc)) from exc
+    platformio.project.exception.InvalidProjectConfError: Invalid '/home/truonglangquan/idk-code/idk-test/idk-corey/Vectrex-M5StickC-Plus2/platformio.ini' (project configuration file): 'While reading from '/home/truonglangquan/idk-code/idk-test/idk-corey/Vectrex-M5StickC-Plus2/platformio.ini' [line 10]: option 'lib_extra_dirs' in section 'env:m5stickc_plus2' already exists'
+[33] BUILD XJackMod-Hooligan-Terminal-Crash-M5Stick
+[92] OK    XJackMod-Hooligan-Terminal-Crash-M5Stick
+DONE total=92 ok=26 fail=66
+[33] OK    XJackMod-Hooligan-Terminal-Crash-M5Stick
+DONE total=0 ok=0 fail=0

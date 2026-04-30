@@ -1,0 +1,80 @@
+{
+  "name": "XJack Seven-Mode Collection",
+  "version": "v1.0",
+  "description": "Complete XJack digital art collection with seven unique screensaver experiences - Christmas 2024 Edition",
+  "author": "CoreyMillia",
+  "created": "2024-12-24",
+  "category": "Entertainment",
+  "device": "M5StickC Plus2",
+  "platform": "ESP32",
+  "firmware": "XJack-SevenMode-Christmas2024-MERGED.bin",
+  "modes": [
+    {
+      "id": 1,
+      "name": "Original XJack",
+      "description": "Classic horror typewriter from The Shining",
+      "color": "red"
+    },
+    {
+      "id": 2,
+      "name": "Back Room",
+      "description": "Dark poetry saga with haunting narrative",
+      "color": "blue"
+    },
+    {
+      "id": 3,
+      "name": "Dogs & Motorbikes",
+      "description": "Musical comedy anthem with full song structure",
+      "color": "orange"
+    },
+    {
+      "id": 4,
+      "name": "System Error",
+      "description": "Tech apocalypse with escalating system failures",
+      "color": "red"
+    },
+    {
+      "id": 5,
+      "name": "Symbol Storm",
+      "description": "Rainbow chaos with full-screen symbol explosion",
+      "color": "rainbow"
+    },
+    {
+      "id": 6,
+      "name": "Terminal Hacker",
+      "description": "Authentic matrix coding with 3-minute rain finale",
+      "color": "green"
+    },
+    {
+      "id": 7,
+      "name": "Hacked Terminal",
+      "description": "System invasion thriller - realistic hacker takeover",
+      "color": "red"
+    }
+  ],
+  "controls": {
+    "Button A": "Cycle through all 7 modes",
+    "Button B": "Toggle auto-scroll between modes"
+  },
+  "features": [
+    "Seven unique digital art experiences",
+    "Authentic terminal simulations",
+    "Dynamic visual effects and color coding",
+    "XScreenSaver homage with modern twists",
+    "Real functional code (matrix C code actually works)",
+    "Escalating chaos and corruption effects",
+    "Perfect for demos and entertainment"
+  ],
+  "technical": {
+    "flash_size": "4MB",
+    "ram_usage": "26KB (7.9%)",
+    "flash_usage": "473KB (36.1%)",
+    "compile_time": "2024-12-24T01:29:00Z"
+  },
+  "notes": [
+    "The Hacked Terminal mode is so realistic it can cause adrenaline rush!",
+    "Created during Christmas Eve/Day 2024 coding session",
+    "Complete backup available in XJackBackups directory",
+    "Each mode has unique personality and visual styling"
+  ]
+}

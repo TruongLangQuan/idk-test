@@ -1,0 +1,74 @@
+{
+  "name": "Tetriminos Space Invaders",
+  "version": "1.2",
+  "description": "Space Invaders with Tetris-themed graphics and particle effects for M5StickC Plus2",
+  "author": "CoreyMillia",
+  "date": "2025-11-08",
+  "category": "Game",
+  "device": "M5StickC Plus2",
+  "chip": "ESP32-PICO",
+  "flash_mode": "dio",
+  "flash_freq": "80m",
+  "flash_size": "4MB",
+  "merged_bin": "Tetriminos-v1.2-MERGED.bin",
+  "firmware": {
+    "bootloader": {
+      "address": "0x1000",
+      "file": "bootloader.bin"
+    },
+    "partition": {
+      "address": "0x8000",
+      "file": "partitions.bin"
+    },
+    "app": {
+      "address": "0x10000",
+      "file": "Tetriminos-v1.2-APP.bin"
+    }
+  },
+  "features": [
+    "Classic Space Invaders gameplay",
+    "Tetris-themed graphics",
+    "Particle explosion system",
+    "Individual block destruction",
+    "T-piece player ship",
+    "Enemy formations with random positioning",
+    "Progressive difficulty",
+    "Enemy shooting (starts Wave 2)",
+    "Bonus life every 1000 points",
+    "Lives system (3 lives, max 5)",
+    "Death explosion animations",
+    "God Mode toggle",
+    "High score tracking",
+    "Bottom border visual"
+  ],
+  "controls": {
+    "joystick_lr": "Move left/right",
+    "joystick_button": "Shoot",
+    "btnB": "Toggle God Mode",
+    "btnA": "Restart (game over)"
+  },
+  "game_mechanics": {
+    "scoring": {
+      "block_destroy": 5,
+      "wave_complete": 100,
+      "bonus_life": "Every 1000 points"
+    },
+    "difficulty": {
+      "wave_1": "No enemy shooting, slow movement",
+      "wave_2": "Light enemy shooting (30%), faster",
+      "wave_3_4": "Moderate shooting (50%)",
+      "wave_5+": "Heavy shooting (80%), very fast"
+    },
+    "visual_effects": {
+      "explosions": "Particle system with colored debris",
+      "death_animation": "2.5 second explosion before respawn",
+      "enemy_formation": "Random block positioning for organic look"
+    }
+  },
+  "requirements": [
+    "M5StickC Plus2",
+    "Mini JoyC Hat (I2C)"
+  ],
+  "github": "",
+  "license": "MIT"
+}

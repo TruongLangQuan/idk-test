@@ -1,0 +1,47 @@
+{
+  "name": "KILLER Portal BS1 v1.1 TUNED",
+  "version": "1.1.1",
+  "description": "WiFi Portal Killer - Tuned version with stable 120 msg/min spam rate for reliable portal neutralization",
+  "author": "Corey Millia",
+  "category": "Security & Defense",
+  "device": "M5StickC Plus2",
+  "firmware": "KILLERBS1-v1.1-TUNED.bin",
+  "size": 929360,
+  "md5": "bfada41bd83c6b19fdb827e3db12979e",
+  "website": "",
+  "documentation": "",
+  "requires": ["M5StickC Plus2"],
+  "features": [
+    "Automatic evil portal detection",
+    "Targets ALL open WiFi networks",
+    "Stable 120 msgs/min spam rate (TUNED)",
+    "Reliable continuous operation",
+    "Portal crash capability",
+    "Real-time threat scanning",
+    "WiFi network analysis",
+    "Interactive button controls",
+    "Live attack status display"
+  ],
+  "instructions": [
+    "Power on M5StickC Plus2",
+    "Navigate menu with buttons B (up) and C (down)",
+    "Press A to select 'COUNTER ATTACK'",
+    "Device will scan for open networks",
+    "Automatically connects and spams portals",
+    "Tuned spam rate: 120 messages per minute",
+    "Runs continuously without freezing",
+    "Press B anytime to exit back to menu"
+  ],
+  "controls": {
+    "A Button": "Select menu item / Confirm action",
+    "B Button": "Navigate up / Exit to main menu", 
+    "C Button": "Navigate down",
+    "Power Button": "Device power on/off"
+  },
+  "warnings": [
+    "Use only on networks you own or have permission to test",
+    "Tuned for stability - runs continuously",
+    "Educational and defensive use only",
+    "Check local laws regarding WiFi security testing"
+  ]
+}
