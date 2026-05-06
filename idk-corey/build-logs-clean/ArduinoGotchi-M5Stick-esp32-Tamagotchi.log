@@ -22,25 +22,14 @@ Dependency Graph
 |-- Wire @ 2.0.0
 |-- EEPROM @ 2.0.0
 Building in release mode
-Building .pio/build/m5stickc_plus2/bootloader.bin
-Generating partitions .pio/build/m5stickc_plus2/partitions.bin
-esptool.py v4.5.1
-Creating esp32 image...
-Merged 1 ELF section
-Successfully created esp32 image.
 Retrieving maximum program size .pio/build/m5stickc_plus2/firmware.elf
 Checking size .pio/build/m5stickc_plus2/firmware.elf
 Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
 RAM:   [==        ]  15.7% (used 51324 bytes from 327680 bytes)
 Flash: [========= ]  88.7% (used 1162901 bytes from 1310720 bytes)
-Building .pio/build/m5stickc_plus2/firmware.bin
-esptool.py v4.5.1
-Creating esp32 image...
-Merged 27 ELF sections
-Successfully created esp32 image.
-========================= [SUCCESS] Took 16.88 seconds =========================
+========================= [SUCCESS] Took 12.16 seconds =========================
 
 Environment     Status    Duration
 --------------  --------  ------------
-m5stickc_plus2  SUCCESS   00:00:16.876
-========================= 1 succeeded in 00:00:16.876 =========================
+m5stickc_plus2  SUCCESS   00:00:12.156
+========================= 1 succeeded in 00:00:12.156 =========================

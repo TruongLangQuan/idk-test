@@ -1,53 +1,65 @@
 #include "Keyboard.h"
 
-extern UNIT_JOYC joyc;
+// 5-way tactile switch pins
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 bool Keyboard::isKeyPressedRight() {
     #ifdef CORE
-    uint16_t y = joyc.getADCValue(1);
-    return (y < 1600);
+    return (digitalRead(PIN_RIGHT) == LOW);
     #endif
 
 	#ifdef PC
-	return sf::Keyboard::isKeyPressed(KEY_RIGHT);
+	return sf::Keyboard::isKeyPressed(KEY_RIGHT_PC);
 	#endif
 }
 
 bool Keyboard::isKeyPressedLeft() {
-    #ifdef CORE
-    uint16_t y = joyc.getADCValue(1);
-    return (y > 3000);
-    #endif
+	#ifdef CORE
+    return (digitalRead(PIN_LEFT) == LOW);
+	#endif
 
 	#ifdef PC
-	return sf::Keyboard::isKeyPressed(KEY_LEFT);
+	return sf::Keyboard::isKeyPressed(KEY_LEFT_PC);
+	#endif
+}
+
+bool Keyboard::isKeyPressedUp() {
+	#ifdef CORE
+    return (digitalRead(PIN_UP) == LOW);
+	#endif
+
+	#ifdef PC
+	return sf::Keyboard::isKeyPressed(KEY_UP_PC);
 	#endif
 }
 
 bool Keyboard::isKeyPressedDown() {
-    #ifdef CORE
-    uint16_t x = joyc.getADCValue(0);
-    return (x < 1200);
-    #endif
+	#ifdef CORE
+    return (digitalRead(PIN_DOWN) == LOW);
+	#endif
 
 	#ifdef PC
-	return sf::Keyboard::isKeyPressed(KEY_DOWN);
+	return sf::Keyboard::isKeyPressed(KEY_DOWN_PC);
 	#endif
 }
 
 bool Keyboard::isKeyPressedAction() {
-    #ifdef CORE
-    return (joyc.getButtonStatus() == 0);
-    #endif
+	#ifdef CORE
+	return StickCP2.BtnA.isPressed() || (digitalRead(PIN_CENTER) == LOW);
+	#endif
 
 	#ifdef PC
-	return sf::Keyboard::isKeyPressed(KEY_ACTION);
+	return sf::Keyboard::isKeyPressed(KEY_ACTION_PC);
 	#endif
 }  
 
 bool Keyboard::isKeyPressedSpindash() {
 	#ifdef CORE
-	return StickCP2.BtnA.isPressed() && (joyc.getButtonStatus() == 0);
+	return StickCP2.BtnA.isPressed() && (digitalRead(PIN_DOWN) == LOW);
 	#endif
 
 	#ifdef PC

@@ -1,35 +1,14 @@
 # CODING_GUIDELINES
 
-## Embedded-safe rules
-- Prefer fixed-size buffers over unbounded `String` growth in hot paths.
-- Avoid heap allocation inside frame loops.
-- Keep display refresh loops deterministic.
-- Do not block WiFi/UDP/game loops with long delays.
-- If delay is required, keep it tied to frame/update cadence.
+## Embedded-Safe Rules
+- **No Dynamic Allocation in Loops:** Avoid `new`, `malloc`, or `std::string` concatenation inside tight loops (like `update()` or `loop()`). Pre-allocate buffers in `init()` or `setup()`.
+- **Use PSRAM Wisely:** For large display buffers (like `LGFX_Sprite`), allocate them in PSRAM using `sprite.setPsram(true)` to save the 320KB SRAM for core logic.
+- **Fixed-Point Math:** For complex 3D or fractal calculations, prefer fixed-point math or pre-computed lookup tables (LUTs) for sin/cos if FPU is a bottleneck.
 
-## Memory / performance
-- MJPG/GIF/text renderers must avoid repeated large allocations.
-- Large generated assets belong in generated headers or FS, not ad-hoc globals.
-- For subtitle/video timing, track media time separately from decode time.
+## Hardware Abstraction
+- **M5Unified First:** Always use `M5.Display`, `M5.BtnA`, `M5.Imu` instead of underlying specific libraries (like `TFT_eSPI` or direct GPIO reads).
+- **Non-Blocking Logic:** NEVER use `delay()` for timing inside the main loop. Use `millis()`, `micros()`, or a `FrameTimer` class to manage state machines and frame rates.
+- **Yield to System:** In heavy calculations (like Mandelbrot generation), include `delay(1)` or `vTaskDelay(1)` occasionally to prevent the ESP32 Watchdog Timer (WDT) from resetting the device.
 
-## Hardware abstraction
-- Use `M5Unified` APIs on M5 targets instead of duplicating low-level pin logic.
-- Treat `Launcher/boards/pinouts/*` and board `interface.cpp` as the source of truth for board wiring.
-- Treat Tenstar TFT pin macros/user setup as authoritative.
-
-## Driver and I/O rules
-- SD changes require re-testing mount, browse, and file open.
-- WiFi changes must preserve AP/STA mode expectations per project.
-- Never rename subtitle pairing convention without updating docs and UI.
-- RTC changes must preserve offline fallback behavior.
-
-## Repo conventions
-- Most mini-firmwares are single-file apps with `setup()` and `loop()`.
-- Use concise status strings and button hints on screen.
-- Keep rotation explicit in `setup()`.
-- Mark unknown hardware details as `ASSUMPTION`.
-
-## Risk labels
-- SAFE TO EDIT: project-local scene/content logic and README/docs.
-- EDIT WITH CAUTION: WiFi, SD, RTC, subtitle timing, IMU math.
-- DO NOT EDIT LIGHTLY: Launcher board pinouts, board interfaces, core boot flow.
+## Memory Constraints Awareness
+- **Global vs Local:** Keep stack frames small. Large arrays (like a 240x135 z-buffer) should be allocated on the heap (PSRAM) or as globals, not local variables inside a function, to avoid stack overflow crashes.

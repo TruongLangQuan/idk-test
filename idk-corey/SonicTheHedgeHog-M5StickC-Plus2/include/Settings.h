@@ -10,7 +10,6 @@
 #define TEX_GHZ_GIMM 	2
 
 #include <M5StickCPlus2.h>
-#include "UNIT_MiniJoyC.h"
 #include <list>
 
 #ifdef OPTIMAL_RESOLUTION

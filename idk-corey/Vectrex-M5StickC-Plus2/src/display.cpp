@@ -12,7 +12,7 @@ int dirty_maxY = 0;
 bool dirty_flag = false;
 
 // Rotation state (0, 1, 2, 3 for 4 directions)
-uint8_t screenRotation = 1;  // 0=portrait, 1=landscape, 2=portrait180, 3=landscape180
+uint8_t screenRotation = 3;  // Default to landscape 3 (inverted)
 
 void displayInit() {
     #ifdef use_lib_log_serial

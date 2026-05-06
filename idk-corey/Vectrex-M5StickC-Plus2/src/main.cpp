@@ -10,10 +10,8 @@
 #include "gbConfig.h"
 #include "gbGlobals.h"
 #include "osint.h"
-#include "UNIT_MiniJoyC.h"
 
 // JoyC joystick
-UNIT_JOYC joyc;
 
 unsigned int gb_stats_time_cur_unified = 0;
 unsigned int gb_stats_time_min_unified = 500000;
@@ -33,7 +31,7 @@ void setup()
 {
   // Initialize M5StickC Plus2
   M5.begin();
-  M5.Lcd.setRotation(1);  // Landscape
+  M5.Lcd.setRotation(3);  // Landscape 3
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setTextColor(GREEN);
   M5.Lcd.setTextSize(2);
@@ -48,16 +46,12 @@ void setup()
    Serial.println("M5StickVectrex starting...");
   #endif
   
-  // Initialize Mini JoyC (GPIO 0 = SDA, GPIO 26 = SCL)
-  if (joyc.begin(&Wire, 0x54, 0, 26, 100000UL)) {
-    #ifdef use_lib_log_serial
-    Serial.println("JoyC initialized successfully");
-    #endif
-  } else {
-    #ifdef use_lib_log_serial
-    Serial.println("JoyC not detected (will use buttons only)");
-    #endif
-  }
+  // Initialize 5-way switch pins
+  pinMode(32, INPUT_PULLUP);
+  pinMode(33, INPUT_PULLUP);
+  pinMode(25, INPUT_PULLUP);
+  pinMode(26, INPUT_PULLUP);
+  pinMode(0, INPUT_PULLUP);
   
   delay(2000);  // Show splash screen
 }

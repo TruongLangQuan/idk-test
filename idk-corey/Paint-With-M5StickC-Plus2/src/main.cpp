@@ -5,9 +5,19 @@
 // ========== DISPLAY SETUP ==========
 #define Disp M5.Lcd
 
+// 5-way tactile switch pins
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
+
 // ========== JOY C POSITION CONSTANTS ==========
 #define POS_X 0
 #define POS_Y 1
+
+UNIT_JOYC Joystick;
+#define JoyC_ADDR 0x38
 
 // ========== PAINT COLORS ==========
 #define PAINT_BLACK     BLACK
@@ -39,7 +49,6 @@ unsigned long lastUpdate = 0;
 int selectedMenuItem = 0;
 
 // ========== PAINT VARIABLES ==========
-UNIT_JOYC Joystick;
 int cursorX = 67;  // Center of 135px width
 int cursorY = 120; // Center of 240px height
 int brushSize = 2;
@@ -139,13 +148,15 @@ void setup() {
   Disp.setTextSize(1);
   Disp.drawString("Initializing Joy C...", 10, 100);
   
-  while (!(Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000UL))) {
-    delay(100);
-    // Serial.println("Joy C I2C Error!");
+  if (Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000L)) {
+    // Set Joy C LED to green to indicate successful connection
+    Joystick.setLEDColor(0, 0x00FF00);
+    delay(500);
+  } else {
+    Disp.setTextColor(PAINT_RED);
+    Disp.drawString("Joy C NOT FOUND!", 10, 120);
+    delay(2000);
   }
-  
-  // Set Joy C LED to green to indicate successful connection
-  Joystick.setLEDColor(0, 0x00FF00);
   
   // Load saved settings
   loadSettings();
@@ -673,25 +684,11 @@ void drawThinCursor() {
 
 // ========== JOY C HELPER FUNCTIONS ==========
 
-bool isJoyUp() {
-  return Joystick.getADCValue(POS_Y) > 3000; // More sensitive threshold
-}
-
-bool isJoyDown() {
-  return Joystick.getADCValue(POS_Y) < 1200;
-}
-
-bool isJoyLeft() {
-  return Joystick.getADCValue(POS_X) < 1200;
-}
-
-bool isJoyRight() {
-  return Joystick.getADCValue(POS_X) > 3000;
-}
-
-bool isJoyPressed() {
-  return Joystick.getButtonStatus() == 0; // Button is active low
-}
+bool isJoyUp() { return digitalRead(PIN_UP) == LOW; }
+bool isJoyDown() { return digitalRead(PIN_DOWN) == LOW; }
+bool isJoyLeft() { return digitalRead(PIN_LEFT) == LOW; }
+bool isJoyRight() { return digitalRead(PIN_RIGHT) == LOW; }
+bool isJoyPressed() { return digitalRead(PIN_CENTER) == LOW; }
 
 // ========== DATA PERSISTENCE ==========
 

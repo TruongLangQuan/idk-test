@@ -1,9 +1,14 @@
 #include <M5StickCPlus2.h>
-#include "UNIT_MiniJoyC.h"
 #include "tet.h"
 #include "wifi_beacon.h"
 #include "wifi_scanner.h"
 #include <IRsend.h>  // IR library for remote control
+
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 #define Disp M5.Lcd
 #define BITMAP M5.Lcd.drawBitmap(0,0,135,240,tet)
@@ -88,7 +93,7 @@ int linePos[4];
   
 int stage;
 
-UNIT_JOYC Joystick;
+// UNIT_JOYC Joystick removed
 
 int pins[8];
 boolean buttons[8];
@@ -112,21 +117,22 @@ void setup() {
   pinMode(35,INPUT_PULLUP);
   pinMode(37,INPUT_PULLUP);
   pinMode(39,INPUT_PULLUP);
+  
+  // Initialize 5-way switch pins
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_CENTER, INPUT_PULLUP);
 
   Disp.setRotation(0);
   BITMAP;
   Disp.fillRect(0,0,135,18,BLACK);
-  //M5.Lcd.setTextSize(2);
-  //M5.Lcd.setFont(&fonts::FreeSerifBoldItalic9pt7b);
-  //M5.Lcd.drawString("C+2",37,77);
   M5.Lcd.setTextSize(1);
   M5.Lcd.drawString("v.1.5.0",4,8,1);
   M5.Lcd.drawString((String)M5.Power.getBatteryLevel()+"%",107,8,1);
   M5.Lcd.drawString("Loading...",39,134,1);
-  while (!(Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000UL))) {
-    delay(100);
-    Serial.println("I2C Error!\r\n");
-  }
+  
   M5.Lcd.fillRect(39,134,100,10,BLACK);
   M5.Lcd.drawString(" Press M5 ",39,134,1);
   M5.Lcd.drawString("L+R:Beacon Up:Scanner",5,150,1);
@@ -154,10 +160,10 @@ void setup() {
       }
     }
     
-    // Check for WiFi scanner mode (Up on joystick)
-    if(Joystick.getADCValue(1) > 2950) {
+    // Check for WiFi scanner mode (Up on switch)
+    if(digitalRead(PIN_UP) == LOW) {
       delay(500); // Hold time to confirm
-      if(Joystick.getADCValue(1) > 2950) {
+      if(digitalRead(PIN_UP) == LOW) {
         wifiScanner();
         // After WiFi scanner, redraw the screen
         Disp.fillScreen(BLACK);
@@ -176,10 +182,10 @@ void setup() {
       }
     }
     
-    // Check for IR Remote mode (Down on joystick) 
-    if(Joystick.getADCValue(1) < 1600) {
+    // Check for IR Remote mode (Down on switch) 
+    if(digitalRead(PIN_DOWN) == LOW) {
       delay(500); // Hold time to confirm
-      if(Joystick.getADCValue(1) < 1600) {
+      if(digitalRead(PIN_DOWN) == LOW) {
         irRemoteControl();
         // After IR remote, redraw the screen
         Disp.fillScreen(BLACK);
@@ -335,34 +341,19 @@ void loop(){
 
 //==============================JoyC==============================
 int check_Btn(){
-  if (Joystick.getButtonStatus()==0){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_CENTER) == LOW ? 0 : 1;
 }
 int check_Up(){
-  if (Joystick.getADCValue(POS_Y)>2950){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_UP) == LOW ? 0 : 1;
 }
 int check_Right(){
-  if ((Joystick.getADCValue(POS_X)>2950)){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_RIGHT) == LOW ? 0 : 1;
 }
 int check_Left(){
-  if ((Joystick.getADCValue(POS_X)<1350)){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_LEFT) == LOW ? 0 : 1;
 }
 int check_Down() {
-  if ((Joystick.getADCValue(POS_Y)<1600)){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_DOWN) == LOW ? 0 : 1;
 }
 //================================================================
 

@@ -2,10 +2,8 @@
  #define _GB_GLOBAL_H
   
  #include "gbConfig.h"
- #include "UNIT_MiniJoyC.h"
 
- // JoyC joystick object
- extern UNIT_JOYC joyc;
+ // JoyC joystick removed
 
  extern unsigned int gb_time_vga_before;
  extern unsigned int gb_time_now;

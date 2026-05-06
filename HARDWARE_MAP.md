@@ -1,69 +1,44 @@
 # HARDWARE_MAP
 
-## Core targets
-- M5StickC / M5StickC Plus2
-  - Files: most `idk-*` firmware under repo root and subject packs
-  - APIs: `M5Unified`, `M5.Display`, `M5.Imu`, `M5.Rtc`
-  - Protocols: display/IMU/RTC abstracted by `M5Unified`
-  - Risk: HIGH when changing button flow, rotation, RTC, IMU, or SD access assumptions
-- Tenstar ESP32-S3 1.14 TFT
-  - Files: `idk-subtitle/src/main.cpp`, `idk-bat/src/*`
-  - APIs: `TFT_eSPI`, `WiFi`, `WiFiUDP`
-  - Pins: `TFT_I2C_POWER=21`, `TFT_BL` from board config, button on GPIO `0`
-  - Protocols: TFT over SPI `ASSUMPTION`, WiFi STA
-  - Risk: HIGH because real display pins live in TFT_eSPI/user setup or board config
-- Launcher multi-board support
-  - Files: `Launcher/boards/pinouts/*.h`, `Launcher/boards/*/interface.cpp`, `Launcher/src/*`
-  - Protocols: SPI, SD, SD_MMC, WiFi, AsyncWebServer, HTTP update, FS
-  - Risk: VERY HIGH
+## CORE TARGET: M5StickC Plus 2
+**MCU:** ESP32-PICO-V3-02 (240MHz, Wi-Fi, Bluetooth)
+**Memory:** 8MB Flash, 2MB PSRAM
 
-## Storage
-- SD card on M5StickC-class video/audio firmware
-  - Files: `idk-video/src/main.cpp`, `idk-audio/src/main.cpp`
-  - Pins: CS `14`, SCK `0`, MISO `36`, MOSI `26`
-  - Protocol: SPI
-  - Critical dependency: file browser, MJPG/WAV playback
-- Launcher removable storage
-  - Files: `Launcher/src/sd_functions.cpp`, `Launcher/src/main.cpp`
-  - Pins/protocol: board-specific via `Launcher/boards/pinouts/*`
-  - Critical dependency: config, app bins, web UI assets
+### Components & Pins (Managed via M5Unified)
+- **Display:** ST7789V2 135x240 TFT (SPI)
+- **IMU (6-axis):** QMI8658 (I2C)
+- **PMIC (Power):** AXP2101 (I2C)
+- **RTC:** BM8563 (I2C)
+- **Microphone:** SPM1423 (I2S)
+- **Buzzer:** Passive (PWM)
+- **IR Transmitter:** IR diode
+- **Buttons:**
+  - Button A (Front): `G37`
+  - Button B (Side): `G39`
+  - Button C (Power): `G35`
+- **LED:** Red LED (`G19`, inverted)
 
-## Networking
-- WiFi AP + UDP subtitle/control
-  - Files: `idk-video/src/main.cpp`, `idk-subtitle/src/main.cpp`, `idk-maze/src/main.cpp`, `idk-dice/src/main.cpp`
-  - Ports: subtitle `4210`, maze `4211`, dice `4212`
-  - Critical dependency: subtitle sync, remote control
-- WiFi STA / NTP / online tools
-  - Files: `idk-clock/src/main.cpp`, `idk-english-wordform/src/main.cpp`, `Launcher/src/*`, `idk-miner/src/*`
-  - Protocols: WiFi STA, HTTP, NTP
-  - Risk: HIGH if blocking or credential logic changes
+### External Interfaces (Grove Port)
+- `G32` / `G33` (I2C / UART / GPIO) - Often used for 5-way joystick in some projects.
 
-## Display / graphics
-- M5 display path
-  - Files: most `src/main.cpp`, `shared/idk_ui/*`, `shared/idk_vi_font.h`
-  - Dependency: rotation, text metrics, subtitle overlay space
-- Tenstar subtitle display path
-  - Files: `idk-subtitle/src/main.cpp`, `shared/idk_vn_text.h`
-  - Critical dependency: UTF-8/Vietnamese rendering limits
+---
 
-## RTC / timing
-- External RTC via M5
-  - Files: `idk-clock/src/main.cpp`
-  - API: `M5.Rtc`
-  - Critical dependency: offline clock fallback, timezone GMT+7
-- Video timing
-  - Files: `idk-video/src/main.cpp`
-  - Dependency: `kFrameDelayMs`, subtitle cue timing, skip logic
+## ALTERNATE TARGET: CYD (Cheap Yellow Display)
+**MCU:** ESP32-WROOM-32
+- **Display:** ILI9341 / ILI9488 (2.8" or 2.4")
+- **Touch:** XPT2046 / Resistive
+- **SD Card:** SPI
+- **Audio:** DAC / I2S amp
 
-## Input / motion
-- Buttons
-  - Files: all handheld firmwares, Launcher input task
-  - Risk: MEDIUM to HIGH because UI flow is button-driven
-- IMU / tilt
-  - Files: `idk-maze/src/main.cpp`, `idk-dice/src/main.cpp`
-  - Protocol: via `M5Unified`
-  - Risk: HIGH for axis mapping and gameplay correctness
+---
 
-## Assumptions
-- Exact SPI TFT pins for Tenstar are defined outside firmware source via board/TFT setup.
-- M5 display/IMU wiring is abstracted by `M5Unified`; low-level pins are not duplicated in each project.
+## ALTERNATE TARGET: Tenstar / ESP32-S3
+- Custom pinouts defined in specific `idk-ts-*` or `idk-tenstar-*` projects.
+
+---
+
+## ⚠️ CRITICAL DEPENDENCIES
+- `M5Unified` abstracts M5StickC hardware. **DO NOT** use raw `pinMode` or `digitalWrite` for I2C devices or display pins.
+- **ASSUMPTION:** 5-way tactile switch mapping used in some apps (`idk-draw`, `idk-worldgen`) assumes:
+  - UP=`32` (Grove), DOWN=`33` (Grove)
+  - LEFT=`25` (Header), RIGHT=`26` (Header), CENTER=`0` (Header)

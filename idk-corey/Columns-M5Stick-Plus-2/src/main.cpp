@@ -6,13 +6,15 @@
  */
 
 #include <M5StickCPlus2.h>
-#include "UNIT_MiniJoyC.h"
 
 #define Disp M5.Lcd
 
-// JoyC axis indices
-#define POS_X 0
-#define POS_Y 1
+// 5-way tactile switch pins
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 // Display configuration (matching Tetris)
 #define offsetx 14
@@ -24,8 +26,7 @@
 // Game constants
 #define NUM_COLORS 5  // Red, Yellow, Blue, White, Green (with X)
 
-// Global variables
-UNIT_JOYC Joystick;
+// Global variables (Joystick removed)
 
 // Game grid (0 = empty, 1-6 = gem colors)
 byte field[fieldy][fieldx];
@@ -470,27 +471,23 @@ void processMatches() {
 // ============================================================================
 
 int check_Btn() {
-    return Joystick.getButtonStatus() == 0 ? 1 : 0;
+    return digitalRead(PIN_CENTER) == LOW ? 1 : 0;
 }
 
 int check_Left() {
-    int val = Joystick.getADCValue(POS_X);
-    return (val < 1350) ? 1 : 0;  // Left is low value
+    return digitalRead(PIN_LEFT) == LOW ? 1 : 0;
 }
 
 int check_Right() {
-    int val = Joystick.getADCValue(POS_X);
-    return (val > 2950) ? 1 : 0;  // Right is high value
+    return digitalRead(PIN_RIGHT) == LOW ? 1 : 0;
 }
 
 int check_Down() {
-    int val = Joystick.getADCValue(POS_Y);
-    return (val < 1600) ? 1 : 0;  // Only trigger if strongly down
+    return digitalRead(PIN_DOWN) == LOW ? 1 : 0;
 }
 
 int check_Up() {
-    int val = Joystick.getADCValue(POS_Y);
-    return (val > 2950) ? 1 : 0;  // Only trigger if strongly up
+    return digitalRead(PIN_UP) == LOW ? 1 : 0;
 }
 
 void wait() {
@@ -582,11 +579,12 @@ void setup() {
     Disp.setRotation(0);  // Portrait mode like Tetris
     Disp.fillScreen(BLACK);
     
-    // Initialize JoyC (same as Tetris)
-    while (!(Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000UL))) {
-        Disp.println("JoyC not found");
-        delay(1000);
-    }
+    // Initialize 5-way switch
+    pinMode(PIN_UP, INPUT_PULLUP);
+    pinMode(PIN_DOWN, INPUT_PULLUP);
+    pinMode(PIN_LEFT, INPUT_PULLUP);
+    pinMode(PIN_RIGHT, INPUT_PULLUP);
+    pinMode(PIN_CENTER, INPUT_PULLUP);
     
     // Initialize game
     randomSeed(esp_random());

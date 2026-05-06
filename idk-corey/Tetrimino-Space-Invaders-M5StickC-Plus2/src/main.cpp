@@ -1,18 +1,4 @@
-/*
- * TETRIMINO SPACE INVADERS
- * M5StickC Plus2 with Mini JoyC Hat
- * 
- * Player: T-piece ship at bottom
- * Enemies: Small Tetrimino pieces in formation
- * 
- * Controls:
- * - Joystick Left/Right: Move ship
- * - Joystick Button: Shoot
- * - BtnB: Toggle God Mode
- */
-
 #include <M5StickCPlus2.h>
-#include "UNIT_MiniJoyC.h"
 
 // Display configuration
 #define SCREEN_WIDTH 135
@@ -20,6 +6,13 @@
 #define PLAY_AREA_TOP 20
 #define PLAY_AREA_BOTTOM 220
 #define BLOCK_SIZE 6
+
+// 5-way tactile switch pins
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 // Game constants
 #define MAX_BULLETS 3
@@ -31,9 +24,7 @@
 #define ENEMY_COLS 9
 #define ENEMY_ROWS 4
 
-// JoyC
-UNIT_JOYC Joystick;
-#define JoyC_ADDR 0x54
+// JoyC removed
 
 // Colors (Tetris themed)
 #define COLOR_PLAYER 0xF81F    // Magenta (T-piece)
@@ -252,9 +243,8 @@ void drawHUD() {
   
   // Show bonus life message
   if (millis() < bonusLifeDisplayUntil) {
-    M5.Lcd.setTextSize(1);
-    M5.Lcd.setTextColor(0x07E0);
-    M5.Lcd.setCursor(35, 120);
+    M5.Lcd.setCursor(40, 12);
+    M5.Lcd.setTextColor(0x07E0); // Green
     M5.Lcd.print("BONUS LIFE!");
   }
 }
@@ -263,420 +253,233 @@ void drawHUD() {
 // GAME LOGIC
 // ============================================================================
 
-void initPlayer() {
-  player.x = SCREEN_WIDTH / 2;
-  player.y = PLAY_AREA_BOTTOM - 15;
-  player.lives = 3;
-  player.alive = true;
-  player.invincibleUntil = millis() + 2000;
-}
-
-void respawnPlayer() {
-  player.x = SCREEN_WIDTH / 2;
-  player.y = PLAY_AREA_BOTTOM - 15;
-  player.alive = true;
-  player.invincibleUntil = millis() + 2000;
-}
-
-void shootBullet() {
-  unsigned long now = millis();
-  if (now - lastShootTime < 300) return;
+void fire() {
+  if (millis() - lastShootTime < 400) return;
   
   for (int i = 0; i < MAX_BULLETS; i++) {
     if (!bullets[i].active) {
       bullets[i].x = player.x;
       bullets[i].y = player.y - BLOCK_SIZE;
-      bullets[i].vy = -4.0f;  // Shoot upward
+      bullets[i].vy = -3.5f;
       bullets[i].active = true;
-      lastShootTime = now;
-      return;
+      lastShootTime = millis();
+      break;
     }
   }
 }
 
-void spawnEnemyFormation() {
-  int enemyIdx = 0;
-  
-  // Each "position" now spawns 4 individual blocks in a small tetromino pattern
-  for (int row = 0; row < ENEMY_ROWS && enemyIdx < MAX_ENEMIES - 4; row++) {
-    int pieceType = row % 6;  // Vary by row
-    for (int col = 0; col < ENEMY_COLS && enemyIdx < MAX_ENEMIES - 4; col++) {
-      // Spawn 3-4 blocks in a small pattern for this grid position
-      int numBlocks = (pieceType == 1) ? 4 : 3;  // O-piece has 4, others 3
-      
-      for (int b = 0; b < numBlocks; b++) {
-        if (enemyIdx >= MAX_ENEMIES) break;
-        
-        enemies[enemyIdx].gridX = col;
-        enemies[enemyIdx].gridY = row;
-        enemies[enemyIdx].type = pieceType;
-        
-        // Random offset within the cell to create clustered look
-        enemies[enemyIdx].offsetX = random(-2, 3);
-        enemies[enemyIdx].offsetY = random(-2, 3);
-        
-        enemies[enemyIdx].active = true;
-        enemyIdx++;
-      }
+void initEnemies() {
+  int index = 0;
+  for (int r = 0; r < ENEMY_ROWS; r++) {
+    for (int c = 0; c < ENEMY_COLS; c++) {
+      enemies[index].gridX = c;
+      enemies[index].gridY = r;
+      enemies[index].offsetX = random(-2, 3);
+      enemies[index].offsetY = random(-2, 3);
+      enemies[index].type = random(6);
+      enemies[index].active = true;
+      index++;
     }
   }
   
-  // Reset formation position
+  enemyDirection = 1;
   enemyGroupX = 0;
   enemyGroupY = 0;
-  enemyDirection = 1;
-  
-  // Increase speed with each wave
-  enemyMoveDelay = 800 - (wave - 1) * 50;
-  if (enemyMoveDelay < 200) enemyMoveDelay = 200;
+  enemySpeed = 0.3f + (wave * 0.1f);
+  enemyMoveDelay = max(100, 800 - (wave * 50));
 }
 
-void updatePlayer() {
-  if (!player.alive) return;
+void initPlayer() {
+  player.x = SCREEN_WIDTH / 2;
+  player.y = PLAY_AREA_BOTTOM - 10;
+  player.lives = 3;
+  player.alive = true;
+  player.invincibleUntil = 0;
+}
+
+void handleInput() {
+  M5.update();
   
-  int joyX = Joystick.getADCValue(0);
-  bool joyBtn = (Joystick.getButtonStatus() == 0);
-  
-  // Move left/right
-  float moveSpeed = 2.5f;
-  if (joyX < 1350) {
-    player.x -= moveSpeed;
-  } else if (joyX > 2950) {
-    player.x += moveSpeed;
+  // Movement
+  if (digitalRead(PIN_LEFT) == LOW && player.x > 15) {
+    player.x -= 2.0f;
+  }
+  if (digitalRead(PIN_RIGHT) == LOW && player.x < SCREEN_WIDTH - 15) {
+    player.x += 2.0f;
   }
   
-  // Keep player on screen
-  if (player.x < BLOCK_SIZE * 2) player.x = BLOCK_SIZE * 2;
-  if (player.x > SCREEN_WIDTH - BLOCK_SIZE * 2) player.x = SCREEN_WIDTH - BLOCK_SIZE * 2;
-  
-  // Shoot
-  if (joyBtn) {
-    shootBullet();
+  // Fire - Center or Button A
+  if (digitalRead(PIN_CENTER) == LOW || M5.BtnA.isPressed()) {
+    fire();
   }
   
-  // God mode toggle
-  static bool lastBtnB = false;
-  if (M5.BtnB.isPressed() && !lastBtnB) {
+  // God mode toggle - Button B
+  if (M5.BtnB.wasPressed()) {
     godMode = !godMode;
-    delay(200);
   }
-  lastBtnB = M5.BtnB.isPressed();
 }
 
-void updateBullets() {
-  for (int i = 0; i < MAX_BULLETS; i++) {
-    if (!bullets[i].active) continue;
-    
-    bullets[i].y += bullets[i].vy;
-    
-    // Deactivate if off screen
-    if (bullets[i].y < PLAY_AREA_TOP) {
-      bullets[i].active = false;
-    }
-  }
+void enemyFire() {
+  // Only shoot in later waves, or rarely in wave 1
+  float chance = (wave == 1) ? 0.005f : 0.015f + (wave * 0.005f);
   
-  // Update enemy bullets
-  for (int i = 0; i < MAX_ENEMY_BULLETS; i++) {
-    if (!enemyBullets[i].active) continue;
-    
-    enemyBullets[i].y += enemyBullets[i].vy;
-    
-    // Deactivate if off screen
-    if (enemyBullets[i].y > PLAY_AREA_BOTTOM) {
-      enemyBullets[i].active = false;
-    }
-  }
-}
-
-void updateParticles() {
-  for (int i = 0; i < MAX_PARTICLES; i++) {
-    if (!particles[i].active) continue;
-    
-    particles[i].x += particles[i].vx;
-    particles[i].y += particles[i].vy;
-  }
-}
-
-void updateEnemies() {
-  unsigned long now = millis();
-  
-  // Move enemy group
-  if (now - lastEnemyMoveTime > enemyMoveDelay) {
-    lastEnemyMoveTime = now;
-    
-    // Move horizontally
-    enemyGroupX += enemyDirection * 6;
-    
-    // Check boundaries - find leftmost and rightmost active enemies
-    int minX = 999, maxX = -999;
+  if (randomFloat(0, 1) < chance) {
+    // Pick a random active enemy to shoot
+    int activeIndices[MAX_ENEMIES];
+    int count = 0;
     for (int i = 0; i < MAX_ENEMIES; i++) {
       if (enemies[i].active) {
-        if (enemies[i].gridX < minX) minX = enemies[i].gridX;
-        if (enemies[i].gridX > maxX) maxX = enemies[i].gridX;
+        activeIndices[count++] = i;
       }
     }
     
-    int startX = 10;
-    int spacingX = 12;
-    int leftEdge = startX + (int)(minX * spacingX + enemyGroupX);
-    int rightEdge = startX + (int)(maxX * spacingX + enemyGroupX) + BLOCK_SIZE * 2;
-    
-    // Hit boundary - move down and reverse
-    if (leftEdge < 5 || rightEdge > SCREEN_WIDTH - 5) {
-      enemyDirection *= -1;
-      enemyGroupY += 8;  // Move down
+    if (count > 0) {
+      int idx = activeIndices[random(count)];
+      // Spawn enemy bullet
+      for (int i = 0; i < MAX_ENEMY_BULLETS; i++) {
+        if (!enemyBullets[i].active) {
+          int startX = 10;
+          int startY = PLAY_AREA_TOP + 10;
+          int spacingX = 12;
+          int spacingY = 12;
+          enemyBullets[i].x = startX + (int)(enemies[idx].gridX * spacingX + enemyGroupX + enemies[idx].offsetX);
+          enemyBullets[i].y = startY + (int)(enemies[idx].gridY * spacingY + enemyGroupY + enemies[idx].offsetY);
+          enemyBullets[i].vy = 2.0f + (wave * 0.2f);
+          enemyBullets[i].active = true;
+          break;
+        }
+      }
     }
   }
-  
-  // Enemy shooting (starts at wave 2)
-  if (wave >= 2 && now - lastEnemyShootTime > 2000) {
-    // Shooting gets more frequent with higher waves
-    int shootChance = wave >= 5 ? 80 : (wave >= 3 ? 50 : 30);
-    
-    if (random(100) < shootChance) {
-      // Pick a random active enemy in the front row
-      int attempts = 0;
-      while (attempts++ < 20) {
-        int idx = random(MAX_ENEMIES);
-        if (enemies[idx].active) {
-          // Check if this enemy is in the frontmost row for its column
-          bool isFront = true;
-          for (int j = 0; j < MAX_ENEMIES; j++) {
-            if (enemies[j].active && 
-                enemies[j].gridX == enemies[idx].gridX && 
-                enemies[j].gridY > enemies[idx].gridY) {
-              isFront = false;
-              break;
-            }
-          }
+}
+
+void updateGame() {
+  // Update bullets
+  for (int i = 0; i < MAX_BULLETS; i++) {
+    if (bullets[i].active) {
+      bullets[i].y += bullets[i].vy;
+      if (bullets[i].y < PLAY_AREA_TOP) bullets[i].active = false;
+      
+      // Check collision with enemies
+      for (int j = 0; j < MAX_ENEMIES; j++) {
+        if (enemies[j].active) {
+          int startX = 10;
+          int startY = PLAY_AREA_TOP + 10;
+          int spacingX = 12;
+          int spacingY = 12;
+          float ex = startX + enemies[j].gridX * spacingX + enemyGroupX + enemies[j].offsetX;
+          float ey = startY + enemies[j].gridY * spacingY + enemyGroupY + enemies[j].offsetY;
           
-          if (isFront) {
-            // Shoot!
-            for (int i = 0; i < MAX_ENEMY_BULLETS; i++) {
-              if (!enemyBullets[i].active) {
-                int startX = 10;
-                int startY = PLAY_AREA_TOP + 10;
-                int spacingX = 12;
-                int spacingY = 12;
-                
-                enemyBullets[i].x = startX + enemies[idx].gridX * spacingX + enemyGroupX + enemies[idx].offsetX;
-                enemyBullets[i].y = startY + enemies[idx].gridY * spacingY + enemyGroupY + enemies[idx].offsetY + BLOCK_SIZE;
-                enemyBullets[i].vy = 3.0f;  // Downward
-                enemyBullets[i].active = true;
-                lastEnemyShootTime = now;
-                break;
-              }
-            }
+          if (abs(bullets[i].x - ex) < 6 && abs(bullets[i].y - ey) < 6) {
+            bullets[i].active = false;
+            enemies[j].active = false;
+            score += 10;
+            spawnParticles(ex, ey, ENEMY_COLORS[enemies[j].type]);
             break;
           }
         }
       }
     }
   }
-}
-
-void checkCollisions() {
-  // Bullet vs Enemy
-  for (int i = 0; i < MAX_BULLETS; i++) {
-    if (!bullets[i].active) continue;
-    
-    for (int j = 0; j < MAX_ENEMIES; j++) {
-      if (!enemies[j].active) continue;
+  
+  // Update enemy bullets
+  for (int i = 0; i < MAX_ENEMY_BULLETS; i++) {
+    if (enemyBullets[i].active) {
+      enemyBullets[i].y += enemyBullets[i].vy;
+      if (enemyBullets[i].y > PLAY_AREA_BOTTOM) enemyBullets[i].active = false;
       
-      // Calculate enemy screen position (with offset now)
-      int startX = 10;
-      int startY = PLAY_AREA_TOP + 10;
-      int spacingX = 12;
-      int spacingY = 12;
-      
-      int enemyX = startX + (int)(enemies[j].gridX * spacingX + enemyGroupX + enemies[j].offsetX);
-      int enemyY = startY + (int)(enemies[j].gridY * spacingY + enemyGroupY + enemies[j].offsetY);
-      
-      // Collision with single block
-      float dx = bullets[i].x - enemyX;
-      float dy = bullets[i].y - enemyY;
-      float dist = sqrt(dx*dx + dy*dy);
-      
-      if (dist < BLOCK_SIZE) {
-        // Spawn particles for explosion
-        spawnParticles(enemyX, enemyY, ENEMY_COLORS[enemies[j].type]);
-        
-        enemies[j].active = false;
-        bullets[i].active = false;
-        score += 5;  // Less points per block now
-        
-        // Bonus life every 1000 points
-        int currentThousands = score / 1000;
-        int lastThousands = lastBonusScore / 1000;
-        
-        if (currentThousands > lastThousands) {
-          player.lives++;
-          if (player.lives > 5) player.lives = 5;  // Cap at 5 lives
-          bonusLifeDisplayUntil = millis() + 2000;  // Show message for 2 seconds
-          lastBonusScore = score;
+      // Collision with player
+      if (player.alive && millis() > player.invincibleUntil && !godMode) {
+        if (abs(enemyBullets[i].x - player.x) < 10 && abs(enemyBullets[i].y - player.y) < 10) {
+          enemyBullets[i].active = false;
+          player.alive = false;
+          player.lives--;
+          spawnParticles(player.x, player.y, COLOR_PLAYER);
+          if (player.lives <= 0) gameOver = true;
+          else player.invincibleUntil = millis() + 2000;
         }
-        
-        break;
       }
     }
   }
   
-  // Enemy bullet vs Player
-  if (!godMode && millis() > player.invincibleUntil) {
-    for (int i = 0; i < MAX_ENEMY_BULLETS; i++) {
-      if (!enemyBullets[i].active) continue;
-      
-      float dx = enemyBullets[i].x - player.x;
-      float dy = enemyBullets[i].y - player.y;
-      float dist = sqrt(dx*dx + dy*dy);
-      
-      if (dist < BLOCK_SIZE * 1.5f) {
-        enemyBullets[i].active = false;
-        
-        // Player death explosion
-        spawnParticles(player.x, player.y, COLOR_PLAYER);
-        spawnParticles(player.x - BLOCK_SIZE, player.y, COLOR_PLAYER);
-        spawnParticles(player.x + BLOCK_SIZE, player.y, COLOR_PLAYER);
-        
-        player.lives--;
-        player.alive = false;  // Hide player during respawn
-        player.invincibleUntil = millis() + 2500;  // 2.5s to see explosion + respawn
-        
-        if (player.lives <= 0) {
-          gameOver = true;
+  // Update enemy formation
+  if (millis() - lastEnemyMoveTime > enemyMoveDelay) {
+    enemyGroupX += enemyDirection * enemySpeed * 10.0f;
+    
+    // Check bounds for reversal
+    bool reverse = false;
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+      if (enemies[i].active) {
+        int startX = 10;
+        float ex = startX + enemies[i].gridX * 12 + enemyGroupX;
+        if (ex < 10 || ex > SCREEN_WIDTH - 10) {
+          reverse = true;
+          break;
         }
-        return;
+      }
+    }
+    
+    if (reverse) {
+      enemyDirection *= -1;
+      enemyGroupY += 5.0f;  // Drop down
+      enemyGroupX += enemyDirection * enemySpeed * 10.0f; // Re-apply move
+    }
+    
+    lastEnemyMoveTime = millis();
+    
+    // Check if enemies reached bottom
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+      if (enemies[i].active) {
+        int startY = PLAY_AREA_TOP + 10;
+        float ey = startY + enemies[i].gridY * 12 + enemyGroupY;
+        if (ey > player.y - 10) {
+          gameOver = true;
+          break;
+        }
       }
     }
   }
   
-  // Check if enemies reached bottom
-  if (!godMode) {
-    int startY = PLAY_AREA_TOP + 10;
-    int spacingY = 12;
-    
-    for (int i = 0; i < MAX_ENEMIES; i++) {
-      if (!enemies[i].active) continue;
-      
-      int enemyY = startY + (int)(enemies[i].gridY * spacingY + enemyGroupY);
-      
-      if (enemyY + BLOCK_SIZE * 2 >= PLAY_AREA_BOTTOM - 20) {
-        // Enemy reached bottom - game over
-        player.lives = 0;
-        player.alive = false;
-        gameOver = true;
-        return;
-      }
-    }
-    
-    // Check if enemy touches player (simplified)
-    for (int i = 0; i < MAX_ENEMIES; i++) {
-      if (!enemies[i].active) continue;
-      
-      int enemyX = 10 + (int)(enemies[i].gridX * 12 + enemyGroupX + enemies[i].offsetX);
-      int enemyY = PLAY_AREA_TOP + 10 + (int)(enemies[i].gridY * 12 + enemyGroupY + enemies[i].offsetY);
-      
-      float dx = enemyX - player.x;
-      float dy = enemyY - player.y;
-      float dist = sqrt(dx*dx + dy*dy);
-      
-      if (dist < BLOCK_SIZE * 1.5f && millis() > player.invincibleUntil) {
-        // Player death explosion
-        spawnParticles(player.x, player.y, COLOR_PLAYER);
-        spawnParticles(player.x - BLOCK_SIZE, player.y, COLOR_PLAYER);
-        spawnParticles(player.x + BLOCK_SIZE, player.y, COLOR_PLAYER);
-        
-        player.lives--;
-        player.alive = false;
-        player.invincibleUntil = millis() + 2500;
-        
-        if (player.lives <= 0) {
-          gameOver = true;
-        }
-        return;
-      }
-    }
-  }
-}
-
-void checkWaveComplete() {
-  // Count active enemies
-  int activeCount = 0;
+  // Enemy shooting
+  enemyFire();
+  
+  // Check for wave complete
+  bool anyActive = false;
   for (int i = 0; i < MAX_ENEMIES; i++) {
-    if (enemies[i].active) activeCount++;
+    if (enemies[i].active) {
+      anyActive = true;
+      break;
+    }
   }
   
-  if (activeCount == 0) {
-    // Wave complete!
+  if (!anyActive) {
     wave++;
-    score += 100;
-    
-    M5.Lcd.fillScreen(COLOR_BG);
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.setTextColor(0x07E0);
-    M5.Lcd.setCursor(20, 100);
-    M5.Lcd.printf("WAVE %d", wave);
-    delay(1500);
-    
-    spawnEnemyFormation();
-  }
-}
-
-void showGameOver() {
-  // Update high score
-  if (score > highScore) {
-    highScore = score;
+    initEnemies();
   }
   
-  M5.Lcd.fillScreen(COLOR_BG);
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setTextColor(0xF800);
-  M5.Lcd.setCursor(15, 80);
-  M5.Lcd.print("GAME OVER");
+  // Update particles
+  // (Handling logic is in drawParticles)
   
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.setTextColor(0xFFFF);
-  M5.Lcd.setCursor(25, 110);
-  M5.Lcd.printf("Wave: %d", wave);
-  M5.Lcd.setCursor(25, 125);
-  M5.Lcd.printf("Score: %d", score);
-  
-  if (score == highScore && score > 0) {
-    M5.Lcd.setTextColor(0x07E0);
-    M5.Lcd.setCursor(25, 140);
-    M5.Lcd.print("NEW HIGH!");
-  } else if (highScore > 0) {
-    M5.Lcd.setTextColor(0x7BEF);
-    M5.Lcd.setCursor(25, 140);
-    M5.Lcd.printf("High: %d", highScore);
+  // Check for bonus life
+  if (score >= lastBonusScore + 1000) {
+    player.lives++;
+    lastBonusScore += 1000;
+    bonusLifeDisplayUntil = millis() + 2000; // Show for 2s
   }
-  
-  M5.Lcd.setTextColor(0xFFFF);
-  M5.Lcd.setCursor(15, 160);
-  M5.Lcd.print("Press BtnA");
-  M5.Lcd.setCursor(15, 175);
-  M5.Lcd.print("to restart");
-  
-  while (!M5.BtnA.isPressed()) {
-    M5.update();
-    delay(50);
-  }
-  
-  delay(200);
 }
 
 void resetGame() {
   score = 0;
   wave = 1;
+  lastBonusScore = 0;
   gameOver = false;
   
   for (int i = 0; i < MAX_BULLETS; i++) bullets[i].active = false;
   for (int i = 0; i < MAX_ENEMY_BULLETS; i++) enemyBullets[i].active = false;
-  for (int i = 0; i < MAX_ENEMIES; i++) enemies[i].active = false;
   for (int i = 0; i < MAX_PARTICLES; i++) particles[i].active = false;
   
   initPlayer();
-  spawnEnemyFormation();
+  initEnemies();
 }
 
 // ============================================================================
@@ -684,77 +487,59 @@ void resetGame() {
 // ============================================================================
 
 void setup() {
-  auto cfg = M5.config();
-  M5.begin(cfg);
-  
+  M5.begin();
   M5.Lcd.setRotation(0);
-  M5.Lcd.fillScreen(COLOR_BG);
-  M5.Lcd.setTextSize(1);
   
-  Serial.begin(115200);
-  Serial.println("Tetrimino Space Invaders Starting...");
+  // Initialize 5-way switch pins
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_CENTER, INPUT_PULLUP);
   
-  // Init JoyC
-  Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000UL);
-  
-  // Title screen
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setTextColor(COLOR_PLAYER);
-  M5.Lcd.setCursor(10, 60);
-  M5.Lcd.print("TETRIMINO");
-  M5.Lcd.setCursor(25, 85);
-  M5.Lcd.print("SPACE");
-  M5.Lcd.setCursor(15, 110);
-  M5.Lcd.print("INVADERS");
-  
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.setTextColor(0xFFFF);
-  M5.Lcd.setCursor(15, 150);
-  M5.Lcd.print("Press BtnA");
-  
-  while (!M5.BtnA.isPressed()) {
-    M5.update();
-    delay(50);
-  }
-  
-  delay(200);
   resetGame();
 }
 
 void loop() {
-  M5.update();
-  
-  if (gameOver) {
-    showGameOver();
-    resetGame();
-    return;
+  if (!gameOver) {
+    handleInput();
+    updateGame();
+    
+    // Respawn player if dead
+    if (!player.alive && !gameOver && millis() > player.invincibleUntil - 1000) {
+      player.alive = true;
+      player.x = SCREEN_WIDTH / 2;
+    }
+    
+    // Draw
+    M5.Lcd.fillScreen(COLOR_BG);
+    drawPlayer();
+    drawEnemies();
+    drawBullets();
+    drawParticles();
+    drawHUD();
+  } else {
+    // Game Over
+    if (score > highScore) highScore = score;
+    
+    M5.Lcd.fillScreen(COLOR_BG);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextColor(0xF800);
+    M5.Lcd.setCursor(15, 100);
+    M5.Lcd.print("GAME OVER");
+    
+    M5.Lcd.setTextSize(1);
+    M5.Lcd.setTextColor(0xFFFF);
+    M5.Lcd.setCursor(30, 130);
+    M5.Lcd.printf("Score: %d", score);
+    M5.Lcd.setCursor(20, 150);
+    M5.Lcd.print("Press M5 to Restart");
+    
+    M5.update();
+    if (M5.BtnA.wasPressed() || digitalRead(PIN_CENTER) == LOW) {
+      resetGame();
+    }
   }
   
-  // Check if player should respawn after death explosion
-  if (!player.alive && player.lives > 0 && millis() > player.invincibleUntil) {
-    respawnPlayer();
-  }
-  
-  // Update
-  updatePlayer();
-  updateBullets();
-  updateEnemies();
-  updateParticles();
-  checkCollisions();
-  checkWaveComplete();
-  
-  // Draw
-  M5.Lcd.fillRect(0, PLAY_AREA_TOP, SCREEN_WIDTH, PLAY_AREA_BOTTOM - PLAY_AREA_TOP, COLOR_BG);
-  
-  // Draw bottom border/floor
-  M5.Lcd.fillRect(0, PLAY_AREA_BOTTOM, SCREEN_WIDTH, SCREEN_HEIGHT - PLAY_AREA_BOTTOM, 0x2104);  // Dark grey border
-  M5.Lcd.drawLine(0, PLAY_AREA_BOTTOM, SCREEN_WIDTH, PLAY_AREA_BOTTOM, 0x7BEF);  // Light grey line
-  
-  drawPlayer();
-  drawBullets();
-  drawEnemies();
-  drawParticles();
-  drawHUD();
-  
-  delay(20);
+  delay(10);
 }

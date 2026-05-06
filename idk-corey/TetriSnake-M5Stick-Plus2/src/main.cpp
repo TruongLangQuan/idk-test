@@ -1,5 +1,4 @@
 #include <M5StickCPlus2.h>
-#include "UNIT_MiniJoyC.h"
 
 // Display constants
 #define SCREEN_WIDTH 135
@@ -7,6 +6,13 @@
 #define PLAY_AREA_TOP 22
 #define PLAY_AREA_BOTTOM 234  // More room at bottom
 #define BLOCK_SIZE 6
+
+// 5-way tactile switch pins
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 // Grid constants
 #define GRID_COLS 22  // 135 / 6 = 22.5
@@ -24,9 +30,7 @@
 #define COLOR_S 0x07E0          // Green
 #define COLOR_Z 0xF800          // Red
 
-// JoyC
-UNIT_JOYC Joystick;
-#define JoyC_ADDR 0x54
+// JoyC removed
 
 // Tetrimino shapes [type][block][x,y offset from anchor]
 const int8_t TETRIMINO_SHAPES[7][4][2] = {
@@ -237,97 +241,107 @@ void drawHUD() {
 void handleInput() {
   M5.update();
   
-  // Read joystick
-  uint16_t xVal = Joystick.getADCValue(0);
-  uint16_t yVal = Joystick.getADCValue(1);
-  
-  // Joystick direction (prevent 180 degree turns)
-  if (xVal < 1350 && snakeDir != 0) {  // Left
+  // 5-way switch direction (prevent 180 degree turns)
+  if (digitalRead(PIN_LEFT) == LOW && snakeDir != 0) {  // Left
     nextDir = 2;
-  } else if (xVal > 2950 && snakeDir != 2) {  // Right
+  } else if (digitalRead(PIN_RIGHT) == LOW && snakeDir != 2) {  // Right
     nextDir = 0;
-  }
-  
-  if (yVal < 1350 && snakeDir != 3) {  // Down (joystick forward)
-    nextDir = 1;
-  } else if (yVal > 2950 && snakeDir != 1) {  // Up (joystick back)
+  } else if (digitalRead(PIN_UP) == LOW && snakeDir != 1) {  // Up
     nextDir = 3;
+  } else if (digitalRead(PIN_DOWN) == LOW && snakeDir != 3) {  // Down
+    nextDir = 1;
   }
   
-  // God mode toggle
-  static bool lastBtnB = false;
-  if (M5.BtnB.isPressed() && !lastBtnB) {
+  // Button B toggles god mode
+  if (M5.BtnB.wasPressed()) {
     godMode = !godMode;
   }
-  lastBtnB = M5.BtnB.isPressed();
+  
+  // Button A or Center toggles pause
+  if (M5.BtnA.wasPressed() || digitalRead(PIN_CENTER) == LOW) {
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextColor(0xFFFF);
+    M5.Lcd.setCursor(35, 110);
+    M5.Lcd.print("PAUSE");
+    delay(300);
+    while (!M5.BtnA.wasPressed() && digitalRead(PIN_CENTER) != LOW) {
+      M5.update();
+      delay(50);
+    }
+    drawGrid(); // Force redraw to clear PAUSE text
+  }
 }
 
-void moveSnake() {
-  unsigned long now = millis();
-  
-  if (now - lastMoveTime < moveDelay) return;
-  lastMoveTime = now;
-  
-  // Apply direction change
+void updateSnake() {
+  // Determine new head position
   snakeDir = nextDir;
+  int newHeadX = snake[0].x;
+  int newHeadY = snake[0].y;
   
-  // Calculate new head position
-  int newX = snake[0].x;
-  int newY = snake[0].y;
-  
-  if (snakeDir == 0) newX++;       // Right
-  else if (snakeDir == 1) newY++;  // Down
-  else if (snakeDir == 2) newX--;  // Left
-  else if (snakeDir == 3) newY--;  // Up
-  
-  // Check collision with walls
-  if (!godMode) {
-    if (newX < 0 || newX >= GRID_COLS || newY < 0 || newY >= GRID_ROWS) {
-      gameOver = true;
-      return;
-    }
-    
-    // Check collision with obstacles or self
-    if (grid[newY][newX] >= 1 && grid[newY][newX] <= 8) {
-      gameOver = true;
-      return;
-    }
-  } else {
-    // God mode: wrap around
-    newX = (newX + GRID_COLS) % GRID_COLS;
-    newY = (newY + GRID_ROWS) % GRID_ROWS;
+  switch (snakeDir) {
+    case 0: newHeadX++; break; // Right
+    case 1: newHeadY++; break; // Down
+    case 2: newHeadX--; break; // Left
+    case 3: newHeadY--; break; // Up
   }
   
-  // Check if food eaten
-  bool ateFood = (grid[newY][newX] == 9);
-  
-  // Move snake segments
-  if (!ateFood) {
-    // Remove tail
-    grid[snake[snakeLength-1].y][snake[snakeLength-1].x] = 0;
-  } else {
-    // Grow snake
-    snakeLength++;
-    score += 10;
-    
-    // Speed up slightly
-    if (moveDelay > 80) {
-      moveDelay -= 5;
+  // Check bounds
+  if (newHeadX < 0 || newHeadX >= GRID_COLS || newHeadY < 0 || newHeadY >= GRID_ROWS) {
+    if (!godMode) gameOver = true;
+    else {
+      // Warp to other side in god mode
+      if (newHeadX < 0) newHeadX = GRID_COLS - 1;
+      else if (newHeadX >= GRID_COLS) newHeadX = 0;
+      if (newHeadY < 0) newHeadY = GRID_ROWS - 1;
+      else if (newHeadY >= GRID_ROWS) newHeadY = 0;
     }
-    
-    // Spawn new food
+  }
+  
+  if (gameOver) return;
+  
+  // Check collision with grid
+  uint8_t cell = grid[newHeadY][newHeadX];
+  bool grow = false;
+  
+  if (cell >= 1 && cell <= 7) {
+    // Collision with tetrimino
+    if (!godMode) {
+      gameOver = true;
+      return;
+    }
+  } else if (cell == 8) {
+    // Collision with self
+    if (!godMode) {
+      gameOver = true;
+      return;
+    }
+  } else if (cell == 9) {
+    // Ate food
+    grow = true;
+    score += 10 + (snakeLength / 5);
+    if (moveDelay > 50) moveDelay -= 2;
     spawnFood();
   }
   
-  // Move body segments forward
+  // Move segments
+  if (!grow) {
+    // Remove tail from grid
+    grid[snake[snakeLength-1].y][snake[snakeLength-1].x] = 0;
+  } else {
+    // Increase length
+    if (snakeLength < MAX_SNAKE_LENGTH) snakeLength++;
+  }
+  
   for (int i = snakeLength - 1; i > 0; i--) {
     snake[i] = snake[i-1];
   }
   
-  // Add new head
-  snake[0].x = newX;
-  snake[0].y = newY;
-  grid[newY][newX] = 8;  // Mark as snake
+  // Update head
+  snake[0].x = newHeadX;
+  snake[0].y = newHeadY;
+  
+  // Mark head on grid
+  grid[newHeadY][newHeadX] = 8;
 }
 
 void resetGame() {
@@ -335,52 +349,14 @@ void resetGame() {
   placeRandomTetriminos();
   initSnake();
   spawnFood();
-  
   score = 0;
   moveDelay = 200;
   gameOver = false;
-}
-
-void showGameOver() {
-  if (score > highScore) {
-    highScore = score;
-  }
+  lastMoveTime = millis();
   
   M5.Lcd.fillScreen(COLOR_BG);
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setTextColor(0xF800);
-  M5.Lcd.setCursor(15, 80);
-  M5.Lcd.print("GAME OVER");
-  
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.setTextColor(0xFFFF);
-  M5.Lcd.setCursor(25, 110);
-  M5.Lcd.printf("Score: %d", score);
-  M5.Lcd.setCursor(25, 125);
-  M5.Lcd.printf("Length: %d", snakeLength);
-  
-  if (score == highScore && score > 0) {
-    M5.Lcd.setTextColor(0x07E0);
-    M5.Lcd.setCursor(25, 140);
-    M5.Lcd.print("NEW HIGH!");
-  } else if (highScore > 0) {
-    M5.Lcd.setTextColor(0x7BEF);
-    M5.Lcd.setCursor(25, 140);
-    M5.Lcd.printf("High: %d", highScore);
-  }
-  
-  M5.Lcd.setTextColor(0xFFFF);
-  M5.Lcd.setCursor(15, 160);
-  M5.Lcd.print("Press BtnA");
-  M5.Lcd.setCursor(15, 175);
-  M5.Lcd.print("to restart");
-  
-  while (!M5.BtnA.isPressed()) {
-    M5.update();
-    delay(50);
-  }
-  
-  delay(200);
+  drawHUD();
+  drawGrid();
 }
 
 // ============================================================================
@@ -388,56 +364,51 @@ void showGameOver() {
 // ============================================================================
 
 void setup() {
-  auto cfg = M5.config();
-  M5.begin(cfg);
-  
+  M5.begin();
   M5.Lcd.setRotation(0);
-  M5.Lcd.fillScreen(COLOR_BG);
   
-  Serial.begin(115200);
-  Serial.println("TetriSnake Starting...");
+  // Initialize 5-way switch pins
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_CENTER, INPUT_PULLUP);
   
-  // Init JoyC
-  Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000UL);
-  
-  // Title screen
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setTextColor(0x07E0);
-  M5.Lcd.setCursor(10, 80);
-  M5.Lcd.print("TetriSnake");
-  
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.setTextColor(0xFFFF);
-  M5.Lcd.setCursor(10, 110);
-  M5.Lcd.print("Snake + Tetriminos");
-  M5.Lcd.setCursor(10, 130);
-  M5.Lcd.print("Press BtnA to start");
-  
-  while (!M5.BtnA.isPressed()) {
-    M5.update();
-    delay(50);
-  }
-  
-  delay(200);
   resetGame();
 }
 
 void loop() {
-  M5.update();
+  handleInput();
   
-  if (gameOver) {
-    showGameOver();
+  if (!gameOver) {
+    if (millis() - lastMoveTime > moveDelay) {
+      updateSnake();
+      drawGrid();
+      drawHUD();
+      lastMoveTime = millis();
+    }
+  } else {
+    // Game Over screen
+    if (score > highScore) highScore = score;
+    
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextColor(0xF800);  // Red
+    M5.Lcd.setCursor(15, 100);
+    M5.Lcd.print("GAME OVER");
+    
+    M5.Lcd.setTextSize(1);
+    M5.Lcd.setTextColor(0xFFFF);
+    M5.Lcd.setCursor(30, 130);
+    M5.Lcd.printf("Score: %d", score);
+    M5.Lcd.setCursor(20, 150);
+    M5.Lcd.print("Press M5 to Restart");
+    
+    while (!M5.BtnA.wasPressed() && digitalRead(PIN_CENTER) != LOW) {
+      M5.update();
+      delay(50);
+    }
     resetGame();
-    return;
   }
   
-  // Update
-  handleInput();
-  moveSnake();
-  
-  // Draw (no full screen clear - only changed cells)
-  drawGrid();
-  drawHUD();
-  
-  delay(20);
+  delay(10);
 }

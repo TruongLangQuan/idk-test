@@ -10,6 +10,13 @@
 #define PLAY_AREA_BOTTOM 235
 #define BLOCK_SIZE 3
 
+// 5-way tactile switch pins
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
+
 // Grid constants
 #define GRID_COLS 45  // 135 / 3
 #define GRID_ROWS 65  // 195 / 3
@@ -22,6 +29,9 @@
 #define COLOR_PROJECTILE 0xFFFF // White
 #define COLOR_EXPLOSION 0xFD20  // Orange
 #define COLOR_BG 0x0000         // Black
+#define COLOR_I 0x07FF          // Cyan
+#define COLOR_O 0xFFE0          // Yellow
+#define COLOR_PLAYER COLOR_TANK1 // Player color
 
 // Grid - 0=empty, 1=terrain, 2=tank1, 3=tank2
 uint8_t grid[GRID_ROWS][GRID_COLS];
@@ -205,7 +215,7 @@ void placeTank(Tank* tank, int side) {
 }
 
 // ============================================================================
-// DRAWING
+// DRAWING FUNCTIONS
 // ============================================================================
 
 void drawBlock(int x, int y, uint16_t color) {
@@ -248,177 +258,49 @@ void drawSky() {
     int px = floatingPieces[i].x * BLOCK_SIZE;
     int py = PLAY_AREA_TOP + floatingPieces[i].y * BLOCK_SIZE;
     
-    // Store previous position
+    // Draw piece based on type
+    uint16_t c = floatingPieces[i].color;
+    switch (floatingPieces[i].type) {
+      case 0: // I piece
+        M5.Lcd.fillRect(px, py, BLOCK_SIZE * 4, BLOCK_SIZE, c);
+        break;
+      case 1: // O piece
+        M5.Lcd.fillRect(px, py, BLOCK_SIZE * 2, BLOCK_SIZE * 2, c);
+        break;
+      case 2: // T piece
+        M5.Lcd.fillRect(px, py + BLOCK_SIZE, BLOCK_SIZE * 3, BLOCK_SIZE, c);
+        M5.Lcd.fillRect(px + BLOCK_SIZE, py, BLOCK_SIZE, BLOCK_SIZE, c);
+        break;
+      default: // Just a block for others
+        M5.Lcd.fillRect(px, py, BLOCK_SIZE * 2, BLOCK_SIZE, c);
+        break;
+    }
+    
     floatingPieces[i].prevX = floatingPieces[i].x;
     floatingPieces[i].prevY = floatingPieces[i].y;
-    
-    // Draw different tetrimino shapes
-    switch (floatingPieces[i].type) {
-      case 0: // I-piece (horizontal)
-        M5.Lcd.fillRect(px, py, BLOCK_SIZE * 4, BLOCK_SIZE, floatingPieces[i].color);
-        break;
-      case 1: // O-piece (square)
-        M5.Lcd.fillRect(px, py, BLOCK_SIZE * 2, BLOCK_SIZE * 2, floatingPieces[i].color);
-        break;
-      case 2: // T-piece
-        M5.Lcd.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE, floatingPieces[i].color);
-        M5.Lcd.fillRect(px - BLOCK_SIZE, py + BLOCK_SIZE, BLOCK_SIZE * 3, BLOCK_SIZE, floatingPieces[i].color);
-        break;
-      case 3: // L-piece
-        M5.Lcd.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE * 2, floatingPieces[i].color);
-        M5.Lcd.fillRect(px + BLOCK_SIZE, py + BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, floatingPieces[i].color);
-        break;
-      case 4: // Z-piece
-        M5.Lcd.fillRect(px, py, BLOCK_SIZE * 2, BLOCK_SIZE, floatingPieces[i].color);
-        M5.Lcd.fillRect(px + BLOCK_SIZE, py + BLOCK_SIZE, BLOCK_SIZE * 2, BLOCK_SIZE, floatingPieces[i].color);
-        break;
-      case 5: // S-piece
-        M5.Lcd.fillRect(px + BLOCK_SIZE, py, BLOCK_SIZE * 2, BLOCK_SIZE, floatingPieces[i].color);
-        M5.Lcd.fillRect(px, py + BLOCK_SIZE, BLOCK_SIZE * 2, BLOCK_SIZE, floatingPieces[i].color);
-        break;
-      case 6: // J-piece
-        M5.Lcd.fillRect(px + BLOCK_SIZE, py, BLOCK_SIZE, BLOCK_SIZE * 2, floatingPieces[i].color);
-        M5.Lcd.fillRect(px, py + BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, floatingPieces[i].color);
-        break;
-    }
-  }
-}
-
-void updateSky() {
-  unsigned long now = millis();
-  
-  // Update every 300ms
-  if (now - lastBirdUpdate > 300) {
-    lastBirdUpdate = now;
-    birdFrame++;
-    
-    // Move floating tetriminos (faster than clouds)
-    for (int i = 0; i < 4; i++) {
-      // Respawn if destroyed
-      if (!floatingPieces[i].alive && floatingPieces[i].x < -10) {
-        floatingPieces[i].x = -5;
-        floatingPieces[i].y = random(15, 22);
-        floatingPieces[i].type = random(0, 7);
-        uint16_t colors[] = {0x07FF, 0xFFE0, 0xF81F, 0x07E0, 0xF800, 0x001F, 0xFD20};
-        floatingPieces[i].color = colors[floatingPieces[i].type];
-        floatingPieces[i].alive = true;
-      }
-      
-      floatingPieces[i].x++;
-      if (floatingPieces[i].x > GRID_COLS + 5) {
-        floatingPieces[i].x = -5;
-        floatingPieces[i].y = random(15, 22);  // Below clouds
-        floatingPieces[i].type = random(0, 7);
-        
-        // Assign colors
-        uint16_t colors[] = {0x07FF, 0xFFE0, 0xF81F, 0x07E0, 0xF800, 0x001F, 0xFD20};
-        floatingPieces[i].color = colors[floatingPieces[i].type];
-        floatingPieces[i].alive = true;
-      }
-    }
-    
-    // Slowly move clouds
-    if (birdFrame % 5 == 0) {
-      for (int i = 0; i < 3; i++) {
-        cloudX[i]++;
-        if (cloudX[i] > GRID_COLS) {
-          cloudX[i] = -5;
-        }
-      }
-    }
   }
 }
 
 void drawGrid() {
-  // Only redraw changed cells
   for (int y = 0; y < GRID_ROWS; y++) {
     for (int x = 0; x < GRID_COLS; x++) {
-      if (grid[y][x] == prevGrid[y][x]) continue;  // Skip unchanged
+      if (grid[y][x] == prevGrid[y][x]) continue;
       
       int screenX = x * BLOCK_SIZE;
       int screenY = PLAY_AREA_TOP + y * BLOCK_SIZE;
       
-      if (grid[y][x] == 0) {
-        drawBlock(screenX, screenY, COLOR_SKY);
-      } else if (grid[y][x] == 1) {
-        drawBlock(screenX, screenY, COLOR_TERRAIN);
-      } else if (grid[y][x] == 2) {
-        drawBlock(screenX, screenY, COLOR_TANK1);
-      } else if (grid[y][x] == 3) {
-        drawBlock(screenX, screenY, COLOR_TANK2);
+      uint16_t color;
+      switch (grid[y][x]) {
+        case 0: color = COLOR_SKY; break;
+        case 1: color = COLOR_TERRAIN; break;
+        case 2: color = COLOR_TANK1; break;
+        case 3: color = COLOR_TANK2; break;
+        default: color = COLOR_SKY; break;
       }
       
+      M5.Lcd.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE, color);
       prevGrid[y][x] = grid[y][x];
     }
-  }
-}
-
-void drawTankAngleIndicator(Tank* tank, int playerNum) {
-  // Only draw for player 1
-  if (playerNum != 1) return;
-  
-  // Clear previous arrow area (small rectangle around tank)
-  int centerX = tank->x * BLOCK_SIZE + BLOCK_SIZE / 2;
-  int centerY = PLAY_AREA_TOP + tank->y * BLOCK_SIZE + BLOCK_SIZE / 2;
-  M5.Lcd.fillRect(centerX - 15, centerY - 15, 30, 30, COLOR_SKY);
-  
-  // Redraw tank blocks that might have been cleared
-  for (int dy = -1; dy <= 2; dy++) {
-    for (int dx = -2; dx <= 2; dx++) {
-      int gx = tank->x + dx;
-      int gy = tank->y + dy;
-      if (gx >= 0 && gx < GRID_COLS && gy >= 0 && gy < GRID_ROWS) {
-        if (grid[gy][gx] == 2) {
-          drawBlock(gx * BLOCK_SIZE, PLAY_AREA_TOP + gy * BLOCK_SIZE, COLOR_TANK1);
-        }
-      }
-    }
-  }
-  
-  // Draw arrow showing firing angle (just a line, no dot)
-  float angleRad = tank->angle * PI / 180.0f;
-  int arrowLen = 6;  // pixels (half of previous 12)
-  int endX = centerX + cos(angleRad) * arrowLen;
-  int endY = centerY - sin(angleRad) * arrowLen;
-  
-  // Draw line only - no circle at end
-  M5.Lcd.drawLine(centerX, centerY, endX, endY, 0xFFFF);  // White arrow
-}
-
-void drawProjectile() {
-  // Clear previous projectile position
-  if (prevProjectileX >= 0 && prevProjectileY >= 0) {
-    int ppx = prevProjectileX * BLOCK_SIZE;
-    int ppy = PLAY_AREA_TOP + prevProjectileY * BLOCK_SIZE;
-    M5.Lcd.fillRect(ppx - 1, ppy - 1, BLOCK_SIZE + 2, BLOCK_SIZE + 2, COLOR_SKY);
-  }
-  
-  if (projectile.active) {
-    int px = (int)projectile.x * BLOCK_SIZE;
-    int py = PLAY_AREA_TOP + (int)projectile.y * BLOCK_SIZE;
-    
-    // Draw bright colored block (magenta/hot pink)
-    M5.Lcd.fillRect(px - 1, py - 1, BLOCK_SIZE + 2, BLOCK_SIZE + 2, 0xF81F);  // Magenta border
-    M5.Lcd.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE, 0xFFFF);  // White center
-    
-    // Store position for clearing next frame
-    prevProjectileX = (int)projectile.x;
-    prevProjectileY = (int)projectile.y;
-  } else {
-    prevProjectileX = -1;
-    prevProjectileY = -1;
-  }
-}
-
-void drawDebris() {
-  for (int i = 0; i < 20; i++) {
-    if (!debris[i].active) continue;
-    
-    int dx = (int)(debris[i].x * BLOCK_SIZE);
-    int dy = PLAY_AREA_TOP + (int)(debris[i].y * BLOCK_SIZE);
-    
-    // Draw small colored pixel
-    M5.Lcd.fillRect(dx, dy, 2, 2, debris[i].color);
   }
 }
 
@@ -426,609 +308,312 @@ void drawHUD() {
   M5.Lcd.fillRect(0, 0, SCREEN_WIDTH, PLAY_AREA_TOP, COLOR_BG);
   
   M5.Lcd.setTextSize(1);
-  
-  // Win/Loss counter at top
-  M5.Lcd.setTextColor(0x07E0);  // Green for wins
+  M5.Lcd.setTextColor(COLOR_TANK1);
   M5.Lcd.setCursor(2, 2);
-  M5.Lcd.printf("W:%d", playerWins);
+  M5.Lcd.printf("P1: %d HP", tank1.hp);
   
-  M5.Lcd.setTextColor(0xF800);  // Red for losses
-  M5.Lcd.setCursor(40, 2);
-  M5.Lcd.printf("L:%d", playerLosses);
-  
-  // Current player indicator
-  if (currentPlayer == 1) {
-    M5.Lcd.setTextColor(COLOR_TANK1);
-    M5.Lcd.setCursor(80, 2);
-    M5.Lcd.print("[YOU]");
-  } else {
-    M5.Lcd.setTextColor(COLOR_TANK2);
-    M5.Lcd.setCursor(80, 2);
-    M5.Lcd.print("[AI]");
-  }
-  
-  // Tank stats
-  Tank* curTank = (currentPlayer == 1) ? &tank1 : &tank2;
+  M5.Lcd.setTextColor(COLOR_TANK2);
+  M5.Lcd.setCursor(SCREEN_WIDTH - 60, 2);
+  M5.Lcd.printf("P2: %d HP", tank2.hp);
   
   M5.Lcd.setTextColor(0xFFFF);
   M5.Lcd.setCursor(2, 12);
-  M5.Lcd.printf("HP:%d", curTank->hp);
+  M5.Lcd.printf("W: %d L: %d", playerWins, playerLosses);
   
-  M5.Lcd.setCursor(50, 12);
-  M5.Lcd.printf("A:%.1f", curTank->angle);
-  
+  // Draw current settings for active player
+  Tank* current = (currentPlayer == 1) ? &tank1 : &tank2;
+  M5.Lcd.setTextColor(current->color);
   M5.Lcd.setCursor(2, 22);
-  M5.Lcd.printf("P:%.1f", curTank->power);
+  M5.Lcd.printf("Player %d Turn", currentPlayer);
+  M5.Lcd.setCursor(2, 32);
+  M5.Lcd.printf("Angle: %.1f Pwr: %.1f", current->angle, current->power);
   
   // Phase indicator
-  M5.Lcd.setCursor(50, 22);
-  if (currentPlayer == 2) {
-    M5.Lcd.print("AI...");
-  } else if (turnPhase == 0) {
-    M5.Lcd.print("ANG P/B");
-  } else if (turnPhase == 1) {
-    M5.Lcd.print("PWR A/B");
-  } else if (turnPhase == 2) {
-    M5.Lcd.print("FIRING");
-  }
-  
-  // Health bars
-  M5.Lcd.setCursor(2, 32);
-  M5.Lcd.setTextColor(COLOR_TANK1);
-  M5.Lcd.printf("P1:%d", tank1.hp);
-  
-  M5.Lcd.setCursor(70, 32);
-  M5.Lcd.setTextColor(COLOR_TANK2);
-  M5.Lcd.printf("AI:%d", tank2.hp);
+  M5.Lcd.setCursor(SCREEN_WIDTH - 50, 32);
+  if (turnPhase == 0) M5.Lcd.print("[ANGLE]");
+  else if (turnPhase == 1) M5.Lcd.print("[POWER]");
 }
 
 // ============================================================================
 // GAME LOGIC
 // ============================================================================
 
-void handleInput() {
-  M5.update();
+void updateVisuals() {
+  // Move clouds
+  if (millis() % 200 < 20) {
+    for (int i = 0; i < 3; i++) {
+      cloudX[i]++;
+      if (cloudX[i] * BLOCK_SIZE > SCREEN_WIDTH) cloudX[i] = -10;
+    }
+  }
   
-  // AI player 2 - auto fire with calculated values
-  if (currentPlayer == 2) {
-    if (turnPhase == 0) {
-      // AI calculates angle toward player (AI is on right, shoots left)
-      int dx = tank2.x - tank1.x;  // Distance (positive = target is to left)
-      int dy = tank2.y - tank1.y;  // Height difference
-      
-      // AI shoots left toward player
-      // Use angles 100-170 (110-170 is more realistic arc)
-      int baseAngle = 130;  // Good starting angle
-      
-      // Adjust based on distance
-      if (dx > 30) {
-        // Far away - use higher angle for arc
-        baseAngle = random(120, 151);
-      } else if (dx > 15) {
-        // Medium distance
-        baseAngle = random(110, 141);
-      } else {
-        // Close - lower angle, more direct
-        baseAngle = random(100, 131);
+  // Move floating tetriminos
+  if (millis() % 150 < 15) {
+    for (int i = 0; i < 4; i++) {
+      floatingPieces[i].x++;
+      if (floatingPieces[i].x * BLOCK_SIZE > SCREEN_WIDTH) {
+        floatingPieces[i].x = -10;
+        floatingPieces[i].y = random(2, 20);
+        floatingPieces[i].alive = true;
       }
-      
-      // Add some randomness (±8 degrees)
-      tank2.angle = baseAngle + random(-8, 9);
-      tank2.angle = constrain(tank2.angle, 100, 170);
-      
-      turnPhase = 1;
-      delay(500);
-    } else if (turnPhase == 1) {
-      // AI calculates power based on distance
-      int distance = abs(tank2.x - tank1.x);
-      
-      // Scale power: closer = less, farther = more
-      // Use 25-45 range (reduced high end from 55)
-      int basePower = map(distance, 5, GRID_COLS, 25, 45);
-      basePower = constrain(basePower, 25, 45);
-      
-      // Add randomness (±8) to make imperfect but closer
-      tank2.power = basePower + random(-8, 9);
-      tank2.power = constrain(tank2.power, 20, 50);
-      
-      turnPhase = 2;
-      fireProjectile();
-      delay(500);
-    }
-    return;
-  }
-  
-  // Player 1 controls
-  if (turnPhase == 2) return;  // No input during firing
-  
-  Tank* curTank = &tank1;
-  
-  static unsigned long lastAdjust = 0;
-  static bool lastPwrBtn = false;
-  static bool lastBtnA = false;
-  static bool lastBtnB = false;
-  static unsigned long pwrHoldStart = 0;
-  static unsigned long btnAHoldStart = 0;
-  
-  unsigned long now = millis();
-  
-  if (now - lastAdjust < 100) {
-    // Update button states
-    lastPwrBtn = M5.BtnPWR.isPressed();
-    lastBtnA = M5.BtnA.isPressed();
-    lastBtnB = M5.BtnB.isPressed();
-    return;  // Debounce
-  }
-  
-  if (turnPhase == 0) {
-    // Adjust angle with PWR (left) and BtnB (right) - 2.5 degree increments
-    // PWR button increases angle (aim more left/up)
-    if (M5.BtnPWR.isPressed()) {
-      if (!lastPwrBtn) {
-        pwrHoldStart = now;
-      }
-      curTank->angle += 2.5;  // Swapped: was -=
-      if (curTank->angle > 170) curTank->angle = 170;
-      lastAdjust = now;
-    } else {
-      pwrHoldStart = 0;
-    }
-    
-    // BtnB decreases angle (aim more right/down)
-    if (M5.BtnB.isPressed()) {
-      curTank->angle -= 2.5;  // Swapped: was +=
-      if (curTank->angle < 10) curTank->angle = 10;
-      lastAdjust = now;
-    }
-    
-    // Press middle button to confirm and move to power adjustment
-    if (M5.BtnA.isPressed() && !lastBtnA) {
-      turnPhase = 1;
-      lastAdjust = now;
-    }
-    
-  } else if (turnPhase == 1) {
-    // Adjust power - BtnA cycles through power levels (2.5% increments)
-    // Hold BtnA to reverse direction
-    if (M5.BtnA.isPressed()) {
-      if (!lastBtnA) {
-        btnAHoldStart = now;
-        // Short press increases
-        curTank->power += 2.5;
-        if (curTank->power > 100) curTank->power = 10;
-        lastAdjust = now;
-      } else if (now - btnAHoldStart > 500) {
-        // Holding decreases after 0.5 seconds
-        curTank->power -= 2.5;
-        if (curTank->power < 10) curTank->power = 100;
-        lastAdjust = now;
-      }
-    } else {
-      btnAHoldStart = 0;
-    }
-    
-    // Press BtnB to fire
-    if (M5.BtnB.isPressed() && !lastBtnB) {
-      turnPhase = 2;
-      fireProjectile();
-      lastAdjust = now;
     }
   }
   
-  // Update button states
-  lastPwrBtn = M5.BtnPWR.isPressed();
-  lastBtnA = M5.BtnA.isPressed();
-  lastBtnB = M5.BtnB.isPressed();
-}
-
-void fireProjectile() {
-  Tank* curTank = (currentPlayer == 1) ? &tank1 : &tank2;
-  
-  // Start from top of tank (center of T)
-  projectile.x = curTank->x;
-  projectile.y = curTank->y;
-  
-  // Calculate velocity based on angle and power
-  float angleRad = curTank->angle * PI / 180.0f;
-  float powerScale = curTank->power / 100.0f;
-  
-  // Increased power multiplier for longer range (was 2.0f)
-  projectile.vx = cos(angleRad) * powerScale * 8.0f;  // Much more powerful!
-  projectile.vy = -sin(angleRad) * powerScale * 8.0f;  // Negative is up
-  
-  projectile.active = true;
-  projectile.lastUpdate = millis();
-}
-
-void updateProjectile() {
-  if (!projectile.active) return;
-  
-  unsigned long now = millis();
-  if (now - projectile.lastUpdate < 20) return;  // 50 FPS
-  projectile.lastUpdate = now;
-  
-  // Apply gravity
-  projectile.vy += GRAVITY;
-  
-  // Update position
-  projectile.x += projectile.vx;
-  projectile.y += projectile.vy;
-  
-  // Check bounds
-  if (projectile.x < 0 || projectile.x >= GRID_COLS || 
-      projectile.y < 0 || projectile.y >= GRID_ROWS) {
-    // Missed
-    projectile.active = false;
-    endTurn();
-    return;
-  }
-  
-  // Check collision
-  int gx = (int)projectile.x;
-  int gy = (int)projectile.y;
-  
-  if (grid[gy][gx] != 0) {
-    // Hit something!
-    handleExplosion(gx, gy);
-    projectile.active = false;
-    endTurn();
-  }
-}
-
-bool checkSkyCollision(float px, float py) {
-  // Convert to grid coords
-  int gx = (int)px;
-  int gy = (int)py;
-  
-  // Only check if in sky area (above terrain)
-  if (gy > 25) return false;
-  
-  // Check clouds
-  for (int i = 0; i < 3; i++) {
-    int cx = cloudX[i];
-    int cy = cloudY[i];
-    
-    // Cloud is 3 blocks wide, 1 block tall
-    if (gx >= cx && gx < cx + 3 && gy == cy) {
-      // Hit cloud! Spawn white debris
-      spawnDebris(gx, gy, 0xFFFF);
-      return true;
-    }
-  }
-  
-  // Check floating tetriminos
-  for (int i = 0; i < 4; i++) {
-    if (!floatingPieces[i].alive) continue;
-    
-    int fx = floatingPieces[i].x;
-    int fy = floatingPieces[i].y;
-    int type = floatingPieces[i].type;
-    
-    // Check hit based on type shape
-    bool hit = false;
-    switch (type) {
-      case 0: // I-piece: 4 blocks horizontal
-        if (gy == fy && gx >= fx && gx < fx + 4) hit = true;
-        break;
-      case 1: // O-piece: 2x2
-        if (gx >= fx && gx < fx + 2 && gy >= fy && gy < fy + 2) hit = true;
-        break;
-      case 2: // T-piece
-        if ((gy == fy && gx >= fx - 1 && gx <= fx + 1) || 
-            (gy == fy + 1 && gx == fx)) hit = true;
-        break;
-      case 3: // L-piece
-        if ((gx == fx && (gy == fy || gy == fy + 1)) || 
-            (gy == fy + 1 && gx == fx + 1)) hit = true;
-        break;
-      case 4: // Z-piece
-        if ((gy == fy && (gx == fx || gx == fx + 1)) || 
-            (gy == fy + 1 && (gx == fx + 1 || gx == fx + 2))) hit = true;
-        break;
-      default:
-        // Simplified check for other pieces
-        if (gx >= fx - 1 && gx < fx + 3 && gy >= fy && gy < fy + 2) hit = true;
-        break;
-    }
-    
-    if (hit) {
-      spawnDebris(fx, fy, floatingPieces[i].color);
-      floatingPieces[i].alive = false;
-      floatingPieces[i].x = -100;  // Move off screen
-      return true;
-    }
-  }
-  
-  return false;
+  updateDebris();
 }
 
 void spawnDebris(int centerX, int centerY, uint16_t color) {
-  // Spawn 8-12 debris particles
-  int numDebris = random(8, 13);
-  int spawned = 0;
-  
-  for (int i = 0; i < 20 && spawned < numDebris; i++) {
+  for (int i = 0; i < 20; i++) {
     if (!debris[i].active) {
-      debris[i].x = centerX + random(-2, 3) * 0.5f;
-      debris[i].y = centerY;
-      debris[i].vx = random(-3, 4) * 0.3f;
-      debris[i].vy = random(-2, 1) * 0.5f;  // Mostly downward
+      debris[i].x = centerX * BLOCK_SIZE;
+      debris[i].y = PLAY_AREA_TOP + centerY * BLOCK_SIZE;
+      debris[i].vx = (random(-20, 21) / 10.0f);
+      debris[i].vy = (random(-30, 0) / 10.0f);
       debris[i].color = color;
       debris[i].active = true;
-      spawned++;
     }
   }
 }
 
 void updateDebris() {
-  bool anyActive = false;
-  
   for (int i = 0; i < 20; i++) {
-    if (!debris[i].active) continue;
-    
-    anyActive = true;
-    
-    // Apply gravity
-    debris[i].vy += GRAVITY * 0.5f;  // Half gravity for visual effect
-    
-    // Update position
-    debris[i].x += debris[i].vx;
-    debris[i].y += debris[i].vy;
-    
-    // Check if hit ground/terrain
-    int gx = (int)debris[i].x;
-    int gy = (int)debris[i].y;
-    
-    if (gy < 0 || gx < 0 || gx >= GRID_COLS) {
-      debris[i].active = false;
-      continue;
+    if (debris[i].active) {
+      // Clear old position
+      M5.Lcd.drawPixel((int)debris[i].x, (int)debris[i].y, COLOR_SKY);
+      
+      debris[i].x += debris[i].vx;
+      debris[i].y += debris[i].vy;
+      debris[i].vy += 0.2f;  // Gravity
+      
+      if (debris[i].y > PLAY_AREA_BOTTOM || debris[i].x < 0 || debris[i].x > SCREEN_WIDTH) {
+        debris[i].active = false;
+      } else {
+        M5.Lcd.drawPixel((int)debris[i].x, (int)debris[i].y, debris[i].color);
+      }
     }
-    
-    if (gy >= GRID_ROWS) {
-      debris[i].active = false;
-      continue;
+  }
+}
+
+void handleInput() {
+  M5.update();
+  Tank* current = (currentPlayer == 1) ? &tank1 : &tank2;
+  
+  // Left/Right: Adjust Angle or Power
+  if (digitalRead(PIN_LEFT) == LOW) {
+    if (turnPhase == 0) current->angle = fmax(0.0f, current->angle - 2.5f);
+    else current->power = fmax(10.0f, current->power - 2.5f);
+  }
+  if (digitalRead(PIN_RIGHT) == LOW) {
+    if (turnPhase == 0) current->angle = fmin(180.0f, current->angle + 2.5f);
+    else current->power = fmin(100.0f, current->power + 2.5f);
+  }
+  
+  // Center or Button A: Switch phase or Fire
+  if (M5.BtnA.wasPressed() || digitalRead(PIN_CENTER) == LOW) {
+    if (turnPhase == 0) {
+      turnPhase = 1;
+    } else if (turnPhase == 1) {
+      fireProjectile();
     }
-    
-    // Check collision with terrain - just stop
-    if (grid[gy][gx] != 0) {
-      debris[i].active = false;
+    delay(200);
+  }
+  
+  // Button B: Reset phase
+  if (M5.BtnB.wasPressed()) {
+    turnPhase = 0;
+  }
+}
+
+void fireProjectile() {
+  Tank* current = (currentPlayer == 1) ? &tank1 : &tank2;
+  float rad = current->angle * PI / 180.0f;
+  
+  projectile.x = current->x;
+  projectile.y = current->y;
+  projectile.vx = cos(rad) * (current->power / 10.0f) * PROJECTILE_SPEED;
+  projectile.vy = -sin(rad) * (current->power / 10.0f) * PROJECTILE_SPEED;
+  projectile.active = true;
+  projectile.lastUpdate = millis();
+  
+  turnPhase = 2;
+  prevProjectileX = -1;
+}
+
+bool checkSkyCollision(float px, float py) {
+  int gx = (int)(px / BLOCK_SIZE);
+  int gy = (int)((py - PLAY_AREA_TOP) / BLOCK_SIZE);
+  
+  for (int i = 0; i < 4; i++) {
+    if (!floatingPieces[i].alive) continue;
+    if (abs(gx - floatingPieces[i].x) < 2 && abs(gy - floatingPieces[i].y) < 2) {
+      floatingPieces[i].alive = false;
+      return true;
     }
+  }
+  return false;
+}
+
+void updateProjectile() {
+  if (!projectile.active) return;
+  
+  // Clear previous dot
+  if (prevProjectileX >= 0) {
+    M5.Lcd.drawPixel(prevProjectileX, prevProjectileY, COLOR_SKY);
+  }
+  
+  projectile.x += projectile.vx;
+  projectile.y += projectile.vy;
+  projectile.vy += GRAVITY * 0.1f;
+  
+  int gx = (int)(projectile.x / BLOCK_SIZE);
+  int gy = (int)((projectile.y - PLAY_AREA_TOP) / BLOCK_SIZE);
+  
+  // Draw current dot
+  if (projectile.y >= PLAY_AREA_TOP && projectile.y < PLAY_AREA_BOTTOM && 
+      projectile.x >= 0 && projectile.x < SCREEN_WIDTH) {
+    M5.Lcd.drawPixel((int)projectile.x, (int)projectile.y, COLOR_PROJECTILE);
+    prevProjectileX = (int)projectile.x;
+    prevProjectileY = (int)projectile.y;
+  }
+  
+  // Check collisions
+  if (gy >= 0 && gy < GRID_ROWS && gx >= 0 && gx < GRID_COLS) {
+    uint8_t hit = grid[gy][gx];
+    if (hit != 0 || checkSkyCollision(projectile.x, projectile.y)) {
+      handleExplosion(gx, gy);
+      projectile.active = false;
+      endTurn();
+    }
+  } else if (projectile.y > PLAY_AREA_BOTTOM || projectile.x < 0 || projectile.x > SCREEN_WIDTH) {
+    projectile.active = false;
+    endTurn();
   }
 }
 
 void handleExplosion(int cx, int cy) {
-  // Explosion radius of 2 blocks
-  int radius = 2;
-  
-  for (int dy = -radius; dy <= radius; dy++) {
-    for (int dx = -radius; dx <= radius; dx++) {
-      int x = cx + dx;
-      int y = cy + dy;
-      
-      if (x < 0 || x >= GRID_COLS || y < 0 || y >= GRID_ROWS) continue;
-      
-      // Circle check
-      if (dx*dx + dy*dy <= radius*radius) {
-        if (grid[y][x] == 2) {
-          // Hit tank 1
-          tank1.hp -= 25;
-          if (tank1.hp <= 0) {
-            tank1.active = false;
-            gameOver = true;
-            winner = 2;
-            playerLosses++;  // Player lost
-          }
-        } else if (grid[y][x] == 3) {
-          // Hit tank 2
-          tank2.hp -= 25;
-          if (tank2.hp <= 0) {
-            tank2.active = false;
-            gameOver = true;
-            winner = 1;
-            playerWins++;  // Player won
-          }
-        } else if (grid[y][x] == 1) {
-          // Destroy terrain
-          grid[y][x] = 0;
+  int radius = 4;
+  for (int y = -radius; y <= radius; y++) {
+    for (int x = -radius; x <= radius; x++) {
+      if (x*x + y*y <= radius*radius) {
+        int gx = cx + x;
+        int gy = cy + y;
+        if (gx >= 0 && gx < GRID_COLS && gy >= 0 && gy < GRID_ROWS) {
+          if (grid[gy][gx] == 2) tank1.hp -= 10;
+          if (grid[gy][gx] == 3) tank2.hp -= 10;
+          grid[gy][gx] = 0;
         }
       }
     }
   }
-  
-  // Apply gravity to terrain
+  spawnDebris(cx, cy, COLOR_EXPLOSION);
   applyGravity();
 }
 
 void applyGravity() {
-  // Let unsupported blocks fall (simple version - scan bottom to top)
-  for (int pass = 0; pass < 10; pass++) {  // Multiple passes for cascading
-    bool changed = false;
-    
+  for (int x = 0; x < GRID_COLS; x++) {
     for (int y = GRID_ROWS - 2; y >= 0; y--) {
-      for (int x = 0; x < GRID_COLS; x++) {
-        if (grid[y][x] == 1 && grid[y + 1][x] == 0) {
-          // Terrain block with empty space below - drop it
-          grid[y + 1][x] = 1;
-          grid[y][x] = 0;
-          changed = true;
+      if (grid[y][x] == 1 && grid[y+1][x] == 0) {
+        int drop = y;
+        while (drop < GRID_ROWS - 1 && grid[drop+1][x] == 0) {
+          grid[drop+1][x] = 1;
+          grid[drop][x] = 0;
+          drop++;
         }
       }
     }
-    
-    if (!changed) break;
   }
-  
-  // Drop tanks if no support
   dropTankIfNeeded(&tank1, 2);
   dropTankIfNeeded(&tank2, 3);
 }
 
 void dropTankIfNeeded(Tank* tank, int tankType) {
   if (!tank->active) return;
-  
-  // Check if any tank block has support below
-  bool hasSupport = false;
-  
-  for (int y = 0; y < GRID_ROWS - 1; y++) {
-    for (int x = 0; x < GRID_COLS; x++) {
-      if (grid[y][x] == tankType) {
-        // Check below this block
-        if (y + 1 < GRID_ROWS && (grid[y + 1][x] == 1 || grid[y + 1][x] == tankType)) {
-          hasSupport = true;
-          break;
-        }
-      }
-    }
-    if (hasSupport) break;
-  }
-  
-  if (!hasSupport) {
-    // Drop tank one row
-    for (int y = GRID_ROWS - 1; y >= 0; y--) {
-      for (int x = 0; x < GRID_COLS; x++) {
-        if (grid[y][x] == tankType && y + 1 < GRID_ROWS) {
-          grid[y + 1][x] = tankType;
-          grid[y][x] = 0;
-        }
-      }
-    }
+  while (tank->y < GRID_ROWS - 2 && grid[tank->y + 2][tank->x] == 0) {
+    // Clear old
+    grid[tank->y][tank->x] = 0;
+    grid[tank->y + 1][tank->x - 1] = 0;
+    grid[tank->y + 1][tank->x] = 0;
+    grid[tank->y + 1][tank->x + 1] = 0;
+    
     tank->y++;
+    
+    // Set new
+    grid[tank->y][tank->x] = tankType;
+    grid[tank->y + 1][tank->x - 1] = tankType;
+    grid[tank->y + 1][tank->x] = tankType;
+    grid[tank->y + 1][tank->x + 1] = tankType;
   }
 }
 
 void endTurn() {
-  // Switch player
   currentPlayer = (currentPlayer == 1) ? 2 : 1;
   turnPhase = 0;
-  delay(500);
+  if (tank1.hp <= 0 || tank2.hp <= 0) {
+    gameOver = true;
+    winner = (tank1.hp > 0) ? 1 : 2;
+    if (winner == 1) playerWins++; else playerLosses++;
+  }
 }
 
-void resetGame() {
+void initGame() {
   clearGrid();
   generateTerrain();
-  
-  // Always player on left, AI on right
   placeTank(&tank1, 1);
   placeTank(&tank2, 2);
+  
+  for (int i = 0; i < 4; i++) {
+    floatingPieces[i].x = random(0, GRID_COLS);
+    floatingPieces[i].y = random(2, 20);
+    floatingPieces[i].type = random(0, 3);
+    floatingPieces[i].color = (i == 0) ? COLOR_I : (i == 1) ? COLOR_O : COLOR_PLAYER;
+    floatingPieces[i].alive = true;
+    floatingPieces[i].prevX = -100;
+  }
   
   currentPlayer = 1;
   turnPhase = 0;
   gameOver = false;
-  winner = 0;
   projectile.active = false;
-  
-  // Initialize floating tetriminos
-  uint16_t colors[] = {0x07FF, 0xFFE0, 0xF81F, 0x07E0, 0xF800, 0x001F, 0xFD20};
-  for (int i = 0; i < 4; i++) {
-    floatingPieces[i].x = random(-5, GRID_COLS);
-    floatingPieces[i].y = random(15, 22);
-    floatingPieces[i].prevX = floatingPieces[i].x;
-    floatingPieces[i].prevY = floatingPieces[i].y;
-    floatingPieces[i].type = random(0, 7);
-    floatingPieces[i].color = colors[floatingPieces[i].type];
-    floatingPieces[i].alive = true;
-  }
-  
-  // Clear all debris
-  for (int i = 0; i < 20; i++) {
-    debris[i].active = false;
-  }
-  
-  // Clear sky area
-  M5.Lcd.fillRect(0, PLAY_AREA_TOP, SCREEN_WIDTH, 25 * BLOCK_SIZE, COLOR_SKY);
+  M5.Lcd.fillScreen(COLOR_SKY);
 }
-
-void showGameOver() {
-  M5.Lcd.fillScreen(COLOR_BG);
-  M5.Lcd.setTextSize(2);
-  
-  if (winner == 1) {
-    M5.Lcd.setTextColor(COLOR_TANK1);
-    M5.Lcd.setCursor(20, 100);
-    M5.Lcd.print("PLAYER 1");
-  } else {
-    M5.Lcd.setTextColor(COLOR_TANK2);
-    M5.Lcd.setCursor(20, 100);
-    M5.Lcd.print("PLAYER 2");
-  }
-  
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.setTextColor(0xFFFF);
-  M5.Lcd.setCursor(40, 130);
-  M5.Lcd.print("WINS!");
-  
-  M5.Lcd.setCursor(20, 160);
-  M5.Lcd.print("Press BtnA");
-  M5.Lcd.setCursor(20, 175);
-  M5.Lcd.print("to restart");
-  
-  while (!M5.BtnA.isPressed()) {
-    M5.update();
-    delay(50);
-  }
-  
-  delay(200);
-}
-
-// ============================================================================
-// SETUP & LOOP
-// ============================================================================
 
 void setup() {
-  auto cfg = M5.config();
-  M5.begin(cfg);
+  M5.begin();
+  M5.Lcd.setRotation(0);
   
-  M5.Lcd.setRotation(0);  // Portrait mode
-  M5.Lcd.fillScreen(COLOR_SKY);
+  // Initialize 5-way switch pins
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_CENTER, INPUT_PULLUP);
   
-  Serial.begin(115200);
-  Serial.println("ScorchedM5 Starting...");
-  
-  // Title screen
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setTextColor(0xFFFF);
-  M5.Lcd.setCursor(5, 80);
-  M5.Lcd.print("ScorchedM5");
-  
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.setCursor(10, 110);
-  M5.Lcd.print("Tetris Artillery");
-  M5.Lcd.setCursor(10, 130);
-  M5.Lcd.print("Player vs AI");
-  M5.Lcd.setCursor(10, 150);
-  M5.Lcd.print("Press BtnA to start");
-  
-  while (!M5.BtnA.isPressed()) {
-    M5.update();
-    delay(50);
-  }
-  
-  delay(200);
-  resetGame();
+  initGame();
 }
 
 void loop() {
-  M5.update();
-  
-  if (gameOver) {
-    showGameOver();
-    resetGame();
-    return;
+  if (!gameOver) {
+    handleInput();
+    updateProjectile();
+    updateVisuals();
+    
+    drawSky();
+    drawGrid();
+    drawHUD();
+  } else {
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.setTextColor(WHITE);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setCursor(10, 100);
+    M5.Lcd.printf("P%d WINS!", winner);
+    M5.Lcd.setTextSize(1);
+    M5.Lcd.setCursor(10, 140);
+    M5.Lcd.print("Press M5 to Restart");
+    
+    M5.update();
+    if (M5.BtnA.wasPressed() || digitalRead(PIN_CENTER) == LOW) {
+      initGame();
+    }
   }
-  
-  // Update
-  handleInput();
-  updateProjectile();
-  updateDebris();
-  updateSky();
-  
-  // Draw (no full clear - only changed cells)
-  drawSky();
-  drawGrid();
-  drawTankAngleIndicator(&tank1, 1);  // Only player tank
-  drawProjectile();
-  drawDebris();
-  drawHUD();
-  
-  delay(20);
+  delay(10);
 }

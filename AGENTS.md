@@ -1,35 +1,31 @@
-- REPO: `/home/truonglangquan/idk-code/idk-test`
-- BUILD: `cd <project> && pio run -e <env>`
-- FLASH: `cd <project> && pio run -e <env> -t upload`
-- FS UPLOAD: `cd <project> && pio run -e <env> -t uploadfs`
-- MONITOR: `cd <project> && pio device monitor -b 115200`
-- ROOT BUILD SCRIPT: `fish /home/truonglangquan/idk-code/idk-test/build_merge_copy.fish`
-- COMMON ENVS: `firmware`, `m5stickc_plus2`, `esp32s3_114tft`, `tenstar-esp32s3`
-- MERGE BIN: `esptool.py --chip esp32 merge_bin -o out.bin 0x1000 bootloader.bin 0x8000 partitions.bin 0x10000 firmware.bin`
-- TEST: boot -> buttons -> display rotation -> SD mount -> WiFi/AP -> feature flow
-- TEST VIDEO: SD mount -> file list -> MJPG play -> pause/skip -> subtitle local/UDP
-- TEST LAUNCHER: cold boot -> stay in launcher -> SD scan -> config load -> launch app
-- GENERATED: `.pio/`, `idk-bin/`, `tools/out/`, `idk-english-wordform/src/generated_word_hashes.h`
-- SAFE TO EDIT: project-local `src/main.cpp` in small single-purpose firmwares
-- SAFE TO EDIT: `shared/idk_ui/*`, `shared/idk_vi_font.h`, project `README.md`
-- SAFE TO EDIT: `idk-*-2d/src/*`, `idk-*-3d/src/*`, `idk-screensaver/src/*`
-- EDIT WITH CAUTION: `idk-video/src/main.cpp`
-- EDIT WITH CAUTION: `idk-subtitle/src/main.cpp`
-- EDIT WITH CAUTION: `idk-clock/src/main.cpp`
-- EDIT WITH CAUTION: `idk-audio/src/main.cpp`
-- EDIT WITH CAUTION: `idk-maze/src/main.cpp`
-- EDIT WITH CAUTION: `idk-dice/src/main.cpp`
-- EDIT WITH CAUTION: `idk-miner/src/*`, `idk-mine/shared/*`
-- EDIT WITH CAUTION: `Launcher/src/*`
-- DO NOT EDIT LIGHTLY: `Launcher/boards/pinouts/*`
-- DO NOT EDIT LIGHTLY: `Launcher/boards/*/interface.cpp`
-- DO NOT EDIT LIGHTLY: `Launcher/platformio.ini`
-- DO NOT EDIT LIGHTLY: project pin constants without checking matching hardware
-- DRIVER RULE: keep SD SPI pins aligned with target board wiring
-- DRIVER RULE: keep display rotation consistent with UI assumptions
-- DRIVER RULE: avoid blocking loops longer than frame/update cadence
-- DRIVER RULE: do not change AP/STA credentials unless explicitly requested
-- DRIVER RULE: preserve subtitle/file basename matching rules (`name.mjpg` + `name.srt`)
-- DRIVER RULE: for Launcher, validate boot behavior on-device after boot/config changes
-- DRIVER RULE: for Tenstar/TFT_eSPI, treat pin macros/user setup as high risk
-- DRIVER RULE: mark unknown pins/protocols as `ASSUMPTION`
+# AGENTS.md
+
+## BUILD FIRMWARE
+- Identify project folder containing `platformio.ini`.
+- Run: `cd <project_dir> && pio run -e <env_name>`
+- *Note: Check `platformio.ini` for exact `<env_name>` (e.g., `m5stickc_plus2`, `cyd`).*
+
+## FLASH DEVICE
+- Connect device via USB.
+- Run: `cd <project_dir> && pio run -e <env_name> --target upload`
+
+## TEST & MONITOR
+- Run: `pio device monitor --baud 115200`
+- Exit monitor: `Ctrl+C`
+
+## SAFE EDIT ZONES (GREEN)
+- `src/animations/*`
+- `src/menu/*`
+- Game logic, math formulas, UI layouts
+- App-level logic inside `loop()`
+
+## FORBIDDEN EDITS (HARDWARE-CRITICAL - RED)
+- `platformio.ini` (Do not change board configs/partitions without explicit instruction)
+- `M5Unified` or `M5GFX` library internals
+- Direct GPIO manipulation for display, IMU, PMIC, RTC (Use M5 API instead)
+- `setup()` block hardware initialization order
+
+## RULES FOR MODIFYING DRIVERS
+- DO NOT modify third-party driver code.
+- If custom behavior is needed, create a wrapper class or use inheritance.
+- Always check `HARDWARE_MAP.md` before assigning new GPIO pins.

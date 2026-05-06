@@ -1,15 +1,4 @@
-/*
- * TETROIDS - Tetris meets Asteroids
- * M5StickC Plus2 with Mini JoyC Hat
- * 
- * Player: T-piece ship that rotates and shoots
- * Enemies: Floating Tetris pieces (asteroids)
- * 
- * Based on M5StickDodge4Wave architecture
- */
-
 #include <M5StickCPlus2.h>
-#include "UNIT_MiniJoyC.h"
 #include <math.h>
 
 // Display configuration
@@ -19,14 +8,19 @@
 #define PLAY_AREA_BOTTOM 220
 #define BLOCK_SIZE 8
 
+// 5-way tactile switch pins
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
+
 // Game constants
 #define MAX_BULLETS 4
 #define MAX_ASTEROIDS 15
 #define MAX_BLOCKS 30
 
-// JoyC
-UNIT_JOYC Joystick;
-#define JoyC_ADDR 0x54  // Mini JoyC Hat I2C address
+// JoyC removed
 
 // Colors (Tetris themed)
 #define COLOR_PLAYER 0xF81F    // Magenta (T-piece)
@@ -251,94 +245,37 @@ void respawnPlayer() {
   player.y = (PLAY_AREA_TOP + PLAY_AREA_BOTTOM) / 2;
   player.vx = 0;
   player.vy = 0;
-  player.angle = 0;  // Facing up
   player.alive = true;
-  player.invincibleUntil = millis() + 2000;  // 2 seconds invincibility
-  Serial.printf("respawnPlayer() called - lives: %d\n", player.lives);
+  player.invincibleUntil = millis() + 2000;
+  Serial.printf("respawnPlayer() called - lives remaining: %d\n", player.lives);
 }
 
-void warpPlayer() {
-  unsigned long now = millis();
-  if (now - player.lastWarpTime < 1000) return;  // 1 second cooldown
+void fire() {
+  if (millis() - lastShootTime < 400) return;
   
-  Serial.println("WARP activated!");
-  
-  // Visual effect - white circle expanding
-  for (int r = 5; r < 25; r += 5) {
-    M5.Lcd.drawCircle(player.x, player.y, r, 0xFFFF);
-    delay(20);
-  }
-  
-  // Random teleport location
-  player.x = randomFloat(30, SCREEN_WIDTH - 30);
-  player.y = randomFloat(PLAY_AREA_TOP + 30, PLAY_AREA_BOTTOM - 30);
-  player.vx = 0;  // Cancel momentum
-  player.vy = 0;
-  
-  // Small chance of danger (10% chance to lose a life)
-  if (random(100) < 10 && !godMode) {
-    Serial.println("WARP MALFUNCTION!");
-    // Flash red
-    M5.Lcd.fillCircle(player.x, player.y, 15, 0xF800);
-    delay(200);
-    
-    player.lives--;
-    if (player.lives <= 0) {
-      // Game over from warp malfunction
-      M5.Lcd.fillScreen(0x0000);
-      M5.Lcd.setTextSize(2);
-      M5.Lcd.setTextColor(0xF800);
-      M5.Lcd.setCursor(20, 100);
-      M5.Lcd.print("WARP FAIL!");
-      M5.Lcd.setTextSize(1);
-      M5.Lcd.setCursor(20, 130);
-      M5.Lcd.printf("Score: %d", score);
-      delay(2000);
-      
-      // Reset game
-      score = 0;
-      wave = 1;
-      for (int i = 0; i < MAX_ASTEROIDS; i++) asteroids[i].active = false;
-      for (int i = 0; i < MAX_BULLETS; i++) bullets[i].active = false;
-      initPlayer();
-      spawnWave();
-    } else {
-      respawnPlayer();  // Respawn at new location with invincibility
-    }
-  } else {
-    // Successful warp - brief invincibility
-    player.invincibleUntil = millis() + 1000;  // 1 second invincibility
-    
-    // Visual arrival effect - green circle
-    M5.Lcd.drawCircle(player.x, player.y, 15, 0x07E0);
-    delay(100);
-  }
-  
-  player.lastWarpTime = now;
-}
-
-void shootBullet() {
-  unsigned long now = millis();
-  if (now - lastShootTime < 200) return; // Rate limit
-  
-  // Calculate forward direction based on player angle
-  float rad = player.angle * PI / 180.0f;
-  float dirX = sin(rad);
-  float dirY = -cos(rad);  // Negative because Y increases downward
-  
-  // Find inactive bullet
   for (int i = 0; i < MAX_BULLETS; i++) {
     if (!bullets[i].active) {
-      // Spawn bullet from the nose of the T-piece (stem position)
-      bullets[i].x = player.x + dirX * (BLOCK_SIZE * 1.5f);
-      bullets[i].y = player.y + dirY * (BLOCK_SIZE * 1.5f);
-      bullets[i].vx = dirX * BULLET_SPEED;
-      bullets[i].vy = dirY * BULLET_SPEED;
+      bullets[i].x = player.x;
+      bullets[i].y = player.y;
+      
+      float rad = player.angle * PI / 180.0f;
+      bullets[i].vx = sin(rad) * BULLET_SPEED;
+      bullets[i].vy = -cos(rad) * BULLET_SPEED;
       bullets[i].active = true;
-      lastShootTime = now;
-      return;
+      lastShootTime = millis();
+      break;
     }
   }
+}
+
+void warp() {
+  if (millis() - player.lastWarpTime < 1000) return;
+  
+  player.x = random(10, SCREEN_WIDTH - 10);
+  player.y = random(PLAY_AREA_TOP + 10, PLAY_AREA_BOTTOM - 10);
+  player.vx = 0;
+  player.vy = 0;
+  player.lastWarpTime = millis();
 }
 
 void spawnAsteroid(float x, float y, int type, bool isLarge) {
@@ -346,365 +283,270 @@ void spawnAsteroid(float x, float y, int type, bool isLarge) {
     if (!asteroids[i].active) {
       asteroids[i].x = x;
       asteroids[i].y = y;
-      asteroids[i].type = type;
-      asteroids[i].rotation = random(4);
-      asteroids[i].rotSpeed = randomFloat(-0.05f, 0.05f);
-      asteroids[i].isLarge = isLarge;
-      asteroids[i].active = true;
       
-      // Random velocity
-      float angle = randomFloat(0, 2 * PI);
-      float speed = randomFloat(0.5f, ASTEROID_SPEED);
+      float angle = random(360) * PI / 180.0f;
+      float speed = isLarge ? ASTEROID_SPEED : ASTEROID_SPEED * 1.5f;
       asteroids[i].vx = cos(angle) * speed;
       asteroids[i].vy = sin(angle) * speed;
-      return;
+      
+      asteroids[i].type = type;
+      asteroids[i].rotation = random(4);
+      asteroids[i].rotSpeed = randomFloat(-5.0f, 5.0f);
+      asteroids[i].active = true;
+      asteroids[i].isLarge = isLarge;
+      break;
     }
   }
 }
 
 void spawnWave() {
-  int count = 3 + wave / 2;
-  if (count > 8) count = 8;
+  int count = 2 + wave;
+  if (count > MAX_ASTEROIDS - 5) count = MAX_ASTEROIDS - 5;
   
   for (int i = 0; i < count; i++) {
-    int type = random(6);
     float x, y;
-    
-    // Spawn at edges
-    if (random(2) == 0) {
-      x = random(2) == 0 ? 10 : SCREEN_WIDTH - 10;
-      y = randomFloat(PLAY_AREA_TOP + 20, PLAY_AREA_BOTTOM - 20);
+    // Spawn away from center
+    if (random(2)) {
+      x = random(2) ? -10 : SCREEN_WIDTH + 10;
+      y = random(PLAY_AREA_TOP, PLAY_AREA_BOTTOM);
     } else {
-      x = randomFloat(20, SCREEN_WIDTH - 20);
-      y = random(2) == 0 ? PLAY_AREA_TOP + 10 : PLAY_AREA_BOTTOM - 10;
+      x = random(0, SCREEN_WIDTH);
+      y = random(2) ? PLAY_AREA_TOP - 10 : PLAY_AREA_BOTTOM + 10;
     }
-    
-    spawnAsteroid(x, y, type, true);
+    spawnAsteroid(x, y, random(6), true);
   }
-}
-
-void breakAsteroid(Asteroid* ast) {
-  if (!ast->isLarge) return;
-  
-  // Spawn 4 small blocks at piece positions
-  for (int i = 0; i < 4; i++) {
-    float bx = ast->x + ASTEROID_SHAPES[ast->type][ast->rotation][i][0] * BLOCK_SIZE;
-    float by = ast->y + ASTEROID_SHAPES[ast->type][ast->rotation][i][1] * BLOCK_SIZE;
-    
-    // Scatter outward
-    float angle = atan2(by - ast->y, bx - ast->x);
-    float speed = 1.5f;
-    
-    spawnAsteroid(bx, by, ast->type, false);
-    // Set velocity for the block we just spawned
-    for (int j = MAX_ASTEROIDS - 1; j >= 0; j--) {
-      if (asteroids[j].active && !asteroids[j].isLarge) {
-        asteroids[j].vx = cos(angle) * speed;
-        asteroids[j].vy = sin(angle) * speed;
-        break;
-      }
-    }
-  }
-  
-  score += 50;
-  ast->active = false;
 }
 
 void updatePlayer() {
   if (!player.alive) return;
   
-  // Read joystick
-  int joyX = Joystick.getADCValue(0);
-  int joyY = Joystick.getADCValue(1);
-  bool joyBtn = (Joystick.getButtonStatus() == 0);
+  M5.update();
   
-  // Smooth rotation (Left/Right on joystick)
-  if (joyX < 1350) {
-    player.angle -= 3.0f;  // Rotate counter-clockwise
-  } else if (joyX > 2950) {
-    player.angle += 3.0f;  // Rotate clockwise
-  }
-  
-  // Keep angle in 0-360 range
-  if (player.angle < 0) player.angle += 360;
-  if (player.angle >= 360) player.angle -= 360;
-  
-  // Calculate forward direction based on angle
-  float rad = player.angle * PI / 180.0f;
-  float dirX = sin(rad);
-  float dirY = -cos(rad);  // Negative because Y increases downward
-  
-  // Thrust (Up on joystick)
-  if (joyY > 2950) {
-    player.vx += dirX * THRUST_POWER;
-    player.vy += dirY * THRUST_POWER;
+  // Input handling
+  // Center or A: Thrust
+  bool thrusting = (digitalRead(PIN_CENTER) == LOW || M5.BtnA.isPressed());
+  if (thrusting) {
+    float rad = player.angle * PI / 180.0f;
+    player.vx += sin(rad) * THRUST_POWER;
+    player.vy -= cos(rad) * THRUST_POWER;
     
-    // Limit speed
+    // Cap speed
     float speed = sqrt(player.vx * player.vx + player.vy * player.vy);
     if (speed > MAX_SPEED) {
       player.vx = (player.vx / speed) * MAX_SPEED;
       player.vy = (player.vy / speed) * MAX_SPEED;
     }
+  } else {
+    player.vx *= FRICTION;
+    player.vy *= FRICTION;
   }
   
-  // Shoot
-  if (joyBtn) {
-    shootBullet();
+  // Rotation
+  if (digitalRead(PIN_LEFT) == LOW) player.angle -= 8.0f;
+  if (digitalRead(PIN_RIGHT) == LOW) player.angle += 8.0f;
+  
+  // Fire
+  if (digitalRead(PIN_UP) == LOW) fire();
+  
+  // Warp
+  if (digitalRead(PIN_DOWN) == LOW) warp();
+  
+  // God mode toggle - BtnB hold
+  if (M5.BtnB.isPressed()) {
+    if (btnBHoldStart == 0) btnBHoldStart = millis();
+    else if (millis() - btnBHoldStart > 1000) {
+      godMode = !godMode;
+      btnBHoldStart = 0;
+      delay(500); // debounce
+    }
+  } else {
+    btnBHoldStart = 0;
   }
   
-  // Simple BtnB toggle for God Mode
-  static bool lastBtnB = false;
-  if (M5.BtnB.isPressed() && !lastBtnB) {
-    godMode = !godMode;
-    Serial.printf("God Mode: %s\n", godMode ? "ON" : "OFF");
-    delay(200);  // Debounce
-  }
-  lastBtnB = M5.BtnB.isPressed();
-  
-  // BtnA activates WARP
-  static bool lastBtnA = false;
-  if (M5.BtnA.isPressed() && !lastBtnA) {
-    warpPlayer();
-  }
-  lastBtnA = M5.BtnA.isPressed();
-  
-  // Apply friction
-  player.vx *= FRICTION;
-  player.vy *= FRICTION;
-  
-  // Move
+  // Physics
   player.x += player.vx;
   player.y += player.vy;
   
-  // Wrap
   player.x = wrapX(player.x);
   player.y = wrapY(player.y);
-}
-
-void updateBullets() {
-  for (int i = 0; i < MAX_BULLETS; i++) {
-    if (!bullets[i].active) continue;
-    
-    bullets[i].x += bullets[i].vx;
-    bullets[i].y += bullets[i].vy;
-    
-    // Deactivate if off screen
-    if (bullets[i].x < 0 || bullets[i].x >= SCREEN_WIDTH ||
-        bullets[i].y < PLAY_AREA_TOP || bullets[i].y >= PLAY_AREA_BOTTOM) {
-      bullets[i].active = false;
+  
+  // Collision with asteroids
+  if (millis() > player.invincibleUntil && !godMode) {
+    for (int i = 0; i < MAX_ASTEROIDS; i++) {
+      if (asteroids[i].active) {
+        float dx = player.x - asteroids[i].x;
+        float dy = player.y - asteroids[i].y;
+        float distSq = dx * dx + dy * dy;
+        float minDist = asteroids[i].isLarge ? 18.0f : 8.0f;
+        
+        if (distSq < minDist * minDist) {
+          player.alive = false;
+          player.lives--;
+          Serial.printf("Player HIT! Lives left: %d\n", player.lives);
+          
+          if (player.lives <= 0) {
+            gameOver = true;
+          }
+          break;
+        }
+      }
     }
   }
 }
 
 void updateAsteroids() {
+  bool anyActive = false;
   for (int i = 0; i < MAX_ASTEROIDS; i++) {
-    if (!asteroids[i].active) continue;
-    
-    asteroids[i].x += asteroids[i].vx;
-    asteroids[i].y += asteroids[i].vy;
-    
-    // Wrap
-    asteroids[i].x = wrapX(asteroids[i].x);
-    asteroids[i].y = wrapY(asteroids[i].y);
-    
-    // Rotate (large only)
-    if (asteroids[i].isLarge) {
-      asteroids[i].rotation += asteroids[i].rotSpeed;
-      if (asteroids[i].rotation < 0) asteroids[i].rotation += 4;
-      if (asteroids[i].rotation >= 4) asteroids[i].rotation -= 4;
-    }
-  }
-}
-
-void checkCollisions() {
-  // Bullet vs Asteroid
-  for (int b = 0; b < MAX_BULLETS; b++) {
-    if (!bullets[b].active) continue;
-    
-    for (int a = 0; a < MAX_ASTEROIDS; a++) {
-      if (!asteroids[a].active) continue;
+    if (asteroids[i].active) {
+      anyActive = true;
+      asteroids[i].x += asteroids[i].vx;
+      asteroids[i].y += asteroids[i].vy;
       
-      float dx = bullets[b].x - asteroids[a].x;
-      float dy = bullets[b].y - asteroids[a].y;
-      float dist = sqrt(dx*dx + dy*dy);
+      asteroids[i].x = wrapX(asteroids[i].x);
+      asteroids[i].y = wrapY(asteroids[i].y);
       
-      if (dist < BLOCK_SIZE * 2) {
-        bullets[b].active = false;
-        
-        if (asteroids[a].isLarge) {
-          breakAsteroid(&asteroids[a]);
-        } else {
-          asteroids[a].active = false;
-          score += 10;
-        }
-        break;
-      }
+      // Piece rotation
+      // asteroids[i].rotation = (int)(millis() / 500) % 4; // Simple rotation
     }
   }
   
-  // Player vs Asteroid (only if not invincible and not in god mode)
-  if (player.alive && !godMode && millis() >= player.invincibleUntil) {
-    for (int a = 0; a < MAX_ASTEROIDS; a++) {
-      if (!asteroids[a].active) continue;
+  if (!anyActive && !gameOver) {
+    wave++;
+    spawnWave();
+  }
+}
+
+void updateBullets() {
+  for (int i = 0; i < MAX_BULLETS; i++) {
+    if (bullets[i].active) {
+      bullets[i].x += bullets[i].vx;
+      bullets[i].y += bullets[i].vy;
       
-      float dx = player.x - asteroids[a].x;
-      float dy = player.y - asteroids[a].y;
-      float dist = sqrt(dx*dx + dy*dy);
+      // Bounds check
+      if (bullets[i].x < 0 || bullets[i].x >= SCREEN_WIDTH || 
+          bullets[i].y < PLAY_AREA_TOP || bullets[i].y >= PLAY_AREA_BOTTOM) {
+        bullets[i].active = false;
+        continue;
+      }
       
-      // Better collision - check closer distance
-      if (dist < BLOCK_SIZE * 2.0f) {  // Made more sensitive
-        // Death explosion effect
-        for (int i = 0; i < 8; i++) {
-          float angle = (i * 45.0f) * PI / 180.0f;
-          M5.Lcd.drawLine(player.x, player.y, 
-                          player.x + cos(angle) * 20, 
-                          player.y + sin(angle) * 20, 
-                          0xFFFF);
-        }
-        delay(150);  // Show explosion longer
-        
-        player.lives--;
-        Serial.printf("HIT! Lives remaining: %d\n", player.lives);
-        
-        if (player.lives <= 0) {
-          // Auto-reset instead of game over
-          Serial.println("=== ALL LIVES LOST - AUTO RESET ===");
+      // Collision with asteroids
+      for (int j = 0; j < MAX_ASTEROIDS; j++) {
+        if (asteroids[j].active) {
+          float dx = bullets[i].x - asteroids[j].x;
+          float dy = bullets[i].y - asteroids[j].y;
+          float distSq = dx * dx + dy * dy;
+          float minDist = asteroids[j].isLarge ? 12.0f : 6.0f;
           
-          // Show quick "GAME OVER" message
-          M5.Lcd.fillScreen(0x0000);
-          M5.Lcd.setTextSize(2);
-          M5.Lcd.setTextColor(0xF800);
-          M5.Lcd.setCursor(20, 100);
-          M5.Lcd.print("GAME OVER");
-          M5.Lcd.setTextSize(1);
-          M5.Lcd.setCursor(20, 130);
-          M5.Lcd.printf("Score: %d", score);
-          M5.Lcd.setCursor(20, 145);
-          M5.Lcd.printf("Wave: %d", wave);
-          delay(2000);  // Show for 2 seconds
-          
-          // Auto-reset everything
-          score = 0;
-          wave = 1;
-          for (int i = 0; i < MAX_ASTEROIDS; i++) asteroids[i].active = false;
-          for (int i = 0; i < MAX_BULLETS; i++) bullets[i].active = false;
-          initPlayer();  // Full reset with 3 lives
-          spawnWave();
-          Serial.println("Game reset complete - starting fresh");
-        } else {
-          respawnPlayer();  // Respawn WITHOUT resetting lives count
+          if (distSq < minDist * minDist) {
+            bullets[i].active = false;
+            asteroids[j].active = false;
+            score += asteroids[j].isLarge ? 20 : 50;
+            
+            // Split if large
+            if (asteroids[j].isLarge) {
+              spawnAsteroid(asteroids[j].x, asteroids[j].y, asteroids[j].type, false);
+              spawnAsteroid(asteroids[j].x, asteroids[j].y, asteroids[j].type, false);
+            }
+            break;
+          }
         }
-        return;
       }
     }
   }
 }
 
-bool waveComplete() {
-  for (int i = 0; i < MAX_ASTEROIDS; i++) {
-    if (asteroids[i].active) return false;
-  }
-  return true;
+void resetGame() {
+  score = 0;
+  wave = 1;
+  gameOver = false;
+  gameStarted = true;
+  
+  for (int i = 0; i < MAX_ASTEROIDS; i++) asteroids[i].active = false;
+  for (int i = 0; i < MAX_BULLETS; i++) bullets[i].active = false;
+  
+  initPlayer();
+  spawnWave();
 }
 
 // ============================================================================
-// MAIN GAME LOOP
+// SETUP & LOOP
 // ============================================================================
 
 void setup() {
   M5.begin();
   M5.Lcd.setRotation(0);
+  
+  // Initialize 5-way switch pins
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_CENTER, INPUT_PULLUP);
+  
   M5.Lcd.fillScreen(0x0000);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.setTextColor(0xF81F); // Magenta
+  M5.Lcd.setCursor(15, 60);
+  M5.Lcd.print("TETROIDS");
   
-  // Init JoyC
-  while (!Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000L)) {
-    M5.Lcd.println("JoyC not found!");
-    delay(500);
-  }
-  
-  randomSeed(esp_random());
-  
-  // Init game
-  initPlayer();
-  for (int i = 0; i < MAX_BULLETS; i++) bullets[i].active = false;
-  for (int i = 0; i < MAX_ASTEROIDS; i++) asteroids[i].active = false;
-  
-  spawnWave();
-  gameStartTime = millis();
-  gameStarted = true;
+  M5.Lcd.setTextSize(1);
+  M5.Lcd.setTextColor(0xFFFF);
+  M5.Lcd.setCursor(20, 100);
+  M5.Lcd.print("Tetris + Asteroids");
+  M5.Lcd.setCursor(15, 140);
+  M5.Lcd.print("Press M5 to Start");
 }
 
 void loop() {
-  M5.update();
-  
-  if (gameOver) {
-    M5.Lcd.fillScreen(0x0000);
-    M5.Lcd.setTextSize(3);
-    M5.Lcd.setTextColor(0xF800);
-    M5.Lcd.setCursor(10, 80);
-    M5.Lcd.print("GAME");
-    M5.Lcd.setCursor(10, 110);
-    M5.Lcd.print("OVER");
-    
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.setTextColor(0xFFFF);
-    M5.Lcd.setCursor(10, 150);
-    M5.Lcd.printf("Score:%d", score);
-    M5.Lcd.setCursor(10, 170);
-    M5.Lcd.printf("Wave: %d", wave);
-    
-    M5.Lcd.setTextSize(1);
-    M5.Lcd.setCursor(10, 200);
-    M5.Lcd.print("Press A or B");
-    M5.Lcd.setCursor(10, 210);
-    M5.Lcd.print("to restart");
-    
-    if (M5.BtnA.wasPressed() || M5.BtnB.wasPressed()) {
-      // Reset
-      score = 0;
-      wave = 1;
-      gameOver = false;
-      initPlayer();
-      for (int i = 0; i < MAX_ASTEROIDS; i++) asteroids[i].active = false;
-      for (int i = 0; i < MAX_BULLETS; i++) bullets[i].active = false;
-      spawnWave();
+  if (!gameStarted) {
+    M5.update();
+    if (M5.BtnA.wasPressed() || digitalRead(PIN_CENTER) == LOW) {
+      resetGame();
     }
-    delay(50);
     return;
   }
   
-  // Check wave complete
-  if (waveComplete()) {
-    wave++;
-    score += 100 * wave;
-    
-    // Extra life every 2 waves (wave 2, 4, 6, 8...)
-    if (wave % 2 == 0 && player.lives < 5) {  // Cap at 5 lives max
-      player.lives++;
-      Serial.printf("EXTRA LIFE! Now have %d lives\n", player.lives);
-      
-      // Visual feedback - flash green
-      M5.Lcd.fillRect(0, 0, SCREEN_WIDTH, 10, 0x07E0);
-      delay(300);
+  if (!gameOver) {
+    if (player.alive) {
+      updatePlayer();
+    } else {
+      delay(1000);
+      respawnPlayer();
     }
     
-    spawnWave();
-    delay(1000);
+    updateAsteroids();
+    updateBullets();
+    
+    // Draw
+    M5.Lcd.fillScreen(0x0000);
+    drawPlayer();
+    drawBullets();
+    drawAsteroids();
+    drawHUD();
+    
+    M5.Lcd.setCursor(60, 15);
+    M5.Lcd.setTextColor(0xFFFF);
+    M5.Lcd.printf("Score: %d", score);
+  } else {
+    // Game Over
+    M5.Lcd.fillScreen(0x0000);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextColor(0xF800);
+    M5.Lcd.setCursor(15, 100);
+    M5.Lcd.print("GAME OVER");
+    
+    M5.Lcd.setTextSize(1);
+    M5.Lcd.setTextColor(0xFFFF);
+    M5.Lcd.setCursor(30, 130);
+    M5.Lcd.printf("Final Score: %d", score);
+    M5.Lcd.setCursor(20, 150);
+    M5.Lcd.print("Press M5 to Restart");
+    
+    M5.update();
+    if (M5.BtnA.wasPressed() || digitalRead(PIN_CENTER) == LOW) {
+      resetGame();
+    }
   }
   
-  // Update
-  updatePlayer();
-  updateBullets();
-  updateAsteroids();
-  checkCollisions();
-  
-  // Draw
-  // Clear entire screen below HUD and including bottom margin
-  M5.Lcd.fillRect(0, 10, SCREEN_WIDTH, SCREEN_HEIGHT - 10, 0x0000);
-  drawAsteroids();
-  drawBullets();
-  drawPlayer();
-  drawHUD();
-  
-  delay(30); // ~33fps
+  delay(20);
 }

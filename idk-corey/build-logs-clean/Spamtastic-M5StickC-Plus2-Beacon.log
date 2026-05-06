@@ -34,4 +34,4 @@ Checking size .pio/build/m5stickc_plus2/firmware.elf
 Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
 RAM:   [==        ]  15.8% (used 51628 bytes from 327680 bytes)
 Flash: [=======   ]  72.9% (used 955821 bytes from 1310720 bytes)
-========================= [SUCCESS] Took 36.10 seconds =========================
+========================= [SUCCESS] Took 36.49 seconds =========================

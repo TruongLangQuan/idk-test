@@ -1,39 +1,23 @@
 # TROUBLESHOOTING
 
-## Flash errors
-- Confirm correct `platformio.ini` env.
-- Close serial monitor before upload.
-- Retry with lower USB contention and correct port.
+## 1. Flash Errors
+- **Error:** `A fatal error occurred: Failed to connect to ESP32: Timed out waiting for packet header`
+- **Fix:** Ensure the M5StickC is turned on and connected. You may need to hold the Power button for 6 seconds to force power off, then plug it in again. Check the USB cable (must support data).
 
-## Boot loop / jumps into app
-- Project: `Launcher`
-- Check `bootToApp` state in config/NVS.
-- Verify startup button path still enters launcher.
-- If recently changed boot flow, test with clean config and serial logs.
+## 2. Boot Loop / Watchdog Reset
+- **Error:** Constant rebooting, serial output shows `Task watchdog got triggered` or `Guru Meditation Error: Core 1 panic'ed (LoadProhibited)`.
+- **Fix:** 
+  - If WDT triggered: A `while()` loop or heavy math function took too long without yielding. Add `vTaskDelay(1)` inside the loop.
+  - If LoadProhibited: Null pointer dereference. Check array bounds and uninitialized objects.
 
-## Device not detected
-- Verify USB cable/data path.
-- Verify correct board family and drivers.
-- Retry `pio device list` and monitor.
+## 3. Device Not Detected (Serial)
+- **Error:** `/dev/ttyUSB0` or `COM port` not showing up.
+- **Fix:** M5StickC Plus 2 uses a CH9102 serial chip. Ensure the CH9102/CH34x drivers are installed on the host OS.
 
-## SD card mount fails
-- Verify SPI pins and card formatting.
-- Cold boot and remount.
-- Compare with known-good SD logic in `idk-video` or `idk-audio`.
-- In Launcher, re-check `src/sd_functions.cpp` retry logic.
+## 4. Hardware Mismatch / White Screen
+- **Error:** Display is entirely white, noisy, or blank after flash.
+- **Fix:** You likely flashed firmware meant for a different board. Verify `[env:m5stickc_plus2]` is selected. M5StickC (old) and Plus 2 have different LCD controllers and PMICs.
 
-## Subtitle missing or wrong timing
-- Verify `name.mjpg` and `name.srt` basename match.
-- Verify SRT format is standard `HH:MM:SS,mmm`.
-- Verify video frame cadence matches subtitle timebase.
-- Verify Tenstar heartbeat/UDP on port `4210`.
-
-## WiFi / UDP remote not working
-- Verify AP/STA mode for that firmware.
-- Verify SSID/password expected by peer device.
-- Verify UDP ports `4210`, `4211`, `4212` are unchanged.
-
-## Hardware mismatch
-- Check target board against `platformio.ini` env.
-- For Launcher, check `boards/pinouts/*` and `boards/*/interface.cpp`.
-- Mark unresolved pin assumptions before editing further.
+## 5. PSRAM Allocation Fails
+- **Error:** Sprites fail to create, or device crashes when allocating `M5Canvas`.
+- **Fix:** Ensure `-DBOARD_HAS_PSRAM` is in `platformio.ini` build flags and that the board supports it. Check `ESP.getFreePsram()` to ensure memory isn't leaking.

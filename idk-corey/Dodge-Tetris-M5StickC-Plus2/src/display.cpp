@@ -2,7 +2,7 @@
 #include "display.h"
 
 void initDisplay() {
-  M5.Lcd.setRotation(1); // Landscape mode
+  M5.Lcd.setRotation(3); // Landscape mode 3 (Inverted)
   M5.Lcd.fillScreen(COLOR_BLACK);
 }
 

@@ -14,7 +14,6 @@
  */
 
 #include <M5StickCPlus2.h>
-#include "UNIT_MiniJoyC.h"
 
 // Display configuration
 #define SCREEN_WIDTH 135
@@ -37,10 +36,11 @@
 #define MAX_PTERODACTYLS 2
 
 // JoyC
-UNIT_JOYC Joystick;
-#define JoyC_ADDR 0x54
-#define POS_X 0
-#define POS_Y 1
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 // Colors (Tetris themed)
 #define COLOR_BG 0x0000        // Black
@@ -149,19 +149,23 @@ bool btnBPressed = false, btnBLastPressed = false;
 bool btnAPressed = false, btnALastPressed = false;
 
 void initInput() {
-  Wire.begin(0, 26, 100000UL);
-  Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000UL);
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_CENTER, INPUT_PULLUP);
 }
 
 void updateInput() {
-  uint16_t rawX = Joystick.getADCValue(POS_X);
-  uint16_t rawY = Joystick.getADCValue(POS_Y);
-  
-  joyX = (int)((rawX - 2048) / 16);
-  joyY = (int)((rawY - 2048) / 16);
+  joyX = 0;
+  joyY = 0;
+  if (digitalRead(PIN_LEFT) == LOW) joyX = -100;
+  if (digitalRead(PIN_RIGHT) == LOW) joyX = 100;
+  if (digitalRead(PIN_UP) == LOW) joyY = -100;
+  if (digitalRead(PIN_DOWN) == LOW) joyY = 100;
   
   btnLastPressed = btnPressed;
-  btnPressed = (Joystick.getButtonStatus() == 0);
+  btnPressed = (digitalRead(PIN_CENTER) == LOW);
   btnBLastPressed = btnBPressed;
   btnBPressed = (M5.BtnB.isPressed());
   btnALastPressed = btnAPressed;

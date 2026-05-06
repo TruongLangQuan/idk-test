@@ -1,6 +1,7 @@
 #ifndef _GBROM_H
 #define _GBROM_H
 
+#include <Arduino.h>
 #include "../gbConfig.h"
 
 #include "rom/gbCart3_D_Crazy_Coaster_1983.h"

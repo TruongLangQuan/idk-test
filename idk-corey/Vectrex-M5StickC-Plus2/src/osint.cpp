@@ -1,4 +1,6 @@
 
+#include <Arduino.h>
+#include <M5StickCPlus2.h>
 #include <math.h>
 #include "gbConfig.h"
 #include "gbGlobals.h"
@@ -11,14 +13,19 @@
 #endif
 
 #include "esp32-hal-cpu.h"
-#include <Arduino.h>
-#include <M5StickCPlus2.h>
 #include "dataFlash/gbbios.h"
 
 // Display for M5StickC Plus2
 #include "display.h"
 
 #define EMU_TIMER 20 // the emulators heart beats at 20 milliseconds
+
+// 5-way tactile switch pins
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 // ROM selection menu
 static int showROMMenu() {
@@ -38,8 +45,9 @@ static int showROMMenu() {
     while (menuActive) {
         M5.update();
         
-        // Read joystick
-        uint16_t xValue = joyc.getADCValue(0);
+        // Read 5-way switch
+        bool moveUp = (digitalRead(PIN_UP) == LOW);
+        bool moveDown = (digitalRead(PIN_DOWN) == LOW);
         
         // Check for up/down input
         unsigned long now = millis();
@@ -47,13 +55,13 @@ static int showROMMenu() {
             bool moved = false;
             
             // Up
-            if (xValue > 2800) {
+            if (moveUp) {
                 selectedIndex--;
                 if (selectedIndex < 0) selectedIndex = max_list_rom - 1;
                 moved = true;
             }
             // Down  
-            else if (xValue < 1300) {
+            else if (moveDown) {
                 selectedIndex++;
                 if (selectedIndex >= max_list_rom) selectedIndex = 0;
                 moved = true;
@@ -64,8 +72,8 @@ static int showROMMenu() {
             }
         }
         
-        // Select with BtnA
-        if (M5.BtnA.wasPressed()) {
+        // Select with BtnA or Center
+        if (M5.BtnA.wasPressed() || (digitalRead(PIN_CENTER) == LOW)) {
             menuActive = false;
         }
         
@@ -81,36 +89,36 @@ static int showROMMenu() {
             M5.Lcd.println("=== SELECT ROM ===");
             M5.Lcd.println("");
         
-        // Calculate scrolling window (show 10 items at a time)
-        const int itemsPerScreen = 10;
-        int startIdx = selectedIndex - (itemsPerScreen / 2);
-        
-        // Keep window in bounds
-        if (startIdx < 0) startIdx = 0;
-        if (startIdx > max_list_rom - itemsPerScreen) {
-            startIdx = max_list_rom - itemsPerScreen;
-        }
-        if (startIdx < 0) startIdx = 0;  // Handle case where total items < itemsPerScreen
-        
-        // Show ROMs in scrolling window
-        for (int i = 0; i < itemsPerScreen && (startIdx + i) < max_list_rom; i++) {
-            int idx = startIdx + i;
+            // Calculate scrolling window (show 10 items at a time)
+            const int itemsPerScreen = 10;
+            int startIdx = selectedIndex - (itemsPerScreen / 2);
             
-            if (idx == selectedIndex) {
-                M5.Lcd.setTextColor(BLACK, GREEN);
-                M5.Lcd.print(">");
-            } else {
-                M5.Lcd.setTextColor(GREEN, BLACK);
-                M5.Lcd.print(" ");
+            // Keep window in bounds
+            if (startIdx < 0) startIdx = 0;
+            if (startIdx > max_list_rom - itemsPerScreen) {
+                startIdx = max_list_rom - itemsPerScreen;
             }
+            if (startIdx < 0) startIdx = 0;  // Handle case where total items < itemsPerScreen
             
-            // Truncate name if too long
-            String name = String(gb_list_rom_title[idx]);
-            if (name.length() > 26) {
-                name = name.substring(0, 23) + "...";
+            // Show ROMs in scrolling window
+            for (int i = 0; i < itemsPerScreen && (startIdx + i) < max_list_rom; i++) {
+                int idx = startIdx + i;
+                
+                if (idx == selectedIndex) {
+                    M5.Lcd.setTextColor(BLACK, GREEN);
+                    M5.Lcd.print(">");
+                } else {
+                    M5.Lcd.setTextColor(GREEN, BLACK);
+                    M5.Lcd.print(" ");
+                }
+                
+                // Truncate name if too long
+                String name = String(gb_list_rom_title[idx]);
+                if (name.length() > 26) {
+                    name = name.substring(0, 23) + "...";
+                }
+                M5.Lcd.println(name);
             }
-            M5.Lcd.println(name);
-        }
         
             // Show position indicator at bottom
             M5.Lcd.println("");
@@ -317,20 +325,22 @@ static void readevents() {
         rotationToggled = false;
     }
     
-    // Read JoyC values
-    uint16_t xValue = joyc.getADCValue(0);  // Vertical axis
-    uint16_t yValue = joyc.getADCValue(1);  // Horizontal axis
-    bool joyBtn = (joyc.getButtonStatus() == 0);  // JoyC button pressed (active low)
+    // Read 5-way switch
+    bool up = (digitalRead(PIN_UP) == LOW);
+    bool down = (digitalRead(PIN_DOWN) == LOW);
+    bool left = (digitalRead(PIN_LEFT) == LOW);
+    bool right = (digitalRead(PIN_RIGHT) == LOW);
+    bool center = (digitalRead(PIN_CENTER) == LOW);
     
     // NEW BUTTON MAPPING:
-    // JoyC Button = Button 1 (Primary fire/action)
+    // Center = Button 1 (Primary fire/action)
     // BtnA = Button 2 (Secondary action)
     // PWR = Button 3 (Special action)
     // BtnB short = Button 4 (Rare games)
     // BtnB hold = Return to menu
     
-    // Button 1 = JoyC button
-    if (joyBtn){
+    // Button 1 = Center switch
+    if (center){
         snd_regs[14] &= ~0x01;
     }
     else{
@@ -358,43 +368,24 @@ static void readevents() {
     else
         snd_regs[14] |= 0x08;
 
-    // Joystick control from JoyC with rotation support
-    // JoyC ADC values: ~2048 centered, 0-4095 range
-    // Vectrex VIA expects: nibbles 0-15 (center = 8)
-    // Note: We're using 8-bit (0-255) but scaled to match nibble behavior
+    // Joystick control simulation from 5-way switch
+    uint8_t rawX = 127;
+    uint8_t rawY = 127;
     
-    // First, convert raw ADC to directional values
-    uint8_t rawX, rawY;
-    
-    // Y-axis (horizontal on joystick): yValue controls this
-    // Left = high values (>2800), Right = low values (<1300), Center = ~2048
-    if (yValue > 2800) {
-        rawX = 0;  // Full left
-    } else if (yValue < 1300) {
-        rawX = 255;  // Full right
-    } else {
-        rawX = map(yValue, 2800, 1300, 0, 255);
-    }
-    
-    // X-axis (vertical on joystick): xValue controls this  
-    // Up = high values (>2800), Down = low values (<1300), Center = ~2048
-    if (xValue > 2800) {
-        rawY = 255;  // Full up
-    } else if (xValue < 1300) {
-        rawY = 0;  // Full down
-    } else {
-        rawY = map(xValue, 1300, 2800, 0, 255);
-    }
+    if (left) rawX = 0;
+    if (right) rawX = 255;
+    if (up) rawY = 255;
+    if (down) rawY = 0;
     
     // Rotate joystick based on screen orientation (landscape modes only)
-    if (screenRotation == 3) {
-        // Landscape 180 (upside down)
-        alg_jch0 = 255 - rawX;
-        alg_jch1 = 255 - rawY;
-    } else {
-        // Landscape (normal) - rotation 1
+    if (screenRotation == 1) {
+        // Landscape (normal)
         alg_jch0 = rawX;
         alg_jch1 = rawY;
+    } else {
+        // Landscape 180 (upside down) - rotation 3
+        alg_jch0 = 255 - rawX;
+        alg_jch1 = 255 - rawY;
     }
 }
 

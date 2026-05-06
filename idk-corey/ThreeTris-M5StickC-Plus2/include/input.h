@@ -1,13 +1,15 @@
-// input.h - Input handling for M5StickC Plus2 with JoyC Hat
+// input.h - Input handling for M5StickC Plus2 with 5-way tactile switch
 #ifndef INPUT_H
 #define INPUT_H
 
 #include "config.h"
-#include "UNIT_MiniJoyC.h"
+#include <M5StickCPlus2.h>
 
-#define JoyC_ADDR 0x54
-#define POS_X 0
-#define POS_Y 1
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 struct ButtonState {
   bool up;
@@ -27,7 +29,6 @@ struct ButtonState {
 };
 
 extern ButtonState buttons;
-extern UNIT_JOYC Joystick;
 
 void initInput();
 void updateInput();

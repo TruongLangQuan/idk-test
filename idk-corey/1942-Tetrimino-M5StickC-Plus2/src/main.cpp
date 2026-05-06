@@ -12,7 +12,12 @@
  */
 
 #include <M5StickCPlus2.h>
-#include "UNIT_MiniJoyC.h"
+
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 // Display configuration
 #define SCREEN_WIDTH 135
@@ -28,9 +33,7 @@
 #define MAX_POWERUPS 1
 #define MAX_WING_BULLETS 18  // 3 volleys of 6 bullets (3 power-ups x 2 wings)
 
-// JoyC
-UNIT_JOYC Joystick;
-#define JoyC_ADDR 0x54
+// JoyC removed
 #define POS_X 0
 #define POS_Y 1
 
@@ -208,21 +211,24 @@ bool btnAPressed = false, btnALastPressed = false;
 bool autoFire = false;  // Auto-fire toggle state
 
 void initInput() {
-  Wire.begin(0, 26, 100000UL);
-  Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000UL);
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_CENTER, INPUT_PULLUP);
 }
 
 void updateInput() {
-  // Read JoyC joystick (12-bit ADC: 0-4095, center ~2048)
-  uint16_t rawX = Joystick.getADCValue(POS_X);
-  uint16_t rawY = Joystick.getADCValue(POS_Y);
-  
-  // Convert to -127 to +127 range (centered at 2048)
-  joyX = (int)((rawX - 2048) / 16);
-  joyY = (int)((rawY - 2048) / 16);
+  // Read 5-way tactile switch (Active-LOW)
+  joyX = 0;
+  joyY = 0;
+  if (digitalRead(PIN_UP) == LOW) joyY = 100;
+  if (digitalRead(PIN_DOWN) == LOW) joyY = -100;
+  if (digitalRead(PIN_LEFT) == LOW) joyX = -100;
+  if (digitalRead(PIN_RIGHT) == LOW) joyX = 100;
   
   btnLastPressed = btnPressed;
-  btnPressed = (Joystick.getButtonStatus() == 0); // Pressed when 0
+  btnPressed = (digitalRead(PIN_CENTER) == LOW); 
   btnBLastPressed = btnBPressed;
   btnBPressed = (M5.BtnB.isPressed());
   btnALastPressed = btnAPressed;

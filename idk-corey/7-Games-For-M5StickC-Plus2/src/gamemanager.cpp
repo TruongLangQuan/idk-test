@@ -240,11 +240,11 @@ void GameManager::setState(GameState state) {
   currentState = state;
   
   if (state == STATE_MENU) {
-    M5.Lcd.setRotation(1); // Reset to landscape for menu
+    M5.Lcd.setRotation(3); // Reset to landscape for menu
     showMenu();
   }
   
   if (state == STATE_GAME_OVER || state == STATE_GAME_WON) {
-    M5.Lcd.setRotation(1); // Reset to landscape for game over screen
+    M5.Lcd.setRotation(3); // Reset to landscape for game over screen
   }
 }

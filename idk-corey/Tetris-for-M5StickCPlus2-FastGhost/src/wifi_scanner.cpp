@@ -1,7 +1,11 @@
 #include "wifi_scanner.h"
-#include "UNIT_MiniJoyC.h"
 
-extern UNIT_JOYC Joystick;
+#ifndef PIN_UP
+#define PIN_UP 32
+#endif
+#ifndef PIN_DOWN
+#define PIN_DOWN 33
+#endif
 
 struct NetworkInfo {
   String ssid;
@@ -45,9 +49,9 @@ void wifiScanner() {
       break;
     }
     
-    // Improved joystick navigation with debouncing
-    bool currentUp = (Joystick.getADCValue(1) > 2950);
-    bool currentDown = (Joystick.getADCValue(1) < 1600);
+    // Improved navigation with debouncing
+    bool currentUp = (digitalRead(PIN_UP) == LOW);
+    bool currentDown = (digitalRead(PIN_DOWN) == LOW);
     
     // Handle Up navigation
     if(currentUp && !upPressed && millis() - lastNavigation > 80) {

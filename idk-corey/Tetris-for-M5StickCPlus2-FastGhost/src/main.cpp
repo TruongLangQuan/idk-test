@@ -1,9 +1,14 @@
 #include <M5StickCPlus2.h>
-#include "UNIT_MiniJoyC.h"
 #include "tet.h"
 #include "wifi_beacon.h"
 #include "wifi_scanner.h"
 #include <IRsend.h>  // IR library for remote control
+
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 #define Disp M5.Lcd
 #define BITMAP M5.Lcd.drawBitmap(0,0,135,240,tet)
@@ -116,7 +121,7 @@ int linePos[4];
   
 int stage;
 
-UNIT_JOYC Joystick;
+// JoyC removed
 
 int pins[8];
 boolean buttons[8];
@@ -140,21 +145,22 @@ void setup() {
   pinMode(35,INPUT_PULLUP);
   pinMode(37,INPUT_PULLUP);
   pinMode(39,INPUT_PULLUP);
+  
+  // Initialize 5-way switch pins
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_CENTER, INPUT_PULLUP);
 
   Disp.setRotation(0);
   BITMAP;
   Disp.fillRect(0,0,135,18,BLACK);
-  //M5.Lcd.setTextSize(2);
-  //M5.Lcd.setFont(&fonts::FreeSerifBoldItalic9pt7b);
-  //M5.Lcd.drawString("C+2",37,77);
   M5.Lcd.setTextSize(1);
   M5.Lcd.drawString("v.1.5.0",4,8,1);
   M5.Lcd.drawString((String)M5.Power.getBatteryLevel()+"%",107,8,1);
   M5.Lcd.drawString("Loading...",39,134,1);
-  while (!(Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000UL))) {
-    delay(100);
-    Serial.println("I2C Error!\r\n");
-  }
+  
   M5.Lcd.fillRect(39,134,100,10,BLACK);
   M5.Lcd.drawString(" Press M5 ",39,134,1);
   M5.Lcd.drawString("L+R:Beacon Up:Scanner",5,150,1);
@@ -181,10 +187,10 @@ void setup() {
       }
     }
     
-    // Check for WiFi scanner mode (Up on joystick)
-    if(Joystick.getADCValue(1) > 2950) {
+    // Check for WiFi scanner mode (Up on switch)
+    if(digitalRead(PIN_UP) == LOW) {
       delay(500); // Hold time to confirm
-      if(Joystick.getADCValue(1) > 2950) {
+      if(digitalRead(PIN_UP) == LOW) {
         wifiScanner();
         // After WiFi scanner, redraw the screen
         Disp.fillScreen(BLACK);
@@ -202,10 +208,10 @@ void setup() {
       }
     }
     
-    // Check for IR Remote mode (Down on joystick) 
-    if(Joystick.getADCValue(1) < 1600) {
+    // Check for IR Remote mode (Down on switch) 
+    if(digitalRead(PIN_DOWN) == LOW) {
       delay(500); // Hold time to confirm
-      if(Joystick.getADCValue(1) < 1600) {
+      if(digitalRead(PIN_DOWN) == LOW) {
         irRemoteControl();
         // After IR remote, redraw the screen
         Disp.fillScreen(BLACK);
@@ -272,104 +278,52 @@ void setup() {
     }
   }
   
-  // Draw Halloween skull at bottom of opening screen (simple pixel art)
-  // Small skull pattern at bottom center (around x=67, y=190-210)
-  int skullX = 50; // Center horizontally
-  int skullY = 190; // Near bottom
-  
-  // Skull outline (white pixels)
-  M5.Lcd.drawPixel(skullX+2, skullY, WHITE);
-  M5.Lcd.drawPixel(skullX+3, skullY, WHITE);
-  M5.Lcd.drawPixel(skullX+4, skullY, WHITE);
-  M5.Lcd.drawPixel(skullX+1, skullY+1, WHITE);
-  M5.Lcd.drawPixel(skullX+5, skullY+1, WHITE);
-  M5.Lcd.drawPixel(skullX, skullY+2, WHITE);
-  M5.Lcd.drawPixel(skullX+6, skullY+2, WHITE);
-  M5.Lcd.drawPixel(skullX, skullY+3, WHITE);
-  M5.Lcd.drawPixel(skullX+6, skullY+3, WHITE);
-  M5.Lcd.drawPixel(skullX+1, skullY+4, WHITE);
-  M5.Lcd.drawPixel(skullX+5, skullY+4, WHITE);
-  M5.Lcd.drawPixel(skullX+2, skullY+5, WHITE);
-  M5.Lcd.drawPixel(skullX+4, skullY+5, WHITE);
-  M5.Lcd.drawPixel(skullX+3, skullY+6, WHITE);
-  
-  // Eye sockets (red pixels for spooky effect)
-  M5.Lcd.drawPixel(skullX+1, skullY+2, RED);
-  M5.Lcd.drawPixel(skullX+5, skullY+2, RED);
-  
-  // Nasal cavity 
-  M5.Lcd.drawPixel(skullX+3, skullY+3, RED);
-  
-  // Teeth/jaw
-  M5.Lcd.drawPixel(skullX+2, skullY+4, WHITE);
-  M5.Lcd.drawPixel(skullX+4, skullY+4, WHITE);
-  
-  // Add "FAST TETRIS!" text in red at center of screen
-  M5.Lcd.setTextColor(0xF800); // Red color
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.drawString("FAST", 55, 100, 1);      // Center horizontal, middle vertical
-  M5.Lcd.drawString("TETRIS!", 40, 115, 1);  // Center horizontal, below FAST
+  // Initialize next piece
+  nextPiece = random(7);
 }
 
 void loop(){
   // Show level select screen
   int startingLevel = levelSelect();
   
-  // Calculate FAST TETRIS speed - much faster drop speeds + INSANE levels 10-20!
-  // Level 0-9: Fast to Lightning, Level 10-20: UNREAL speeds!
-  if(startingLevel == 0) speed = 150;
-  else if(startingLevel == 1) speed = 130;
-  else if(startingLevel == 2) speed = 110;
-  else if(startingLevel == 3) speed = 90;
-  else if(startingLevel == 4) speed = 70;
-  else if(startingLevel == 5) speed = 60;
-  else if(startingLevel == 6) speed = 50;
-  else if(startingLevel == 7) speed = 40;
-  else if(startingLevel == 8) speed = 30;
-  else if(startingLevel == 9) speed = 20;
-  // INSANE LEVELS 10-20: UNREAL SPEEDS!
-  else if(startingLevel == 10) speed = 15;
-  else if(startingLevel == 11) speed = 12;
-  else if(startingLevel == 12) speed = 10;
-  else if(startingLevel == 13) speed = 8;
-  else if(startingLevel == 14) speed = 6;
-  else if(startingLevel == 15) speed = 5;
-  else if(startingLevel == 16) speed = 4;
-  else if(startingLevel == 17) speed = 3;
-  else if(startingLevel == 18) speed = 2;
-  else if(startingLevel == 19) speed = 1;  // FRAMES! PURE INSANITY!
-  else if(startingLevel == 20) speed = 1;  // MAX INSANITY
-  else speed = 150; // fallback
+  // Reset modern features
+  heldPiece = -1;
+  canHold = true;
+  
+  // Calculate proper speed for selected level - make it VERY obvious
+  // Level 0 = 1000ms (slow), Level 5 = 300ms (fast), Level 9 = 100ms (insane)
+  if(startingLevel == 0) speed = 1000;
+  else if(startingLevel == 1) speed = 800;
+  else if(startingLevel == 2) speed = 600;
+  else if(startingLevel == 3) speed = 450;
+  else if(startingLevel == 4) speed = 350;
+  else if(startingLevel == 5) speed = 300;
+  else if(startingLevel == 6) speed = 250;
+  else if(startingLevel == 7) speed = 200;
+  else if(startingLevel == 8) speed = 150;
+  else if(startingLevel == 9) speed = 100;
+  else speed = 750; // fallback
   
   timez=millis();
   score=0;
   level=startingLevel; // Start at selected level
   stage=startingLevel / 10; // Set proper stage based on level
   lineCount=0; // Reset line counter for proper speed progression
-  
-  // Initialize modern Tetris features
-  heldPiece = -1;           // No held piece at start
-  nextPiece = random(7);    // Generate first next piece
-  canHold = true;           // Allow holding
-  
   newPiece(0);
   game=1;
   showField(0,fieldy,1);
-  
-  // Draw initial hold and next piece areas
-  drawHoldPiece();
-  drawNextPiece();
-  
   while(game){
     collide=1;
     multiplier=1;
-    // Removed scoreBoardWrite - only show score at game end
+    scoreBoardWrite(score);
       while(collide){
         wait();
         if(collide) moveDown();
       }
-    if(game!=0)
-    newPiece(1);
+    if(game!=0) {
+      newPiece(1);
+      canHold = true; // Reset hold capability when piece locks
+    }
   }
   for(a=0;a<fieldy;a++){
     for(b=0;b<fieldx;b++){
@@ -377,84 +331,61 @@ void loop(){
     }
   }
   delay(1500);
-  
-  // Show final score at game end
-  scoreBoardWrite(score);
-  delay(3000);  // Show score for 3 seconds
-  
   M5.Lcd.drawString("            ",36,135,1); //Erase Reset msg
+  M5.Lcd.drawString("Sco.:00     ",10,4,1);
 }
 
 //==============================JoyC==============================
 int check_Btn(){
-  if (Joystick.getButtonStatus()==0){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_CENTER) == LOW ? 0 : 1;
 }
 int check_Up(){
-  if (Joystick.getADCValue(POS_Y)>2950){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_UP) == LOW ? 0 : 1;
 }
 int check_Right(){
-  if ((Joystick.getADCValue(POS_X)>2950)){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_RIGHT) == LOW ? 0 : 1;
 }
 int check_Left(){
-  if ((Joystick.getADCValue(POS_X)<1350)){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_LEFT) == LOW ? 0 : 1;
 }
 int check_Down() {
-  if ((Joystick.getADCValue(POS_Y)<1600)){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_DOWN) == LOW ? 0 : 1;
 }
 //================================================================
 
 void blockDraw(int y, int x, int colorz){
-  // Dynamic colors that change each level for variety!
+  // Modern colors
   int red=0;
   int gre=0;
   int blu=0;
   
-  // Use level to shift color palette - each level gets different colors!
-  int levelOffset = (level % 10); // Cycle through 10 different palettes
-  int techColor = ((colorz + levelOffset) % 8); // 8 tech colors + level offset
+  // Map colors 
+  int tetColor = (colorz % 7); 
   
-  switch(techColor) {
-    case 0: // Electric Blue (varies with level)
-      red = 0 + (levelOffset * 2); gre = 15 + levelOffset; blu = 31;
+  switch(tetColor) {
+    case 0: // Cyan (I)
+      red = 0; gre = 31; blu = 31;
       break;
-    case 1: // Matrix Green (varies with level)  
-      red = 0; gre = 31; blu = 8 + (levelOffset * 2);
+    case 1: // Yellow (O)
+      red = 31; gre = 31; blu = 0;
       break;
-    case 2: // Cyber Red (varies with level)
-      red = 31; gre = 0 + levelOffset; blu = 8 + levelOffset;
+    case 2: // Purple (T)
+      red = 15; gre = 0; blu = 31;
       break;
-    case 3: // Neon Cyan (varies with level)
-      red = 0 + levelOffset; gre = 31; blu = 31;
+    case 3: // Green (S)
+      red = 0; gre = 31; blu = 0;
       break;
-    case 4: // Electric Purple (varies with level)
-      red = 20 + levelOffset; gre = 0; blu = 31;
+    case 4: // Red (Z)
+      red = 31; gre = 0; blu = 0;
       break;
-    case 5: // Laser Yellow (varies with level)
-      red = 31; gre = 31; blu = 0 + (levelOffset * 3);
+    case 5: // Blue (J)
+      red = 0; gre = 0; blu = 31;
       break;
-    case 6: // Tech Magenta (varies with level)
-      red = 31; gre = 0 + (levelOffset * 2); blu = 31;
-      break;
-    case 7: // Circuit White (varies with level)
-      red = 25 + levelOffset; gre = 25 + levelOffset; blu = 31;
+    case 6: // Orange (L)
+      red = 31; gre = 15; blu = 0;
       break;
     default:
-      red = 0 + levelOffset; gre = 31; blu = 15 + levelOffset; // Fallback
+      red = 31; gre = 15; blu = 0; 
       break;
   }
   
@@ -574,6 +505,7 @@ void clearLines(){
   }
   timez=millis();
 }
+
 void newPiece(boolean setPiece){
   if(setPiece){
       for(a=0;a<4;a++){
@@ -582,44 +514,102 @@ void newPiece(boolean setPiece){
     clearLines();
   }
   
-  // Modern Tetris piece generation
-  if(setPiece) {
-    canHold = true;  // Reset hold ability when piece locks
-  }
+  // Use pre-generated next piece
+  block = nextPiece;
+  nextPiece = random(7); // Generate piece for next turn
   
   posY=1;
   posX=4;
   rot=0;
+  color=block+1; // Fixed colors for pieces
   
-  // Use next piece, then generate new next piece
-  if(nextPiece >= 0) {
-    block = nextPiece;
-    nextPiece = random(7);  // Generate new next piece
-  } else {
-    block = random(7);      // Fallback for first piece
-    nextPiece = random(7);
-  }
-  
-  color=random(96)+1;
-  
-  // Reset lock delay for new piece
-  lockDelayActive = false;
+  // Redraw previews
+  drawNextPiece();
+  drawHoldPiece();
   
   showField(0,20,1);
-  drawNextPiece();    // Update next piece display
-  drawHoldPiece();    // Update hold piece display
-  
   if(game!=0){
     game=test(0,0);    
   }
 }
 
+void holdPiece() {
+  if (!canHold) return; // Only one hold per drop
+  
+  int temp = heldPiece;
+  heldPiece = block;
+  
+  if (temp == -1) {
+    // First time holding, spawn new piece
+    block = nextPiece;
+    nextPiece = random(7);
+  } else {
+    // Swap with previously held piece
+    block = temp;
+  }
+  
+  posY = 1;
+  posX = 4;
+  rot = 0;
+  color = block + 1;
+  canHold = false; // Disable holding until next piece locks
+  
+  // Clear the field (hide current piece at old position)
+  showField(0, fieldy, 0);
+  
+  // Redraw previews
+  drawNextPiece();
+  drawHoldPiece();
+  
+  // Redraw field with new piece
+  showField(0, fieldy, 1);
+}
+
+void drawMiniPiece(int pieceType, int x, int y, int scale) {
+  if (pieceType == -1) return;
+  
+  uint16_t colors[] = {0x07FF, 0xFFE0, 0xF81F, 0x07E0, 0xF800, 0x001F, 0xFD20};
+  uint16_t c = colors[pieceType % 7];
+  
+  for (int i = 0; i < 4; i++) {
+    int px = x + piece[pieceType][0][1][i] * scale;
+    int py = y + piece[pieceType][0][0][i] * scale;
+    M5.Lcd.fillRect(px, py, scale - 1, scale - 1, c);
+  }
+}
+
+void drawHoldPiece() {
+  // Clear hold area
+  M5.Lcd.fillRect(1, 40, 12, 30, BLACK);
+  M5.Lcd.drawRect(0, 38, 14, 34, WHITE);
+  M5.Lcd.setTextSize(1);
+  M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.setCursor(1, 30);
+  M5.Lcd.print("H");
+  
+  if (heldPiece != -1) {
+    drawMiniPiece(heldPiece, 3, 48, 4);
+  }
+}
+
+void drawNextPiece() {
+  // Clear next area
+  M5.Lcd.fillRect(123, 40, 12, 30, BLACK);
+  M5.Lcd.drawRect(121, 38, 14, 34, WHITE);
+  M5.Lcd.setTextSize(1);
+  M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.setCursor(123, 30);
+  M5.Lcd.print("N");
+  
+  drawMiniPiece(nextPiece, 123, 48, 4);
+}
+
 void wait(){
   timez+=speed;
   while(millis()<(timez+speed)){
-    if(millis()>(leftHold+75)){hold[0]=0;}  // Faster JoyC response!
-    if(millis()>(downHold+75)){hold[1]=0;}  // 75ms instead of 150ms
-    if(millis()>(rightHold+75)){hold[2]=0;}  // Much more responsive
+    if(millis()>(leftHold+150)){hold[0]=0;}
+    if(millis()>(downHold+150)){hold[1]=0;}
+    if(millis()>(rightHold+150)){hold[2]=0;}
     for(int d=0;d<8;d++){
       buttons[d]=0;
       ButtonLoop(d);
@@ -636,24 +626,16 @@ void wait(){
     if(buttons[0]){moveLeft();leftHold=millis();}
     if(buttons[1]){moveDown();downHold=millis();}
     if(buttons[2]){moveRight();rightHold=millis();}
-    if(buttons[3]){rotateRight();}     // JOYSTICK BUTTON = ROTATE RIGHT
-    if(buttons[4]){rotateLeft();}      // L BUTTON = ROTATE LEFT  
-    if(buttons[5]){plummet();}         // UP JOYSTICK = HARD DROP
-    if(buttons[6]){                    // M5 BUTTON = HOLD PIECE
-      holdPiece(); // Simple direct call - no hold array complications
-    }
-    if(buttons[7]){pausegame();}       // R BUTTON = PAUSE
+    if(buttons[3]){rotateRight();}
+    if(buttons[4]){holdPiece();} // Btn 4 (GPIO 35) = Hold
+    if(buttons[5]){rotateLeft();} // Joystick Up = Rotate Left
+    if(buttons[6]){pausegame();}
+    if(buttons[7]){plummet();} // Btn 7 (GPIO 39) = Hard Drop
   }
 }
 
 void moveLeft(){
-  if(test(0,-1)) {
-    posX--;
-    // Reset lock delay timer on successful movement
-    if(lockDelayActive) {
-      lockDelayStart = millis();
-    }
-  }
+  posX-=test(0,-1);
   showField(0,fieldy,1); // Full redraw to clear ghost trails
 }
 
@@ -661,38 +643,19 @@ void moveDown(){
   if(test(1,0)){
     posY++;
     showField(0,fieldy,1); // Full redraw to clear ghost trails
-    // Reset lock delay if piece moved down successfully
-    lockDelayActive = false;
   } else{
-    // Piece can't move down - start lock delay
-    if(!lockDelayActive) {
-      lockDelayActive = true;
-      lockDelayStart = millis();
-    }
-    
-    // Check if 500ms lock delay has expired
-    if(millis() - lockDelayStart >= lockDelayTime) {
-      collide=0; // Lock the piece
-      lockDelayActive = false;
-    }
-    // Otherwise piece stays in position during lock delay
+    collide=0;
   }
   timez=millis();
 }
 
 void moveRight(){
-  if(test(0,1)) {
-    posX++;
-    // Reset lock delay timer on successful movement
-    if(lockDelayActive) {
-      lockDelayStart = millis();
-    }
-  }
+  posX+=(test(0,1));
   showField(0,fieldy,1); // Full redraw to clear ghost trails
 }
 
 void plummet(){
-  multiplier=2;posY;
+  multiplier=2;
   while(collide){
     moveDown();
     delay(12);
@@ -707,11 +670,6 @@ void rotateLeft(){
   if(!test(0,0)){
     rot++;
     rot%=4;
-  } else {
-    // Reset lock delay timer on successful rotation
-    if(lockDelayActive) {
-      lockDelayStart = millis();
-    }
   }
   showField(0,fieldy,1); // Full redraw to clear ghost trails
 }
@@ -723,23 +681,19 @@ void rotateRight(){
     rot+=4;
     rot--;
     rot%=4;
-  } else {
-    // Reset lock delay timer on successful rotation
-    if(lockDelayActive) {
-      lockDelayStart = millis();
-    }
   }
   showField(0,fieldy,1); // Full redraw to clear ghost trails
 }
 
 void pausegame(){
   delay(200);
-  M5.Lcd.drawString("(PAUSED)",45,100,1);
-  while (digitalRead(39)==1) {  // Wait for R button release (pause button)
-  Serial.println("Game paused");
-  delay(100);
+  M5.Lcd.drawString("(P)",61,4,1);
+  while (digitalRead(37)==1) {
+    Serial.println("Game paused :'v");
+    delay(100);
   }
-  M5.Lcd.fillRect(45,100,50,10,BLACK); // Clear pause text
+  M5.Lcd.drawString("   ",61,4,1);
+  M5.Lcd.drawString("Sco.:0"+String(score),10,4,1);
 }
 
 void reset(){
@@ -799,28 +753,28 @@ boolean test(int y, int x){
 void ButtonLoop(int _btn){
   switch (_btn) {
   case 0:
-    pins[0]=check_Left();        // LEFT
+    pins[0]=check_Left();
   break; 
   case 1:
-    pins[1]=check_Down();        // DOWN
+    pins[1]=check_Down();
   break;
   case 2:
-    pins[2]=check_Right();       // RIGHT
+    pins[2]=check_Right();
   break;
   case 3:
-    pins[3]=check_Btn();         // JOYSTICK BUTTON
+    pins[3]=check_Btn();
   break;
   case 4:
-    pins[4]=digitalRead(35);     // L BUTTON  
+    pins[4]=digitalRead(35);
   break;
   case 5:
-    pins[5]=check_Up();          // UP JOYSTICK 
+    pins[5]=check_Up();
   break;
   case 6:
-    pins[6]=digitalRead(37);     // M5 BUTTON
+    pins[6]=digitalRead(37);
   break;
   case 7:
-    pins[7]=digitalRead(39);     // R BUTTON
+    pins[7]=digitalRead(39);
   break;
   default:
   break;
@@ -828,10 +782,8 @@ void ButtonLoop(int _btn){
 }
 
 void scoreBoardWrite(int scorez){
-  // Only called at game end - show final score and level
-  M5.Lcd.drawString("GAME OVER!",30,100,1);
-  M5.Lcd.drawString("Final Score: "+String(score),10,120,1);
-  M5.Lcd.drawString("Level: "+String(level),10,140,1);
+  M5.Lcd.drawString("Sco.:0"+String(score),10,4,1);
+  M5.Lcd.drawString("Level:"+String(level),84,4,1);
 }
 
 int levelSelect() {
@@ -862,61 +814,41 @@ int levelSelect() {
     String levelText = "LEVEL " + String(selectedLevel);
     M5.Lcd.drawString(levelText, 15, 80, 1);
     
-    // Speed info - show the ACTUAL FAST speed values we're using
+    // Speed info
     M5.Lcd.setTextSize(1);
     M5.Lcd.setTextColor(YELLOW);
     long actualSpeed;
-    if(selectedLevel == 0) actualSpeed = 150;
-    else if(selectedLevel == 1) actualSpeed = 130;
-    else if(selectedLevel == 2) actualSpeed = 110;
-    else if(selectedLevel == 3) actualSpeed = 90;
-    else if(selectedLevel == 4) actualSpeed = 70;
-    else if(selectedLevel == 5) actualSpeed = 60;
-    else if(selectedLevel == 6) actualSpeed = 50;
-    else if(selectedLevel == 7) actualSpeed = 40;
-    else if(selectedLevel == 8) actualSpeed = 30;
-    else if(selectedLevel == 9) actualSpeed = 20;
-    else if(selectedLevel == 10) actualSpeed = 15;
-    else if(selectedLevel == 11) actualSpeed = 12;
-    else if(selectedLevel == 12) actualSpeed = 10;
-    else if(selectedLevel == 13) actualSpeed = 8;
-    else if(selectedLevel == 14) actualSpeed = 6;
-    else if(selectedLevel == 15) actualSpeed = 5;
-    else if(selectedLevel == 16) actualSpeed = 4;
-    else if(selectedLevel == 17) actualSpeed = 3;
-    else if(selectedLevel == 18) actualSpeed = 2;
-    else if(selectedLevel >= 19) actualSpeed = 1;
-    else actualSpeed = 150;
+    if(selectedLevel == 0) actualSpeed = 1000;
+    else if(selectedLevel == 1) actualSpeed = 800;
+    else if(selectedLevel == 2) actualSpeed = 600;
+    else if(selectedLevel == 3) actualSpeed = 450;
+    else if(selectedLevel == 4) actualSpeed = 350;
+    else if(selectedLevel == 5) actualSpeed = 300;
+    else if(selectedLevel == 6) actualSpeed = 250;
+    else if(selectedLevel == 7) actualSpeed = 200;
+    else if(selectedLevel == 8) actualSpeed = 150;
+    else if(selectedLevel == 9) actualSpeed = 100;
+    else actualSpeed = 750;
     
     M5.Lcd.drawString("Speed: " + String(actualSpeed) + "ms", 25, 120, 1);
     
-    // Difficulty description - updated for FAST Tetris speeds 0-20
+    // Difficulty description
     M5.Lcd.setTextColor(WHITE);
     String difficulty;
-    if(selectedLevel <= 2) difficulty = "Fast";
-    else if(selectedLevel <= 5) difficulty = "Very Fast"; 
-    else if(selectedLevel <= 8) difficulty = "Lightning";
-    else if(selectedLevel <= 12) difficulty = "Ludicrous";
-    else if(selectedLevel <= 16) difficulty = "UNREAL";
-    else difficulty = "MATRIX MODE";
+    if(selectedLevel <= 1) difficulty = "Beginner";
+    else if(selectedLevel <= 3) difficulty = "Intermediate"; 
+    else if(selectedLevel <= 6) difficulty = "Advanced";
+    else if(selectedLevel <= 8) difficulty = "Expert";
+    else difficulty = "INSANE";
     M5.Lcd.drawString("Difficulty: " + difficulty, 20, 140, 1);
     
-    // Visual level bars - show 0-20 with scrolling display
+    // Visual level bars
     M5.Lcd.setTextColor(CYAN);
-    int startLevel = max(0, selectedLevel - 5);  // Show 6 levels centered on selection
-    int endLevel = min(20, startLevel + 5);
-    
-    for(int i = 0; i <= 5 && (startLevel + i) <= 20; i++) {
-      int level = startLevel + i;
-      uint16_t barColor = (level == selectedLevel) ? RED : GREEN;
-      if(level <= selectedLevel) {
-        M5.Lcd.fillRect(10 + (i * 20), 160, 15, 15, barColor);
-      } else {
-        M5.Lcd.drawRect(10 + (i * 20), 160, 15, 15, DARKGREY);
-      }
-      // Draw level number
-      M5.Lcd.setTextColor(WHITE);
-      M5.Lcd.drawString(String(level), 12 + (i * 20), 178, 1);
+    for(int i = 0; i <= selectedLevel && i < 10; i++) {
+      M5.Lcd.fillRect(10 + (i * 11), 160, 8, 20, GREEN);
+    }
+    for(int i = selectedLevel + 1; i < 10; i++) {
+      M5.Lcd.drawRect(10 + (i * 11), 160, 8, 20, DARKGREY);
     }
     
     // Handle input with debouncing
@@ -929,7 +861,7 @@ int levelSelect() {
       
       // Right button - increase level  
       if(digitalRead(39) == 0) {
-        if(selectedLevel < 20) selectedLevel++;
+        if(selectedLevel < 9) selectedLevel++;
         lastInput = millis();
       }
       
@@ -947,34 +879,36 @@ int levelSelect() {
   Disp.fillScreen(BLACK);
   M5.Lcd.drawLine(0,16,135,16,WHITE);
   
-  // Redraw cool tech colored borders that got cleared
+  // Redraw borders
   for(int x = 0; x <= 13; x++) {
-    for(int y = 20; y < 240; y += 3) {
-      int colorPattern = ((x + y/3) % 6);
+    for(int y = 20; y < 240; y += 4) {
+      int colorPattern = ((x + y/4) % 7);
       uint16_t borderColor;
       switch(colorPattern) {
-        case 0: borderColor = 0x001F; break; case 1: borderColor = 0x07FF; break;
+        case 0: borderColor = 0xF800; break; case 1: borderColor = 0x7800; break;
         case 2: borderColor = 0xF81F; break; case 3: borderColor = 0x07E0; break;
-        case 4: borderColor = 0xFFE0; break; case 5: borderColor = 0xF800; break;
-        default: borderColor = 0x001F; break;
+        case 4: borderColor = 0xFFE0; break; case 5: borderColor = 0x8010; break;
+        case 6: borderColor = 0xFC00; break; default: borderColor = 0xF800; break;
       }
       M5.Lcd.drawPixel(x, y, borderColor);
       M5.Lcd.drawPixel(x, y+1, borderColor);
+      M5.Lcd.drawPixel(x, y+2, borderColor);
     }
   }
   
   for(int x = 124; x < 135; x++) {
-    for(int y = 20; y < 240; y += 3) {
-      int colorPattern = ((x + y/3) % 6);
+    for(int y = 20; y < 240; y += 4) {
+      int colorPattern = ((x + y/4) % 7);
       uint16_t borderColor;
       switch(colorPattern) {
-        case 0: borderColor = 0x001F; break; case 1: borderColor = 0x07FF; break;
+        case 0: borderColor = 0xF800; break; case 1: borderColor = 0x7800; break;
         case 2: borderColor = 0xF81F; break; case 3: borderColor = 0x07E0; break;
-        case 4: borderColor = 0xFFE0; break; case 5: borderColor = 0xF800; break;
-        default: borderColor = 0x001F; break;
+        case 4: borderColor = 0xFFE0; break; case 5: borderColor = 0x8010; break;
+        case 6: borderColor = 0xFC00; break; default: borderColor = 0xF800; break;
       }
       M5.Lcd.drawPixel(x, y, borderColor);
       M5.Lcd.drawPixel(x, y+1, borderColor);
+      M5.Lcd.drawPixel(x, y+2, borderColor);
     }
   }
   
@@ -982,62 +916,41 @@ int levelSelect() {
 }
 
 int calculateDropDistance() {
-  // Calculate how far the current piece can drop
   int dropDistance = 0;
   int originalPosY = posY;
   
-  // Keep testing downward positions until we hit something
   for(int testY = posY + 1; testY < fieldy; testY++) {
     boolean canDrop = true;
-    
-    // Test all 4 blocks of the piece at this position
     for(int i = 0; i < 4; i++) {
       int blockY = testY + piece[block][rot][0][i];
       int blockX = posX + piece[block][rot][1][i];
-      
-      // Check bounds and collisions
       if(blockY >= fieldy || blockX < 0 || blockX >= fieldx || 
          (blockY >= 0 && field[blockY][blockX] > 0)) {
         canDrop = false;
         break;
       }
     }
-    
-    if(canDrop) {
-      dropDistance = testY - originalPosY;
-    } else {
-      break;
-    }
+    if(canDrop) dropDistance = testY - originalPosY;
+    else break;
   }
-  
   return dropDistance;
 }
 
 void drawGhostPiece() {
   int dropDistance = calculateDropDistance();
-  
   if(dropDistance > 0) {
     int ghostY = posY + dropDistance;
-    
-    // Draw ghost piece blocks as dim gray outlines
     for(int i = 0; i < 4; i++) {
       int blockY = ghostY + piece[block][rot][0][i];
       int blockX = posX + piece[block][rot][1][i];
-      
-      // Only draw if within bounds and not overlapping current piece
       if(blockY >= 0 && blockY < fieldy && blockX >= 0 && blockX < fieldx) {
-        // Don't draw ghost where the actual piece is
         boolean isCurrentPiece = false;
         for(int j = 0; j < 4; j++) {
-          if(blockY == posY + piece[block][rot][0][j] && 
-             blockX == posX + piece[block][rot][1][j]) {
-            isCurrentPiece = true;
-            break;
+          if(blockY == posY + piece[block][rot][0][j] && blockX == posX + piece[block][rot][1][j]) {
+            isCurrentPiece = true; break;
           }
         }
-        
         if(!isCurrentPiece && field[blockY][blockX] == 0) {
-          // Draw ghost piece as a dim gray outline
           int posx = (blockX * blockSize) + offsetx;
           int posy = (blockY * blockSize) + offsety;
           M5.Lcd.drawRect(posx, posy, blockSize-1, blockSize-1, DARKGREY);
@@ -1047,250 +960,20 @@ void drawGhostPiece() {
   }
 }
 
-void clearGhostPiece() {
-  // This function is now handled by showField redrawing the background
-  // No separate clearing needed since we redraw empty spaces each time
-}
-
-// ========== MODERN TETRIS FEATURES ==========
-
-// HOLD PIECE Implementation
-void holdPiece() {
-  if(!canHold) return;  // Can only hold once per piece
-  
-  if(heldPiece == -1) {
-    // No held piece - store current piece and get new one
-    heldPiece = block;
-    canHold = false;
-    newPiece(false);  // Get new piece without placing current
-  } else {
-    // Swap current piece with held piece
-    int tempPiece = block;
-    block = heldPiece;
-    heldPiece = tempPiece;
-    
-    // Reset piece position and rotation
-    posY = 1;
-    posX = 4;
-    rot = 0;
-    canHold = false;
-  }
-  
-  drawHoldPiece();  // Update hold display
-  showField(0, fieldy, 1);  // Refresh field
-}
-
-void drawMiniPiece(int pieceType, int x, int y, int scale) {
-  if(pieceType < 0 || pieceType > 6) return;
-  
-  // Draw mini piece using piece data
-  for(int i = 0; i < 4; i++) {
-    int px = x + (piece[pieceType][0][1][i] * scale);
-    int py = y + (piece[pieceType][0][0][i] * scale);
-    
-    // Use level-based colors like main pieces
-    int levelOffset = (level % 10);
-    int techColor = ((pieceType + levelOffset) % 8);
-    uint16_t pieceColor;
-    
-    switch(techColor) {
-      case 0: pieceColor = 0x001F; break; // Electric Blue
-      case 1: pieceColor = 0x07E0; break; // Matrix Green  
-      case 2: pieceColor = 0xF800; break; // Cyber Red
-      case 3: pieceColor = 0x07FF; break; // Neon Cyan
-      case 4: pieceColor = 0xF81F; break; // Electric Purple
-      case 5: pieceColor = 0xFFE0; break; // Laser Yellow
-      case 6: pieceColor = 0xF81F; break; // Tech Magenta
-      case 7: pieceColor = 0xFFFF; break; // Circuit White
-      default: pieceColor = 0x07E0; break;
-    }
-    
-    M5.Lcd.fillRect(px, py, scale-1, scale-1, pieceColor);
-  }
-}
-
-void drawHoldPiece() {
-  // Clear hold area (top-left corner)
-  M5.Lcd.fillRect(2, 2, 28, 28, BLACK);
-  M5.Lcd.drawRect(1, 1, 30, 30, WHITE);
-  
-  // Draw "HOLD" label
-  M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.drawString("HOLD", 4, 32, 1);
-  
-  if(heldPiece >= 0) {
-    drawMiniPiece(heldPiece, 8, 8, 5);  // 5x5 pixel mini blocks in TOP-LEFT
-  }
-}
-
-void drawNextPiece() {
-  // Clear next area (top-right corner)  
-  M5.Lcd.fillRect(106, 2, 28, 28, BLACK);
-  M5.Lcd.drawRect(105, 1, 30, 30, WHITE);
-  
-  // Draw "NEXT" label
-  M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.drawString("NEXT", 108, 32, 1);
-  
-  if(nextPiece >= 0) {
-    drawMiniPiece(nextPiece, 112, 8, 5);  // 5x5 pixel mini blocks in TOP-RIGHT
-  }
-}
+void clearGhostPiece() {}
 
 // ========== IR REMOTE CONTROL FUNCTIONS ==========
-
 void irRemoteControl() {
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.drawString("⚡ FAST Tetris Remote 🎮", 5, 40);
-  M5.Lcd.drawString("Sending Universal", 20, 80);
-  M5.Lcd.drawString("TV POWER codes...", 20, 100);
-  
-  // Send all universal power codes
+  M5.Lcd.drawString("🎃 Halloween Remote 📺", 5, 40);
   sendUniversalPower();
-  
-  M5.Lcd.drawString("Power codes sent!", 20, 140);
-  M5.Lcd.drawString("Returning to game...", 15, 160);
-  
-  delay(2000); // Show message for 2 seconds
+  delay(2000);
 }
 
 void sendUniversalPower() {
-  // Comprehensive TV power codes from multiple protocols and brands
-  // Progress indicator
-  int totalCodes = 50;
-  int currentCode = 0;
-  
-  M5.Lcd.fillRect(20, 120, 100, 10, BLACK);
-  M5.Lcd.drawString("Sending code: 1/50", 20, 120);
-  
-  // Sony TV Power codes (multiple variants)
-  irsend.sendSony(0xA90, 12); currentCode++; delay(100);
-  irsend.sendSony(0x290, 12); currentCode++; delay(100);
-  irsend.sendSony(0x750, 12); currentCode++; delay(100);
-  
-  // Samsung TV Power codes
-  irsend.sendSAMSUNG(0xE0E040BF); currentCode++; delay(100);
-  irsend.sendSAMSUNG(0xE0E09966); currentCode++; delay(100);
-  
-  // LG TV Power codes  
-  irsend.sendLG(0x20DF10EF); currentCode++; delay(100);
-  irsend.sendLG(0x20DF0FF0); currentCode++; delay(100);
-  
-  // Update progress
-  M5.Lcd.fillRect(20, 120, 100, 10, BLACK);
-  M5.Lcd.drawString("Sending code: 7/50", 20, 120);
-  
-  // Panasonic TV Power codes
-  irsend.sendPanasonic(0x4004, 0x100BCBD); currentCode++; delay(100);
-  irsend.sendPanasonic(0x4004, 0x1000BCD); currentCode++; delay(100);
-  
-  // NEC Protocol variants (many TVs)
-  irsend.sendNEC(0xFF02FD); currentCode++; delay(100);  // Generic
-  irsend.sendNEC(0x20DF10EF); currentCode++; delay(100); // LG variant
-  irsend.sendNEC(0x04FB08F7); currentCode++; delay(100); // Sharp
-  irsend.sendNEC(0x1CE318E7); currentCode++; delay(100); // Toshiba
-  irsend.sendNEC(0x40BF00FF); currentCode++; delay(100); // Philips
-  
-  // Update progress  
-  M5.Lcd.fillRect(20, 120, 100, 10, BLACK);
-  M5.Lcd.drawString("Sending code: 13/50", 20, 120);
-  
-  // RC5 Protocol (European TVs)
-  irsend.sendRC5(0x0C0C); currentCode++; delay(100); // Philips
-  irsend.sendRC5(0x100C); currentCode++; delay(100); // Thomson
-  irsend.sendRC5(0x180C); currentCode++; delay(100); // Grundig
-  
-  // RC6 Protocol 
-  irsend.sendRC6(0x800F040C, 20); currentCode++; delay(100);
-  
-  // JVC Power codes
-  irsend.sendJVC(0xC5E8, 16); currentCode++; delay(100);
-  irsend.sendJVC(0xC538, 16); currentCode++; delay(100);
-  
-  // Update progress
-  M5.Lcd.fillRect(20, 120, 100, 10, BLACK); 
-  M5.Lcd.drawString("Sending code: 19/50", 20, 120);
-  
-  // DISH Network codes
-  irsend.sendDISH(0x775A85, 16); currentCode++; delay(100);
-  irsend.sendDISH(0x775A05, 16); currentCode++; delay(100);
-  
-  // Sharp Power codes
-  irsend.sendSharpRaw(0x41A2, 15); currentCode++; delay(100);
-  irsend.sendSharpRaw(0x45A8, 15); currentCode++; delay(100);
-  
-  // Mitsubishi codes
-  irsend.sendMitsubishi(0xE25D); currentCode++; delay(100);
-  
-  // Update progress
-  M5.Lcd.fillRect(20, 120, 100, 10, BLACK);
-  M5.Lcd.drawString("Sending code: 25/50", 20, 120);
-  
-  // Additional Samsung variants (using standard SAMSUNG function)
-  irsend.sendSAMSUNG(0x400462001); currentCode++; delay(100);
-  irsend.sendSAMSUNG(0x400460001); currentCode++; delay(100);
-  
-  // More NEC variants for different brands
-  irsend.sendNEC(0x00FF807F); currentCode++; delay(100); // Emerson
-  irsend.sendNEC(0x807F40BF); currentCode++; delay(100); // RCA
-  irsend.sendNEC(0x827D42BD); currentCode++; delay(100); // Zenith
-  irsend.sendNEC(0x20DF708F); currentCode++; delay(100); // LG variant 2
-  irsend.sendNEC(0x55AA1AE5); currentCode++; delay(100); // Vizio
-  irsend.sendNEC(0x10EF20DF); currentCode++; delay(100); // Sanyo
-  
-  // Update progress
-  M5.Lcd.fillRect(20, 120, 100, 10, BLACK);
-  M5.Lcd.drawString("Sending code: 32/50", 20, 120);
-  
-  // Pioneer codes
-  irsend.sendPioneer(0xA55A38C7, 32); currentCode++; delay(100);
-  
-  // Whynter codes
-  irsend.sendWhynter(0x87654321, 32); currentCode++; delay(100);
-  
-  // More RC5 variants
-  irsend.sendRC5(0x140C); currentCode++; delay(100); // Bang & Olufsen
-  irsend.sendRC5(0x1C0C); currentCode++; delay(100); // Loewe
-  
-  // Additional Panasonic variants
-  irsend.sendPanasonic(0x4004, 0x1004BCD); currentCode++; delay(100);
-  irsend.sendPanasonic(0x4004, 0x1008BCD); currentCode++; delay(100);
-  
-  // Update progress
-  M5.Lcd.fillRect(20, 120, 100, 10, BLACK);
-  M5.Lcd.drawString("Sending code: 38/50", 20, 120);
-  
-  // Coolix (many Chinese brands)
-  irsend.sendCOOLIX(0xB24D7F); currentCode++; delay(100);
-  
-  // Denon codes  
-  irsend.sendDenon(0x2A4C028D, 32); currentCode++; delay(100);
-  
-  // More NEC codes for different manufacturers
-  irsend.sendNEC(0x08F708F7); currentCode++; delay(100); // Hitachi
-  irsend.sendNEC(0x42BD827D); currentCode++; delay(100); // Admiral
-  
-  // Additional Sony variants
-  irsend.sendSony(0xB90, 12); currentCode++; delay(100);
-  irsend.sendSony(0xF90, 12); currentCode++; delay(100);
-  irsend.sendSony(0x190, 12); currentCode++; delay(100);
-  
-  // Update progress
-  M5.Lcd.fillRect(20, 120, 100, 10, BLACK);
-  M5.Lcd.drawString("Sending code: 45/50", 20, 120);
-  
-  // Final batch - more NEC variants
-  irsend.sendNEC(0x02FD807F); currentCode++; delay(100);
-  irsend.sendNEC(0x827D708F); currentCode++; delay(100);
-  irsend.sendNEC(0x10EF708F); currentCode++; delay(100);
-  irsend.sendNEC(0xFF00BF40); currentCode++; delay(100);
-  irsend.sendNEC(0x7F80FF00); currentCode++; delay(100);
-  
-  // Final progress update
-  M5.Lcd.fillRect(20, 120, 100, 10, BLACK);
-  M5.Lcd.drawString("All 50 codes sent!", 20, 120);
+  irsend.sendSony(0xA90, 12); delay(100);
+  irsend.sendSAMSUNG(0xE0E040BF); delay(100);
+  irsend.sendLG(0x20DF10EF); delay(100);
+  irsend.sendNEC(0xFF02FD); delay(100);
 }

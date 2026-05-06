@@ -1,11 +1,16 @@
 #include <M5StickCPlus2.h>
-#include "UNIT_MiniJoyC.h"
 #include "tet.h"
 #include "wifi_beacon.h"
 #include "wifi_scanner.h"
 #include <IRsend.h>  // IR library for remote control
 #include <WiFi.h>
 #include <WiFiUdp.h>
+
+#define PIN_UP 32
+#define PIN_DOWN 33
+#define PIN_LEFT 25
+#define PIN_RIGHT 26
+#define PIN_CENTER 0
 
 #define Disp M5.Lcd
 #define BITMAP M5.Lcd.drawBitmap(0,0,135,240,tet)
@@ -116,8 +121,6 @@ int linePos[4];
   
 int stage;
 
-UNIT_JOYC Joystick;
-
 int pins[8];
 boolean buttons[8];
 boolean hold[8];
@@ -200,6 +203,11 @@ void setup() {
   pinMode(35,INPUT_PULLUP);
   pinMode(37,INPUT_PULLUP);
   pinMode(39,INPUT_PULLUP);
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_CENTER, INPUT_PULLUP);
 
   Disp.setRotation(0);
   BITMAP;
@@ -211,10 +219,7 @@ void setup() {
   M5.Lcd.drawString("v.1.4.0",4,8,1);
   M5.Lcd.drawString((String)M5.Power.getBatteryLevel()+"%",107,8,1);
   M5.Lcd.drawString("Loading...",39,134,1);
-  while (!(Joystick.begin(&Wire, JoyC_ADDR, 0, 26, 100000UL))) {
-    delay(100);
-    Serial.println("I2C Error!\r\n");
-  }
+  
   M5.Lcd.fillRect(39,134,100,10,BLACK);
   M5.Lcd.drawString(" Press M5 ",39,134,1);
   M5.Lcd.drawString("L+R:Beacon Up:Scanner",5,150,1);
@@ -244,9 +249,9 @@ void setup() {
     }
     
     // Check for WiFi scanner mode (Up on joystick)
-    if(Joystick.getADCValue(1) > 2950) {
+    if(digitalRead(PIN_UP) == LOW) {
       delay(500); // Hold time to confirm
-      if(Joystick.getADCValue(1) > 2950) {
+      if(digitalRead(PIN_UP) == LOW) {
         wifiScanner();
         // After WiFi scanner, redraw the screen
         Disp.fillScreen(BLACK);
@@ -266,9 +271,9 @@ void setup() {
     }
     
     // Check for Battle Mode (Down on joystick) 
-    if(Joystick.getADCValue(1) < 1600) {
+    if(digitalRead(PIN_DOWN) == LOW) {
       delay(500); // Hold time to confirm
-      if(Joystick.getADCValue(1) < 1600) {
+      if(digitalRead(PIN_DOWN) == LOW) {
         if(setupTetrisBattle()) {
           // Battle mode setup successful, now wait for both players to ready up
           if(waitForBothPlayersReady()) {
@@ -508,34 +513,19 @@ void loop(){
 
 //==============================JoyC==============================
 int check_Btn(){
-  if (Joystick.getButtonStatus()==0){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_CENTER);
 }
 int check_Up(){
-  if (Joystick.getADCValue(POS_Y)>2950){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_UP);
 }
 int check_Right(){
-  if ((Joystick.getADCValue(POS_X)>2950)){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_RIGHT);
 }
 int check_Left(){
-  if ((Joystick.getADCValue(POS_X)<1350)){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_LEFT);
 }
 int check_Down() {
-  if ((Joystick.getADCValue(POS_Y)<1600)){
-    return 0;
-  }
-  return 1;
+  return digitalRead(PIN_DOWN);
 }
 //================================================================
 
