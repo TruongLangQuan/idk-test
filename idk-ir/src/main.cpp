@@ -223,6 +223,17 @@ void sendCommand(const IrCommand& cmd) {
     return;
   }
 
+  if (protocol.indexOf("SAMSUNG") >= 0) {
+    uint16_t addr8 = static_cast<uint8_t>(cmd.address & 0xFFu);
+    uint16_t cmd8 = static_cast<uint8_t>(cmd.command & 0xFFu);
+    uint64_t data = sender.encodeSAMSUNG(addr8, cmd8);
+    sender.sendSAMSUNG(data, 32);
+    for (uint8_t i = 0; i < IR_REPEATS; ++i) sender.sendSAMSUNG(data, 32);
+    digitalWrite(tx_pin, LOW);
+    g_status = "Sent Samsung " + String(cmd.name);
+    return;
+  }
+
   if (protocol.indexOf("SIRC15") >= 0) {
     uint32_t data = ((cmd.address & 0xFFu) << 7) | (cmd.command & 0x7Fu);
     sender.sendSony(data, 15, 2);
