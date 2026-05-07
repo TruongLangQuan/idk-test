@@ -11,7 +11,7 @@
 #define WEATHER_CITY  "Cat Lai,VN"
 #define WEATHER_LAT   10.7551
 #define WEATHER_LON   106.7764
-#define WEATHER_KEY   "1f5736e44e5b924481a3a000f0b215af"
+#define WEATHER_KEY   ""
 
 #define SD_CS 5
 #define SD_MOSI 13
