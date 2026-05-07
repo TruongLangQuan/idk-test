@@ -2,3 +2,5 @@
 tools/out/
 **/.pio/
 **/.vscode/
+*.zip
+data-pdf/
