@@ -38,6 +38,7 @@ private:
     Cell _prevGrid[kRows][kCols];
     M5Canvas _canvas;
     bool _initialized = false;
+    bool _forceFullRedraw = true;
 };
 
 } // namespace idk

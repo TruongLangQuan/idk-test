@@ -1,4 +1,6 @@
 #include <M5Unified.h>
+#include <math.h>
+#include <algorithm>
 #include "engine/ASCIIRenderer.h"
 #include "styles/StyleManager.h"
 #include "world/WorldGenerator.h"
@@ -21,29 +23,36 @@ float camX = 0, camZ = 0;
 float camY = 10.0f;
 float yaw = 0;
 
+bool readPressed(int pin) {
+    return digitalRead(pin) == LOW;
+}
+
 // ─── Input Handling ────────────────────────────────────────────
 void handleInput() {
     static uint32_t lastMove = 0;
     if (millis() - lastMove < 33) return; // ~30Hz input polling
     lastMove = millis();
 
-    if (digitalRead(kPinUp) == LOW) {
-        camX += std::sin(yaw) * 0.5f;
-        camZ += std::cos(yaw) * 0.5f;
+    const float moveSpeed = 0.45f;
+    const float turnSpeed = 0.08f;
+
+    if (readPressed(kPinUp)) {
+        camX += cosf(yaw) * moveSpeed;
+        camZ += sinf(yaw) * moveSpeed;
     }
-    if (digitalRead(kPinDown) == LOW) {
-        camX -= std::sin(yaw) * 0.5f;
-        camZ -= std::cos(yaw) * 0.5f;
+    if (readPressed(kPinDown)) {
+        camX -= cosf(yaw) * moveSpeed;
+        camZ -= sinf(yaw) * moveSpeed;
     }
-    if (digitalRead(kPinLeft) == LOW) {
-        yaw -= 0.05f;
+    if (readPressed(kPinLeft)) {
+        yaw += turnSpeed;
     }
-    if (digitalRead(kPinRight) == LOW) {
-        yaw += 0.05f;
+    if (readPressed(kPinRight)) {
+        yaw -= turnSpeed;
     }
 
     static bool centerPressed = false;
-    if (digitalRead(kPinCenter) == LOW) {
+    if (readPressed(kPinCenter)) {
         if (!centerPressed) {
             currentStyleIdx = (currentStyleIdx + 1) % kStyleCount;
             centerPressed = true;
@@ -54,6 +63,8 @@ void handleInput() {
 
     if (M5.BtnA.isPressed()) camY += 0.2f;
     if (M5.BtnB.isPressed()) camY -= 0.2f;
+    if (camY < 2.0f) camY = 2.0f;
+    if (camY > 24.0f) camY = 24.0f;
 }
 
 // ─── Main Logic ───────────────────────────────────────────────
@@ -98,8 +109,8 @@ void loop() {
 
     for (int x = 0; x < kScreenW; ++x) {
         float rayAngle = (yaw - kFOV/2.0f) + (float)x / kScreenW * kFOV;
-        float rx = std::sin(rayAngle);
-        float rz = std::cos(rayAngle);
+        float rx = cosf(rayAngle);
+        float rz = sinf(rayAngle);
         
         bool hit = false;
         float dist = 0.1f;
@@ -110,7 +121,7 @@ void loop() {
             float wz = camZ + rz * dist;
             
             float h = world.getHeight(wx, wz);
-            if (h > 2.0f) hit = true; 
+            if (h > camY * 0.22f) hit = true; 
         }
 
         // Draw Vertical Slice
@@ -123,15 +134,23 @@ void loop() {
         if (hit) {
             // Distance fading for Doom aesthetic
             int fade = std::max(0, 255 - (int)(dist * 8));
-            uint16_t color = M5.Display.color565(fade/2, fade/2, fade/2);
+            uint16_t color = M5.Display.color565(fade/2, fade/2, fade/3);
             M5.Display.drawFastVLine(x, drawStart, drawEnd - drawStart, color);
         }
     }
 
     M5.Display.endWrite();
     
-    // We can still draw the header with the ASCIIRenderer sprite or just natively
     M5.Display.setTextColor(TFT_YELLOW, M5.Display.color565(20, 20, 20));
     M5.Display.setCursor(2, 2);
-    M5.Display.printf("POS: %.1f, %.1f  YAW: %.1f", camX, camZ, yaw);
+    M5.Display.printf("HP:--  POS:%.1f,%.1f Y:%.0f", camX, camZ, camY);
+    M5.Display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+    M5.Display.setCursor(4, 120);
+    M5.Display.print("5way:move/turn A/B:height C:style");
+
+    const int mx = 205;
+    const int my = 8;
+    M5.Display.drawRect(mx - 1, my - 1, 30, 30, TFT_DARKGREY);
+    M5.Display.fillRect(mx + 14, my + 14, 2, 2, TFT_GREEN);
+    M5.Display.drawLine(mx + 15, my + 15, mx + 15 + (int)(cosf(yaw) * 10), my + 15 + (int)(sinf(yaw) * 10), TFT_YELLOW);
 }

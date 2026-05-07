@@ -79,6 +79,16 @@ void drawPixelCell(int x, int y) {
   M5.Display.fillRect(x * kScale, y * kScale, kScale, kScale, g_canvas[y][x]);
 }
 
+void redrawPixelNeighborhood(int cx, int cy) {
+  for (int y = cy - 1; y <= cy + 1; ++y) {
+    for (int x = cx - 1; x <= cx + 1; ++x) {
+      if (x >= 0 && x < kCanvasW && y >= 0 && y < kCanvasH) {
+        drawPixelCell(x, y);
+      }
+    }
+  }
+}
+
 void drawCanvas() {
   M5.Display.startWrite();
   for (int y = 0; y < kCanvasH; ++y) {
@@ -124,8 +134,8 @@ void redrawAll() {
 }
 
 void redrawCursorMove(int oldX, int oldY) {
-  drawPixelCell(oldX, oldY);
-  drawPixelCell(g_cursorX, g_cursorY);
+  redrawPixelNeighborhood(oldX, oldY);
+  redrawPixelNeighborhood(g_cursorX, g_cursorY);
   drawStatusBar();
   drawCursor();
 }

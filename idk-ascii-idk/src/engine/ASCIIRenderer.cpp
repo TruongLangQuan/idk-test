@@ -18,6 +18,11 @@ bool ASCIIRenderer::begin() {
     _canvas.setTextSize(1);
     
     clear();
+    for (int r = 0; r < kRows; ++r) {
+        for (int c = 0; c < kCols; ++c) {
+            _prevGrid[r][c] = {0xFF, 0xFFFF, 0xFFFF};
+        }
+    }
     _initialized = true;
     return true;
 }
@@ -28,6 +33,7 @@ void ASCIIRenderer::clear(uint8_t ch, uint16_t fg, uint16_t bg) {
             _grid[r][c] = {ch, fg, bg};
         }
     }
+    _forceFullRedraw = true;
 }
 
 void ASCIIRenderer::setCell(int col, int row, uint8_t ch, uint16_t fg, uint16_t bg) {
@@ -52,7 +58,7 @@ void ASCIIRenderer::flush() {
     
     for (int r = 0; r < kRows; ++r) {
         for (int c = 0; c < kCols; ++c) {
-            if (_grid[r][c] != _prevGrid[r][c]) {
+            if (_forceFullRedraw || _grid[r][c] != _prevGrid[r][c]) {
                 _canvas.fillRect(c * kCellW, r * kCellH, kCellW, kCellH, _grid[r][c].bg);
                 _canvas.setTextColor(_grid[r][c].fg, _grid[r][c].bg);
                 _canvas.drawChar(_grid[r][c].ch, c * kCellW, r * kCellH);
@@ -60,6 +66,7 @@ void ASCIIRenderer::flush() {
             }
         }
     }
+    _forceFullRedraw = false;
     
     _canvas.endWrite();
     

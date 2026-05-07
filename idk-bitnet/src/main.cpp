@@ -50,6 +50,68 @@ void clear() {
 uint32_t timer = 0;
 int step = 0;
 int layer_activations[3][8]; // 3 layers, 8 nodes
+int g_mode = 0;
+int g_complexity = 0;
+String g_generated = "";
+
+const char* modeName() {
+    if (g_mode == 0) return "BitNet";
+    if (g_mode == 1) return "Text";
+    if (g_mode == 2) return "Math";
+    return "Equation";
+}
+
+void wrapPrint(int col, int row, const String& text, uint16_t fg) {
+    int c = col;
+    int r = row;
+    for (int i = 0; i < text.length() && r < kRows; ++i) {
+        char ch = text[i];
+        if (ch == '\n' || c >= kCols - 1) {
+            c = col;
+            r++;
+            if (ch == '\n') continue;
+        }
+        setCell(c++, r, ch, fg);
+    }
+}
+
+String genText() {
+    static const char* subjects[] = {"robot", "sensor", "student", "model", "screen"};
+    static const char* verbs[] = {"learns", "draws", "solves", "predicts", "builds"};
+    static const char* objects[] = {"patterns", "signals", "maps", "words", "numbers"};
+    int a = esp_random() % 5;
+    int b = esp_random() % 5;
+    int c = esp_random() % 5;
+    if (g_complexity == 0) return String(subjects[a]) + " " + verbs[b] + ".";
+    if (g_complexity == 1) return String("The ") + subjects[a] + " " + verbs[b] + " " + objects[c] + " using tiny weights.";
+    return String("Because the ") + subjects[a] + " " + verbs[b] + " noisy " + objects[c] + ", it compresses context, compares tokens, then answers step by step.";
+}
+
+String genMath() {
+    int a = 2 + (esp_random() % (8 + g_complexity * 20));
+    int b = 1 + (esp_random() % (7 + g_complexity * 15));
+    int c = 1 + (esp_random() % (5 + g_complexity * 9));
+    if (g_complexity == 0) return String(a) + " + " + String(b) + " = " + String(a + b);
+    if (g_complexity == 1) return String(a) + " * " + String(b) + " - " + String(c) + " = " + String(a * b - c);
+    return String("(") + a + " + " + b + ") * " + c + " - " + a + "^2 = " + String((a + b) * c - a * a);
+}
+
+String genEquation() {
+    int a = 1 + (esp_random() % (4 + g_complexity * 3));
+    int x = 1 + (esp_random() % (8 + g_complexity * 8));
+    int b = esp_random() % (10 + g_complexity * 20);
+    int rhs = a * x + b;
+    if (g_complexity == 0) return String("x + ") + b + " = " + rhs + "\nx = " + String(rhs - b);
+    if (g_complexity == 1) return String(a) + "x + " + b + " = " + rhs + "\nx = " + x;
+    int c = 1 + (esp_random() % 5);
+    return String(a) + "(x + " + c + ") + " + b + " = " + (a * (x + c) + b) + "\nx = " + x;
+}
+
+void generateOutput() {
+    if (g_mode == 1) g_generated = genText();
+    else if (g_mode == 2) g_generated = genMath();
+    else if (g_mode == 3) g_generated = genEquation();
+}
 
 void setup() {
     pinMode(14, OUTPUT);
@@ -72,6 +134,15 @@ void setup() {
 
 void loop() {
     M5.update();
+    if (M5.BtnA.wasPressed()) {
+        g_mode = (g_mode + 1) % 4;
+        generateOutput();
+    }
+    if (M5.BtnB.wasPressed()) {
+        g_complexity = (g_complexity + 1) % 3;
+        generateOutput();
+    }
+    if (M5.BtnPWR.wasPressed()) generateOutput();
     uint32_t now = millis();
     
     if (now - timer > 100) {
@@ -80,8 +151,17 @@ void loop() {
         
         step++;
         
-        printStr(2, 0, "BitNet 1-bit LLM Sim", TFT_YELLOW);
-        printStr(2, 1, "(-1, 0, 1) Quantization", TFT_DARKGREY);
+        char title[38];
+        snprintf(title, sizeof(title), "%s gen  C:%d", modeName(), g_complexity + 1);
+        printStr(2, 0, title, TFT_YELLOW);
+        printStr(2, 1, "A:mode B:level PWR:gen", TFT_DARKGREY);
+
+        if (g_mode != 0) {
+            if (g_generated.isEmpty()) generateOutput();
+            wrapPrint(2, 4, g_generated, g_mode == 1 ? TFT_CYAN : (g_mode == 2 ? TFT_GREEN : TFT_ORANGE));
+            render();
+            return;
+        }
         
         // Draw input tokens
         printStr(1, 4, "INP", TFT_CYAN);

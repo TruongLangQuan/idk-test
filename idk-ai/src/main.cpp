@@ -219,6 +219,16 @@ void drawMenu() {
   M5.Display.print("A:Select  B:Next  PWR:Prev");
 }
 
+void drawBoot(const char* msg) {
+  M5.Display.fillScreen(TFT_BLACK);
+  M5.Display.setTextColor(TFT_YELLOW, TFT_BLACK);
+  M5.Display.setCursor(2, 2);
+  M5.Display.print("idk-ai");
+  M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+  M5.Display.setCursor(2, 24);
+  M5.Display.print(msg);
+}
+
 }  // namespace
 
 void setup() {
@@ -226,21 +236,27 @@ void setup() {
   M5.begin(cfg);
   M5.Display.setRotation(3);
   M5.Display.setBrightness(180);
+  M5.Display.setTextSize(1);
+  drawBoot("Booting...");
 
   // Initialize file systems
+  drawBoot("Mount SD/SPIFFS...");
   SD.begin();        // SD card (if available)
   SPIFFS.begin(true);  // SPIFFS with format if needed
 
+  drawBoot("Loading font...");
   (void)loadFontFromMemory(vi12_font, vi12_font_len, g_font_wrap);
   
   // Load API key from file
+  drawBoot("Loading API key...");
   if (loadApiKeyFromFile()) {
     g_status = "API key loaded";
   } else {
     g_status = "No API key";
   }
 
-  autoConnectKnownWifi(kKnownWifis, sizeof(kKnownWifis) / sizeof(kKnownWifis[0]), g_status);
+  drawBoot("Connecting WiFi...");
+  autoConnectKnownWifi(kKnownWifis, sizeof(kKnownWifis) / sizeof(kKnownWifis[0]), g_status, 3000);
   drawMenu();
 }
 

@@ -30,7 +30,10 @@ struct RomEntry {
   String filename;
   String displayName;
   uint32_t fileSize;
-  bool isLoaded;
+  uint16_t maxKb;
+  bool playable;
+  const char* console;
+  const char* note;
 };
 
 static std::vector<RomEntry> g_roms;
@@ -42,6 +45,25 @@ static int g_rom_page = 0;
 static uint8_t *g_rom_data = nullptr;
 static uint8_t *g_ram_data = nullptr;
 static struct gb_s gb_context;
+
+struct RomTypeInfo {
+  const char* ext;
+  const char* console;
+  uint16_t maxKb;
+  bool playable;
+  const char* note;
+};
+
+static constexpr RomTypeInfo kRomTypes[] = {
+    {".gb", "Game Boy", 1536, true, "Playable: PeanutGB"},
+    {".gbc", "Game Boy Color", 1536, true, "Best effort: DMG-compatible"},
+    {".nes", "Nintendo NES/Famicom", 512, false, "No NES core in repo"},
+    {".sfc", "Super Nintendo", 4096, false, "No SNES core in repo"},
+    {".smc", "Super Nintendo", 4096, false, "No SNES core in repo"},
+    {".md", "Sega Genesis/Mega Drive", 4096, false, "No Genesis core in repo"},
+    {".gen", "Sega Genesis/Mega Drive", 4096, false, "No Genesis core in repo"},
+    {".gba", "Game Boy Advance", 8192, false, "No GBA core in repo"},
+};
 
 uint8_t gb_rom_read(struct gb_s *gb, const uint_fast32_t addr) {
     return g_rom_data[addr];
@@ -79,14 +101,17 @@ void scanDirectory(File dir) {
       String nameLower = name;
       nameLower.toLowerCase();
       
-      if (nameLower.endsWith(".gb")) { // PeanutGB only supports GB (DMG)
-        String displayName = name.substring(name.lastIndexOf('/') + 1);
-        bool exists = false;
-        for (const auto& r : g_roms) {
-          if (r.filename == name) { exists = true; break; }
-        }
-        if (!exists) {
-          g_roms.push_back({name, displayName, file.size(), false});
+      for (const auto& type : kRomTypes) {
+        if (nameLower.endsWith(type.ext)) {
+          String displayName = name.substring(name.lastIndexOf('/') + 1);
+          bool exists = false;
+          for (const auto& r : g_roms) {
+            if (r.filename == name) { exists = true; break; }
+          }
+          if (!exists) {
+            g_roms.push_back({name, displayName, file.size(), type.maxKb, type.playable, type.console, type.note});
+          }
+          break;
         }
       }
     }
@@ -116,7 +141,7 @@ void drawRomList() {
   canvas.setTextColor(TFT_WHITE, TFT_BLACK);
   canvas.setTextSize(1);
   canvas.setCursor(4, 4);
-  canvas.printf("GameBoy ROMs [%d/%d]", g_rom_index + 1, (int)g_roms.size());
+  canvas.printf("Console ROMs [%d/%d]", g_rom_index + 1, (int)g_roms.size());
 
   const int itemsPerPage = 7;
   g_rom_page = g_rom_index / itemsPerPage;
@@ -153,16 +178,54 @@ void drawRomInfo() {
   canvas.setCursor(4, 20);
   canvas.printf("Name: ");
   canvas.println(rom.displayName);
-  canvas.printf("Size: %u KB\n", rom.fileSize / 1024);
-  canvas.printf("Format: GameBoy (DMG)\n");
-  canvas.printf("Status: %s\n", rom.isLoaded ? "IN LittleFS" : "ON SD CARD");
+  const uint32_t sizeKb = (rom.fileSize + 1023) / 1024;
+  canvas.printf("Size: %u KB\n", sizeKb);
+  canvas.printf("Max: %u KB\n", rom.maxKb);
+  canvas.printf("Format: %s\n", rom.console);
+  canvas.printf("Status: %s\n", rom.playable ? "PLAYABLE" : "BROWSER ONLY");
+  canvas.printf("%s\n", rom.note);
   canvas.setTextColor(TFT_DARKGREY, TFT_BLACK);
   canvas.setCursor(4, 125);
-  canvas.print("A: LOAD & PLAY  Hold PWR: back");
+  canvas.print("A: play/info  Hold PWR: back");
 }
 
-void launchEmulator(const String& destName) {
-  File f = LittleFS.open(destName, FILE_READ);
+void showMessage(const char* title, const String& msg, uint16_t color = TFT_YELLOW) {
+  canvas.fillSprite(TFT_BLACK);
+  canvas.setTextColor(color, TFT_BLACK);
+  canvas.setCursor(8, 24);
+  canvas.print(title);
+  canvas.setTextColor(TFT_WHITE, TFT_BLACK);
+  canvas.setCursor(8, 48);
+  canvas.print(msg);
+  canvas.pushSprite(0, 0);
+}
+
+void restoreGamepadPins() {
+  pinMode(kPinUp, INPUT_PULLUP);
+  pinMode(kPinDown, INPUT_PULLUP);
+  pinMode(kPinLeft, INPUT_PULLUP);
+  pinMode(kPinRight, INPUT_PULLUP);
+  pinMode(kPinCenter, INPUT_PULLUP);
+  delay(5);
+}
+
+void launchEmulator(const RomEntry& rom) {
+  if (!rom.playable) {
+    showMessage("Unsupported", String(rom.console) + "\n" + rom.note, TFT_RED);
+    delay(2500);
+    g_screen = ScreenState::ROM_INFO;
+    return;
+  }
+
+  const uint32_t sizeKb = (rom.fileSize + 1023) / 1024;
+  if (sizeKb > rom.maxKb) {
+    showMessage("ROM too large", String(sizeKb) + " KB > max " + String(rom.maxKb) + " KB", TFT_RED);
+    delay(3000);
+    g_screen = ScreenState::ROM_INFO;
+    return;
+  }
+
+  File f = SD.open(rom.filename, FILE_READ);
   if (!f) return;
 
   size_t sz = f.size();
@@ -173,13 +236,7 @@ void launchEmulator(const String& destName) {
   g_ram_data = (uint8_t*)heap_caps_malloc(32768, MALLOC_CAP_SPIRAM); // 32KB RAM max for basic carts
   
   if (!g_rom_data || !g_ram_data) {
-      canvas.fillSprite(TFT_BLACK);
-      canvas.setTextColor(TFT_RED);
-      canvas.setCursor(10, 60);
-      canvas.printf("Out of PSRAM!");
-      canvas.setCursor(10, 75);
-      canvas.printf("Need: %u KB", sz / 1024);
-      canvas.pushSprite(0, 0);
+      showMessage("Out of PSRAM", String("Need: ") + String((sz + 1023) / 1024) + " KB", TFT_RED);
       
       if (g_rom_data) { heap_caps_free(g_rom_data); g_rom_data = nullptr; }
       if (g_ram_data) { heap_caps_free(g_ram_data); g_ram_data = nullptr; }
@@ -191,6 +248,7 @@ void launchEmulator(const String& destName) {
   
   f.read(g_rom_data, sz);
   f.close();
+  restoreGamepadPins();
   
   enum gb_init_error_e ret = gb_init(&gb_context, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error, nullptr);
   if (ret == GB_INIT_NO_ERROR) {
@@ -265,61 +323,7 @@ void handleInput() {
     } else if (g_screen == ScreenState::ROM_INFO) {
       RomEntry& rom = g_roms[g_rom_index];
       
-      if (!LittleFS.begin(true)) {
-        canvas.fillSprite(TFT_BLACK);
-        canvas.setCursor(20, 60);
-        canvas.setTextColor(TFT_RED);
-        canvas.print("LittleFS format failed");
-        canvas.pushSprite(0, 0);
-        delay(2000);
-        return;
-      }
-
-      String destName = String("/") + rom.displayName;
-      
-      if (rom.isLoaded || LittleFS.exists(destName)) {
-        rom.isLoaded = true;
-        launchEmulator(destName);
-        return;
-      }
-
-      canvas.fillSprite(TFT_BLACK);
-      canvas.setTextColor(TFT_YELLOW);
-      canvas.setCursor(20, 40);
-      canvas.print("Copying ROM to RAM/Flash...");
-      canvas.pushSprite(0, 0);
-      
-      File source = SD.open(rom.filename, FILE_READ);
-      if (source) {
-        File dest = LittleFS.open(destName, FILE_WRITE);
-        if (dest) {
-          uint8_t buf[2048];
-          size_t copied = 0;
-          while (source.available()) {
-            size_t len = source.read(buf, sizeof(buf));
-            dest.write(buf, len);
-            copied += len;
-            if (copied % 16384 == 0 || copied == rom.fileSize) {
-              float pct = (float)copied / rom.fileSize;
-              canvas.fillSprite(TFT_BLACK);
-              canvas.setTextColor(TFT_YELLOW);
-              canvas.setCursor(20, 40);
-              canvas.print("Copying ROM...");
-              canvas.drawRect(20, 60, 200, 10, TFT_WHITE);
-              canvas.fillRect(20, 60, (int)(pct * 200.0f), 10, TFT_GREEN);
-              canvas.setTextColor(TFT_WHITE);
-              canvas.setCursor(105, 75);
-              canvas.printf("%d%%", (int)(pct * 100.0f));
-              canvas.pushSprite(0, 0);
-            }
-          }
-          dest.close();
-          rom.isLoaded = true;
-          delay(500);
-          launchEmulator(destName);
-        }
-        source.close();
-      }
+      launchEmulator(rom);
     }
   }
 }
@@ -363,9 +367,9 @@ void setup() {
     canvas.fillSprite(TFT_BLACK);
     canvas.setTextColor(TFT_YELLOW);
     canvas.setCursor(10, 50);
-    canvas.print("No .gb files found!");
+    canvas.print("No console ROMs found!");
     canvas.setCursor(10, 70);
-    canvas.print("Place .gb ROMs in root or /roms");
+    canvas.print("Use /roms: gb gbc nes sfc md gba");
     canvas.pushSprite(0, 0);
     delay(3000);
   }

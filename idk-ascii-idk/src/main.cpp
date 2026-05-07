@@ -174,6 +174,8 @@ else activeAnim = new PlaceholderAnim();
     }
 
     if (activeAnim) {
+        renderer.clear(' ', TFT_WHITE, TFT_BLACK);
+        renderer.flush();
         activeAnim->init(renderer);
     }
 }

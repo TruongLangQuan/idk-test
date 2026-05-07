@@ -1,19 +1,26 @@
 # idk-gamerom
 
-**NES ROM player for M5StickC Plus 2** with 5-way tactile switch controls.
+Console ROM browser/player for M5StickC Plus 2 with 5-way tactile switch controls.
 
 ## Features
 
-- Load NES ROM files from SD card
+- Load ROM files from SD card
 - Display ROM info and thumbnails
 - 5-way tactile switch controls (UP/DOWN: navigate, LEFT/RIGHT: select action, CENTER: start game)
 - Landscape display (rotation = 3)
-- Memory-efficient emulation framework (256KB+ code space)
+- Game Boy/Game Boy Color best-effort playback via PeanutGB
 
 ## ROM Storage
 
-- Place `.nes` files in `/roms/` on SD card
-- ROM info stored in `/rom_metadata/` (auto-generated)
+- Place ROM files in `/roms/` on SD card.
+- Supported extensions: `.gb`, `.gbc`, `.nes`, `.sfc`, `.smc`, `.md`, `.gen`, `.gba`.
+- Runtime max ROM sizes shown on the device:
+  - Game Boy: 1536 KB, playable.
+  - Game Boy Color: 1536 KB, best-effort playable for DMG-compatible carts.
+  - NES/Famicom: 512 KB, browser only until an NES core is added.
+  - SNES: 4096 KB, browser only.
+  - Sega Genesis/Mega Drive: 4096 KB, browser only.
+  - GBA: 8192 KB, browser only.
 
 ## 5-way Button Mapping
 
@@ -27,14 +34,9 @@ CENTER= Load/Start selected ROM
 
 ## Supported Emulators
 
-### Phase 1 (Current): NES Support
-- Uses lightweight NES emulator framework
-- Planned: Integration with PicoDrive or custom minimal emulator
-
-### Future Phases
-- Game Boy (GB/GBC)
-- Atari 8-bit
-- Sega Master System
+### Current playable core
+- Game Boy through `peanut_gb.h`.
+- Other console formats are detected and documented in-app, but need emulator cores before real playback.
 
 ## Build
 
