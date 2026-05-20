@@ -1,6 +1,11 @@
 .venv/
+.venv*/
 tools/out/
 **/.pio/
 **/.vscode/
 *.zip
 data-pdf/
+**/data/api_key.txt
+.codex
+.gemini
+idk-ai/

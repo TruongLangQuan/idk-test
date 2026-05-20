@@ -376,48 +376,62 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
   draw();
   bool longBHandled = false;
   bool longPwrHandled = false;
+
+  // 5-Way Pins (shared with main.cpp)
+  static constexpr int kPinUp     = 32;
+  static constexpr int kPinDown   = 33;
+  static constexpr int kPinLeft   = 25;
+  static constexpr int kPinRight  = 26;
+  static constexpr int kPinCenter = 0;
+
+  auto isPrsd = [](int p) { return digitalRead(p) == LOW; };
+  struct KeyEdge {
+    int pin;
+    bool last;
+  } edges[] = { {kPinUp,true}, {kPinDown,true}, {kPinLeft,true}, {kPinRight,true}, {kPinCenter,true} };
+
   while (true) {
     M5.update();
+    bool changed = false;
 
-    if (M5.BtnB.pressedFor(300) && !longBHandled) {
-      longBHandled = true;
-      if (y == -1) {
-        x = (x - 1 + btnCount) % btnCount;
-      } else {
-        x = (x - 1 + kKeyboardCols) % kKeyboardCols;
+    // 5-Way Edge Detection
+    bool eUp=false, eDown=false, eLeft=false, eRight=false, eCenter=false;
+    for(int i=0; i<5; ++i) {
+      bool cur = isPrsd(edges[i].pin);
+      if(cur && !edges[i].last) {
+        if(i==0) eUp=true; if(i==1) eDown=true; if(i==2) eLeft=true; if(i==3) eRight=true; if(i==4) eCenter=true;
       }
-      draw();
-    }
-    if (M5.BtnB.wasReleased()) {
-      longBHandled = false;
-    }
-    if (M5.BtnB.wasPressed() && !longBHandled) {
-      if (y == -1) {
-        x = (x + 1) % btnCount;
-      } else {
-        x = (x + 1) % kKeyboardCols;
-      }
-      draw();
+      edges[i].last = cur;
     }
 
-    if (M5.BtnPWR.pressedFor(300) && !longPwrHandled) {
-      longPwrHandled = true;
-      y--;
-      if (y < -1) y = kKeyboardRows - 1;
-      if (y == -1 && x >= btnCount) x = btnCount - 1;
-      draw();
+    // Horizontal Movement
+    if (M5.BtnB.wasPressed() || eRight) {
+      if (y == -1) x = (x + 1) % btnCount;
+      else x = (x + 1) % kKeyboardCols;
+      changed = true;
     }
-    if (M5.BtnPWR.wasReleased()) {
-      longPwrHandled = false;
+    if (eLeft) {
+      if (y == -1) x = (x - 1 + btnCount) % btnCount;
+      else x = (x - 1 + kKeyboardCols) % kKeyboardCols;
+      changed = true;
     }
-    if (M5.BtnPWR.wasPressed() && !longPwrHandled) {
+
+    // Vertical Movement
+    if (M5.BtnPWR.wasPressed() || eDown) {
       y++;
       if (y >= kKeyboardRows) y = -1;
       if (y == -1 && x >= btnCount) x = btnCount - 1;
-      draw();
+      changed = true;
+    }
+    if (eUp) {
+      y--;
+      if (y < -1) y = kKeyboardRows - 1;
+      if (y == -1 && x >= btnCount) x = btnCount - 1;
+      changed = true;
     }
 
-    if (M5.BtnA.wasPressed()) {
+    // Selection
+    if (M5.BtnA.wasPressed() || eCenter) {
       if (y == -1) {
         if (x == 0) { out = value; return true; }
         if (x == 1) { caps = !caps; }
@@ -444,10 +458,11 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
           }
         }
       }
-      draw();
+      changed = true;
     }
 
-    delay(8);
+    if (changed) draw();
+    delay(10);
   }
 }
 

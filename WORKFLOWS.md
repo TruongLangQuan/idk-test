@@ -1,37 +1,58 @@
 # WORKFLOWS
 
-## 1. Build Firmware
-1. Open terminal and navigate to the specific project directory (e.g., `cd idk-ascii-idk`).
-2. Identify the environment in `platformio.ini` (e.g., `[env:m5stickc_plus2]`).
+## 1. Build Firmware (PlatformIO)
+1. Open terminal and navigate to the specific project directory:
+   ```bash
+   cd /home/truonglangquan/idk-code/idk-test/idk-maze
+   ```
+2. Identify the environment from the project's `platformio.ini` (e.g., `m5stickc_plus2`, `firmware`, `esp32s3_114tft`).
 3. Run the build command:
    ```bash
-   pio run -e m5stickc_plus2
+   pio run -e <env_name>
    ```
 
 ## 2. Flash Process (USB)
-1. Ensure the device is connected via USB.
-2. Run the upload command:
+1. Connect device via USB (ensure cable supports data).
+2. Upload firmware:
    ```bash
-   pio run -e m5stickc_plus2 --target upload
+   pio run -e <env_name> --target upload
    ```
-3. To monitor serial output immediately after:
+3. Upload filesystem (SPIFFS/LittleFS) if the project uses data (e.g., `idk-ai`, `idk-badapple`):
    ```bash
-   pio device monitor --baud 115200
+   pio run -e <env_name> --target uploadfs
    ```
 
 ## 3. Merge for OTA (Bmorcelli Launcher)
-1. Use the `build_merge_copy.fish` script or run `esptool.py` manually to merge bootloader, partitions, and firmware:
+1. To merge bootloader, partitions, and firmware into a single `.bin` for OTA or SD card booting:
    ```bash
-   esptool.py --chip esp32 merge_bin -o output.bin 0x1000 bootloader.bin 0x8000 partitions.bin 0x10000 firmware.bin
+   cd /home/truonglangquan/idk-code/idk-test
+   ./build_merge_copy.fish
    ```
-2. Upload `output.bin` to the SD card or flash via OTA WebUI.
+2. Or use `esptool.py` manually:
+   ```bash
+   esptool.py --chip esp32 merge_bin -o out.bin 0x1000 bootloader.bin 0x8000 partitions.bin 0x10000 firmware.bin
+   ```
 
 ## 4. Debugging Hardware
-- **Display blank:** Verify `M5.begin()` is called and brightness is set (`M5.Display.setBrightness()`).
-- **I2C failures:** Check if peripheral power is enabled (AXP2101 PMIC needs to turn on power rails for internal I2C devices). M5Unified handles this automatically.
+- **Blank Display:** Verify `M5.begin()` is called. PMIC (AXP192/AXP2101) must enable display power rails. M5Unified handles this automatically.
+- **Boot Loop (Guru Meditation / WDT):** Ensure heavy loops yield to the RTOS using `vTaskDelay(1)` or `delay(1)`.
+- **Serial Monitor:** 
+  ```bash
+  pio device monitor -b 115200
+  ```
 
-## 5. Adding a New Module / Animation
-1. Create a new `.h` file in the appropriate directory (e.g., `src/animations/`).
-2. Inherit from the base class (e.g., `IAnimation`).
-3. Implement `init()` and `update()`.
-4. Register the module in the main factory loop in `main.cpp`.
+## 5. Compiling Assets (Images, GIFs, Text, IR)
+1. Place raw assets in `/tools/assets/` subdirectories.
+2. Run the compiler script:
+   ```bash
+   cd /home/truonglangquan/idk-code/idk-test
+   source .venv/bin/activate
+   python tools/asset_compiler.py all
+   ```
+3. The script generates C++ header files in `generated/` folders (e.g., `idk_vi_font.h`, `gif_asset.h`).
+
+## 6. Adding a New ASCII Animation
+1. Edit `gen_distinct.py` or `gen_missing.py` to add new math/logic patterns.
+2. Run `python gen_distinct.py`.
+3. Fix up the generated headers if needed: `python fix_gen.py`.
+4. Rebuild the `idk-ascii-idk` project.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IN_DEFAULT="/home/truonglangquan/Downloads/YTDown.com_YouTube_TOM-TAT-100-NGAY-MINECRAFT-WONDERLAND-JA_Media_SEhWSXW0aCc_006_144p.mp4"
+IN_DEFAULT="/home/truonglangquan/Videos/ellen.mp4"
 OUT_DEFAULT="../data/video.mjpg"
 
 IN="${1:-$IN_DEFAULT}"
