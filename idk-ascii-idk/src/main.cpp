@@ -190,7 +190,11 @@ void setup() {
     cfg.internal_spk = false; // Disable SPK
     M5.begin(cfg);
     
-    M5.Display.setRotation(3); 
+#if defined(STICKS3)
+    M5.Display.setRotation(1);
+#else
+    M5.Display.setRotation(3);
+#endif 
     M5.Display.setBrightness(128);
 
     if (!renderer.begin()) {

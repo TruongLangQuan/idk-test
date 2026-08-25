@@ -60,7 +60,11 @@ public:
     Renderer() : _canvas(nullptr) {}
 
     void begin() {
+#if defined(STICKS3)
+        M5.Display.setRotation(1);
+#else
         M5.Display.setRotation(3);
+#endif
         M5.Display.setBrightness(100);
         _canvas = new M5Canvas(&M5.Display);
         _canvas->createSprite(DISPLAY_WIDTH, DISPLAY_HEIGHT);

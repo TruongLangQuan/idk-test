@@ -8,6 +8,8 @@
 #include "dma.h"
 #include "display.h"
 #include "srtc.h"
+#include "fxemu.h"
+#include "fxinst.h"
 
 extern const uint8_t mul_brightness [16][32];
 
@@ -93,6 +95,67 @@ void S9xFixColourBrightness()
    for (size_t p = 0; p < 8; p++)
       for (size_t c = 0; c < 256; c++)
          IPPU.DirectColors [p * 256 + c] = BUILD_PIXEL(((c & 7) << 2) | ((p & 1) << 1), ((c & 0x38) >> 1) | (p & 2), ((c & 0xc0) >> 3) | (p & 4)); /* XXX: Brightness */
+}
+
+void S9xSuperFXExec(void);
+
+static void S9xSetSuperFX(uint8_t Byte, uint16_t Address)
+{
+   uint8_t old_fill_ram;
+   if (!Settings.SuperFX)
+      return;
+
+   old_fill_ram = Memory.FillRAM[Address];
+   Memory.FillRAM[Address] = Byte;
+
+   switch (Address)
+   {
+      case 0x3030:
+         if ((old_fill_ram ^ Byte) & FLG_G)
+         {
+            Memory.FillRAM [Address] = Byte;
+            if (Byte & FLG_G) /* Go flag has been changed */
+               S9xSuperFXExec();
+            else
+               FxFlushCache();
+         }
+         break;
+      case 0x3034:
+      case 0x3036:
+         Memory.FillRAM [Address] &= 0x7f;
+         break;
+      case 0x3038:
+         fx_dirtySCBR();
+         break;
+      case 0x303c:
+         fx_updateRamBank(Byte);
+         break;
+      case 0x301f:
+         Memory.FillRAM [0x3000 + GSU_SFR] |= FLG_G;
+         S9xSuperFXExec();
+         break;
+      default:
+         break;
+   }
+}
+
+void S9xSuperFXExec(void)
+{
+   if (Settings.SuperFX)
+   {
+      if ((Memory.FillRAM [0x3000 + GSU_SFR] & FLG_G) && (Memory.FillRAM [0x3000 + GSU_SCMR] & 0x18) == 0x18)
+      {
+         int32_t GSUStatus;
+
+         if (!Settings.WinterGold || Settings.StarfoxHack)
+            FxEmulate(~0);
+         else
+            FxEmulate((Memory.FillRAM [0x3000 + GSU_CLSR] & 1) ? 700 : 350);
+         GSUStatus = Memory.FillRAM [0x3000 + GSU_SFR] | (Memory.FillRAM [0x3000 + GSU_SFR + 1] << 8);
+         if ((GSUStatus & (FLG_G | FLG_IRQ)) == FLG_IRQ)
+            S9xSetIRQ(GSU_IRQ_SOURCE); /* Trigger a GSU IRQ. */
+      }
+   }
 }
 
 /******************************************************************************/
@@ -608,7 +671,10 @@ void S9xSetPPU(uint8_t Byte, uint16_t Address)
       if (Address == 0x2801 && Settings.SRTC) /* Dai Kaijyu Monogatari II */
          S9xSetSRTC(Byte, Address);
       else if (Address >= 0x3000 && Address < 0x3300)
+      {
+         S9xSetSuperFX(Byte, Address);
          return;
+      }
    }
    Memory.FillRAM[Address] = Byte;
 }

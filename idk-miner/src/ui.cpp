@@ -10,7 +10,11 @@ void UI::begin() {
   lastSignature_ = 0;
 
   auto& d = M5.Display;
+#if defined(STICKS3)
+  d.setRotation(1);
+#else
   d.setRotation(3);
+#endif
   d.fillScreen(TFT_BLACK);
   d.setTextDatum(top_left);
   d.setTextSize(1);

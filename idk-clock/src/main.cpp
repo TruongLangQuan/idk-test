@@ -392,7 +392,11 @@ void setup() {
   auto cfg = M5.config();
   cfg.external_rtc = true;
   M5.begin(cfg);
+#if defined(STICKS3)
+  M5.Display.setRotation(1);
+#else
   M5.Display.setRotation(3);
+#endif
   applyVietnamTimezone();
   g_rtc_enabled = M5.Rtc.isEnabled();
   loadRtcToSystem();

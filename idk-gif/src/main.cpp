@@ -26,7 +26,11 @@ void drawFrame(uint16_t asset_idx, uint16_t frame_idx) {
 void setup() {
   auto cfg = M5.config();
   M5.begin(cfg);
+#if defined(STICKS3)
+  M5.Display.setRotation(1);
+#else
   M5.Display.setRotation(3);
+#endif
   M5.Display.fillScreen(TFT_BLACK);
   drawFrame(0, 0);
 }

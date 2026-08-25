@@ -25,10 +25,22 @@ static const int kHeaderH = 20;
 static const int kFooterH = 16;
 
 // SD pins aligned with /home/truonglangquan/idk-code/idk-firmware-idk/boards/m5stack-cplus2/m5stack-cplus2.ini
+#if defined(STICKS3)
+static const int kSdCsPin = 7;
+static const int kSdSckPin = 5;
+static const int kSdMisoPin = 4;
+static const int kSdMosiPin = 6;
+#elif defined(PCBFUN)
+static const int kSdCsPin = -1;
+static const int kSdSckPin = -1;
+static const int kSdMisoPin = -1;
+static const int kSdMosiPin = -1;
+#else
 static const int kSdCsPin = 14;
 static const int kSdSckPin = 0;
 static const int kSdMisoPin = 36;
 static const int kSdMosiPin = 26;
+#endif
 
 enum class AppState {
   FILE_SELECT,
@@ -98,8 +110,12 @@ static bool isVideoFile(const String &name) {
 
 static bool ensureSdReady() {
   if (g_sd_ready) return true;
+#if defined(PCBFUN)
+  g_sd_ready = SD.begin();
+#else
   SPI.begin(kSdSckPin, kSdMisoPin, kSdMosiPin, kSdCsPin);
   g_sd_ready = SD.begin(kSdCsPin, SPI);
+#endif
   return g_sd_ready;
 }
 
@@ -556,7 +572,11 @@ static void clearSubtitleState() {
 void setup() {
   auto cfg = M5.config();
   M5.begin(cfg);
-  M5.Display.setRotation(3); // Left landscape
+#if defined(STICKS3)
+  M5.Display.setRotation(1);
+#else
+  M5.Display.setRotation(3);
+#endif // Left landscape
   M5.Display.setBrightness(180);
   g_vi_font_loaded = idk_vi_font::load(M5.Display);
 

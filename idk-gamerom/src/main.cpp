@@ -11,14 +11,112 @@
 #include "idk_nes.h"
 #include "idk_snes.h"
 
+#include <Wire.h>
+
+bool g_cardkb_up = false;
+bool g_cardkb_down = false;
+bool g_cardkb_left = false;
+bool g_cardkb_right = false;
+bool g_cardkb_a = false;
+bool g_cardkb_b = false;
+bool g_cardkb_x = false;
+bool g_cardkb_y = false;
+bool g_cardkb_l = false;
+bool g_cardkb_r = false;
+bool g_cardkb_start = false;
+bool g_cardkb_select = false;
+bool g_cardkb_esc = false;
+
+static uint32_t g_last_up_ms = 0;
+static uint32_t g_last_down_ms = 0;
+static uint32_t g_last_left_ms = 0;
+static uint32_t g_last_right_ms = 0;
+static uint32_t g_last_a_ms = 0;
+static uint32_t g_last_b_ms = 0;
+static uint32_t g_last_x_ms = 0;
+static uint32_t g_last_y_ms = 0;
+static uint32_t g_last_l_ms = 0;
+static uint32_t g_last_r_ms = 0;
+static uint32_t g_last_start_ms = 0;
+static uint32_t g_last_select_ms = 0;
+static uint32_t g_last_esc_ms = 0;
+
+void pollCardKB() {
+  Wire1.requestFrom(0x5F, 1);
+  if (Wire1.available()) {
+    uint8_t key = Wire1.read();
+    if (key != 0) {
+      uint32_t now = millis();
+      if (key == 0xB5 || key == 'w' || key == 'i') { g_cardkb_up = true; g_last_up_ms = now; }
+      else if (key == 0xB6 || key == 's' || key == 'k') { g_cardkb_down = true; g_last_down_ms = now; }
+      else if (key == 0xB4 || key == 'a' || key == 'j') { g_cardkb_left = true; g_last_left_ms = now; }
+      else if (key == 0xB7 || key == 'd' || key == 'l') { g_cardkb_right = true; g_last_right_ms = now; }
+      else if (key == 'z') { g_cardkb_a = true; g_last_a_ms = now; }
+      else if (key == 'x') { g_cardkb_b = true; g_last_b_ms = now; }
+      else if (key == 'c') { g_cardkb_x = true; g_last_x_ms = now; }
+      else if (key == 'v') { g_cardkb_y = true; g_last_y_ms = now; }
+      else if (key == 'q') { g_cardkb_l = true; g_last_l_ms = now; }
+      else if (key == 'e') { g_cardkb_r = true; g_last_r_ms = now; }
+      else if (key == 0x0D || key == 0x0A) { g_cardkb_start = true; g_last_start_ms = now; }
+      else if (key == 0x20) { g_cardkb_select = true; g_last_select_ms = now; }
+      else if (key == 0x1B) { g_cardkb_esc = true; g_last_esc_ms = now; }
+    }
+  }
+
+  uint32_t now = millis();
+  if (now - g_last_up_ms > 150) g_cardkb_up = false;
+  if (now - g_last_down_ms > 150) g_cardkb_down = false;
+  if (now - g_last_left_ms > 150) g_cardkb_left = false;
+  if (now - g_last_right_ms > 150) g_cardkb_right = false;
+  if (now - g_last_a_ms > 150) g_cardkb_a = false;
+  if (now - g_last_b_ms > 150) g_cardkb_b = false;
+  if (now - g_last_x_ms > 150) g_cardkb_x = false;
+  if (now - g_last_y_ms > 150) g_cardkb_y = false;
+  if (now - g_last_l_ms > 150) g_cardkb_l = false;
+  if (now - g_last_r_ms > 150) g_cardkb_r = false;
+  if (now - g_last_start_ms > 150) g_cardkb_start = false;
+  if (now - g_last_select_ms > 150) g_cardkb_select = false;
+  if (now - g_last_esc_ms > 150) g_cardkb_esc = false;
+}
+
 namespace {
 
 // ─── 5-way tactile switch GPIO mapping ──────────────────────────
-static constexpr int kPinUp = 32;
-static constexpr int kPinDown = 33;
-static constexpr int kPinLeft = 25;
-static constexpr int kPinRight = 26;
+#if defined(STICKS3)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 8;
+static constexpr int kPinCenter = 43;
+#elif defined(PCBFUN)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 4;
+static constexpr int kPinCenter = 5;
+#else
+static constexpr int kPinUp     = 32;
+static constexpr int kPinDown   = 33;
+static constexpr int kPinLeft   = 25;
+static constexpr int kPinRight  = 26;
 static constexpr int kPinCenter = 0;
+#endif
+
+#if defined(STICKS3)
+static const int kSdCsPin = 7;
+static const int kSdSckPin = 5;
+static const int kSdMisoPin = 4;
+static const int kSdMosiPin = 6;
+#elif defined(PCBFUN)
+static const int kSdCsPin = -1;
+static const int kSdSckPin = -1;
+static const int kSdMisoPin = -1;
+#else
+static const int kSdCsPin = 14;
+static const int kSdSckPin = 0;
+static const int kSdMisoPin = 36;
+static const int kSdMosiPin = 26;
+#endif
 
 M5Canvas canvas(&M5.Display);
 
@@ -368,8 +466,12 @@ void launchEmulator(const RomEntry& rom) {
   if (g_rom_data) heap_caps_free(g_rom_data);
   if (g_ram_data) heap_caps_free(g_ram_data);
   
-  g_rom_data = (uint8_t*)heap_caps_malloc(sz, MALLOC_CAP_SPIRAM);
-  g_ram_data = (uint8_t*)heap_caps_malloc(32768, MALLOC_CAP_SPIRAM); // 32KB RAM max for basic carts
+  uint32_t caps = MALLOC_CAP_8BIT;
+  if (ESP.getPsramSize() > 0) caps |= MALLOC_CAP_SPIRAM;
+  g_rom_data = (uint8_t*)heap_caps_malloc(sz, caps);
+  g_ram_data = (uint8_t*)heap_caps_malloc(32768, caps);
+  if (!g_rom_data) g_rom_data = (uint8_t*)heap_caps_malloc(sz, MALLOC_CAP_8BIT);
+  if (!g_ram_data) g_ram_data = (uint8_t*)heap_caps_malloc(32768, MALLOC_CAP_8BIT);
   
   if (!g_rom_data || !g_ram_data) {
       showMessage("Out of PSRAM", String("Need: ") + String((sz + 1023) / 1024) + " KB", TFT_RED);
@@ -448,6 +550,11 @@ void handleInput() {
   bool select = M5.BtnA.wasPressed();
   bool back = M5.BtnPWR.pressedFor(500);
 
+  if (g_cardkb_up) { up = true; g_cardkb_up = false; }
+  if (g_cardkb_down) { down = true; g_cardkb_down = false; }
+  if (g_cardkb_select || g_cardkb_a || g_cardkb_start) { select = true; g_cardkb_select = false; g_cardkb_a = false; g_cardkb_start = false; }
+  if (g_cardkb_esc) { back = true; g_cardkb_esc = false; }
+
   if (g_screen == ScreenState::EMULATING) {
      if (back) {
          if (g_emulator == EmulatorKind::NES) idk_nes_end();
@@ -488,7 +595,18 @@ void setup() {
   cfg.internal_mic = false;
   cfg.internal_spk = false;
   M5.begin(cfg);
+  
+  // Power up external Grove port to power CardKB
+  M5.Power.setExtOutput(true);
+  
+  // Initialize CardKB wire on Grove port pins (SDA=9, SCL=10)
+  Wire1.begin(9, 10, 100000UL);
+
+#if defined(STICKS3)
+  M5.Display.setRotation(1);
+#else
   M5.Display.setRotation(3);
+#endif
   M5.Display.setBrightness(180);
 
   pinMode(kPinUp, INPUT_PULLUP);
@@ -504,8 +622,12 @@ void setup() {
   canvas.setColorDepth(8);
   canvas.createSprite(240, 135);
 
-  SPI.begin(0, 36, 26, 14);
-  if (!SD.begin(14, SPI, 15000000)) {
+#if defined(PCBFUN)
+  if (!SD.begin()) {
+#else
+  SPI.begin(kSdSckPin, kSdMisoPin, kSdMosiPin, kSdCsPin);
+  if (!SD.begin(kSdCsPin, SPI, 15000000)) {
+#endif
     canvas.fillSprite(TFT_BLACK);
     canvas.setTextColor(TFT_RED);
     canvas.setCursor(10, 60);
@@ -529,6 +651,7 @@ void setup() {
 }
 
 void loop() {
+  pollCardKB();
   handleInput();
   drawScreen();
   delay(1);

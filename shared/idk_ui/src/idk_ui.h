@@ -2,6 +2,8 @@
 
 #include <M5Unified.h>
 #include <WiFi.h>
+#include <SD.h>
+#include <SD_MMC.h>
 #include <cctype>
 #include <cstdint>
 #include <lgfx/v1/misc/DataWrapper.hpp>

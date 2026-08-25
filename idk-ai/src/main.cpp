@@ -11,15 +11,44 @@
 namespace {
 
 // ─── 5-Way Switch Pins (Requested Mapping) ──────────────────────────
+#if defined(STICKS3)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 8;
+static constexpr int kPinCenter = 43;
+#elif defined(PCBFUN)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 4;
+static constexpr int kPinCenter = 5;
+#else
 static constexpr int kPinUp     = 32;
 static constexpr int kPinDown   = 33;
 static constexpr int kPinLeft   = 25;
 static constexpr int kPinRight  = 26;
 static constexpr int kPinCenter = 0;
+#endif
 
 // ─── Hardware Config ───────────────────────────────────────────────
 // SD Card disabled to avoid pin conflicts with 5-way switch (GPIO 0, 26)
-constexpr int kSdCsPin = 14; 
+#if defined(STICKS3)
+constexpr int kSdCsPin = 7;
+constexpr int kSdSckPin = 5;
+constexpr int kSdMisoPin = 4;
+constexpr int kSdMosiPin = 6;
+#elif defined(PCBFUN)
+constexpr int kSdCsPin = -1;
+constexpr int kSdSckPin = -1;
+constexpr int kSdMisoPin = -1;
+constexpr int kSdMosiPin = -1;
+#else
+constexpr int kSdCsPin = 14;
+constexpr int kSdSckPin = 0;
+constexpr int kSdMisoPin = 36;
+constexpr int kSdMosiPin = 26;
+#endif
 
 // ─── UI Config ─────────────────────────────────────────────────────
 constexpr int kMenuLines = 6;
@@ -477,7 +506,11 @@ void actionStatus() {
 void setup() {
     auto cfg = M5.config();
     M5.begin(cfg);
+#if defined(STICKS3)
+    M5.Display.setRotation(1);
+#else
     M5.Display.setRotation(3);
+#endif
     M5.Display.setBrightness(180);
     
     g_sprite.setColorDepth(8);
@@ -487,10 +520,17 @@ void setup() {
         pinMode(k.pin, INPUT_PULLUP);
     }
 
+#if defined(STICKS3)
+    SPI.begin(kSdSckPin, kSdMisoPin, kSdMosiPin, kSdCsPin);
+    g_sd_ready = SD.begin(kSdCsPin, SPI);
+#elif defined(PCBFUN)
+    g_sd_ready = SD.begin();
+#else
     // SPI and SD disabled due to pin conflict with 5-way switch (GPIO 0, 26)
     // SPI.begin(kSdSckPin, kSdMisoPin, kSdMosiPin, kSdCsPin);
     // g_sd_ready = SD.begin(kSdCsPin, SPI);
     g_sd_ready = false;
+#endif
     g_spiffs_ready = SPIFFS.begin(true);
 
     loadFontFromMemory(vi12_font, vi12_font_len, g_font_wrap);

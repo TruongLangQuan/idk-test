@@ -1,490 +1,563 @@
 #include <M5Unified.h>
-#include <SPIFFS.h>
-#include <vector>
 
 namespace {
 
 // ─── 5-way tactile switch GPIO mapping ──────────────────────────
-static constexpr int kPinUp = 32;
-static constexpr int kPinDown = 33;
-static constexpr int kPinLeft = 25;
-static constexpr int kPinRight = 26;
+#if defined(STICKS3)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 8;
+static constexpr int kPinCenter = 43;
+#elif defined(PCBFUN)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 4;
+static constexpr int kPinCenter = 5;
+#else
+static constexpr int kPinUp     = 32;
+static constexpr int kPinDown   = 33;
+static constexpr int kPinLeft   = 25;
+static constexpr int kPinRight  = 26;
 static constexpr int kPinCenter = 0;
+#endif
 
 // ─── Game States ───────────────────────────────────────────────
 enum GameMode {
-  MENU,
-  EXPLORING,
-  COMBAT,
-  INVENTORY,
-  GAME_OVER,
+    MENU,       // Select Class
+    STORY_DISPLAY, // Narrative & Choices
+    GAME_OVER
 };
 
 struct PlayerStats {
-  int level;
-  int hp, maxHp;
-  int xp, xpNext;
-  int str, def, intel;
-  int gold;
-  int weaponDmg;
-  int armorDef;
-  int potions;
-};
-
-struct Enemy {
-  String name;
-  int hp, maxHp;
-  int str, def;
-  int xpReward;
-  int goldReward;
+    String pClass;
+    int level;
+    int hp, maxHp;
+    int xp, xpNext;
+    int gold;
+    int potions;
 };
 
 // ─── Global State ──────────────────────────────────────────────
 static GameMode g_mode = MENU;
 static PlayerStats g_player = {
+    .pClass = "Warrior",
     .level = 1,
-    .hp = 30,
-    .maxHp = 30,
+    .hp = 40,
+    .maxHp = 40,
     .xp = 0,
     .xpNext = 100,
-    .str = 5,
-    .def = 2,
-    .intel = 3,
-    .gold = 0,
-    .weaponDmg = 1,
-    .armorDef = 0,
-    .potions = 3,
+    .gold = 10,
+    .potions = 3
 };
 
-static int g_menu_idx = 0;
-static int g_menu_max = 5;  // Continue, New Game, Save, Load, Quit
-static bool g_running = true;
+// UI & Display
+static M5Canvas canvas(&M5.Display);
+static int g_selected_choice = 0; // 0, 1, 2 for Choice 1, 2, 3
+static bool g_autoplay = false;
+static uint32_t g_autoplay_timer = 0;
+static constexpr uint32_t AUTOPLAY_DELAY_MS = 3000;
 
-// Map & Exploration
-static char g_map[10][20];
-static int g_playerX = 1;
-static int g_playerY = 1;
+// Cyberpunk Palette
+static constexpr uint16_t COLOR_CYBER_BG = 0x0802;   // Deep dark indigo/purple
+static constexpr uint16_t COLOR_CYBER_FG = 0x07FF;   // Neon Cyan
+static constexpr uint16_t COLOR_ALERT_FG = 0xF81F;   // Neon Magenta
+static constexpr uint16_t COLOR_SUCCESS_FG = 0x07E0; // Matrix Green
+static constexpr uint16_t COLOR_GOLD_FG = 0xFDE0;    // Neon Gold
 
-// Combat
-static Enemy g_enemy;
-static int g_combat_menu_idx = 0;
-static String g_combat_msg1 = "";
-static String g_combat_msg2 = "";
+// AI Story Data
+static String g_story_text = "";
+static String g_choice1 = "";
+static String g_choice2 = "";
+static String g_choice3 = "";
+static int g_best_choice = 1;
+static String g_monster_name = "";
+static int g_gold_reward = 0;
+static int g_xp_reward = 0;
+static int g_hp_change = 0;
 
-// ─── Map Generation ────────────────────────────────────────────
-void generateMap() {
-  for (int y = 0; y < 10; ++y) {
-    for (int x = 0; x < 20; ++x) {
-      if (x == 0 || x == 19 || y == 0 || y == 9) g_map[y][x] = '#';
-      else if (esp_random() % 100 < 15) g_map[y][x] = '#';
-      else if (esp_random() % 100 < 5) g_map[y][x] = 'G';  // Gold
-      else if (esp_random() % 100 < 3) g_map[y][x] = 'P';  // Potion
-      else if (esp_random() % 100 < 10) g_map[y][x] = 'E'; // Enemy trigger
-      else g_map[y][x] = '.';
+static String g_previous_story = "The hero stands brave before the dark dungeon gates.";
+static String g_selected_choice_text = "Enter the dungeon.";
+static int g_last_choice_idx = 0; // index chosen in the previous scene
+
+// ─── Offline Story Engine (no network) ─────────────────────────
+static const char* kMonsters[] = {"Goblin", "Skeleton", "Orc", "Slime", "Dragon"};
+
+static const char* kOutcomeGood[] = {
+    "Your move succeeds brilliantly!",
+    "Fortune favors you this time.",
+    "You pull it off without a scratch.",
+    "Well executed - the way is clear."
+};
+static const char* kOutcomeBad[] = {
+    "It goes badly - pain flares up.",
+    "You misjudge and take a hit.",
+    "Danger catches you off guard.",
+    "A costly mistake in the dark."
+};
+
+static String pickLine(const char** table, int n) {
+    return String(table[random(n)]);
+}
+
+// Resolves the outcome of the previously chosen action, then rolls
+// a fresh dungeon situation with 3 choices.
+void generateStory() {
+    bool success = (g_last_choice_idx + 1) == g_best_choice;
+
+    if (success) {
+        g_story_text = pickLine(kOutcomeGood, 4);
+        g_gold_reward = random(2, 9);
+        g_xp_reward = random(8, 20);
+        g_hp_change = random(-1, 4);
+    } else {
+        g_story_text = pickLine(kOutcomeBad, 4);
+        g_gold_reward = random(0, 3);
+        g_xp_reward = random(3, 10);
+        g_hp_change = -random(2, 7);
     }
-  }
-  g_playerX = 1;
-  g_playerY = 1;
-  g_map[g_playerY][g_playerX] = '.';
-  // Ensure exit exists
-  g_map[8][18] = '>';
+
+    int roll = random(100);
+    g_monster_name = "";
+    if (roll < 55) {
+        g_monster_name = kMonsters[random(5)];
+        if (g_monster_name == "Dragon") g_hp_change -= random(0, 4); // dragons bite
+        g_story_text += " A " + g_monster_name + " blocks the passage!";
+        g_choice1 = "Strike the " + g_monster_name;
+        g_choice2 = "Feint and counter";
+        g_choice3 = "Retreat to safety";
+        g_best_choice = 2;
+    } else if (roll < 70) {
+        g_story_text += " A dusty chest sits half-buried here.";
+        g_choice1 = "Force the lock";
+        g_choice2 = "Inspect for traps";
+        g_choice3 = "Smash it open";
+        g_best_choice = 2;
+    } else if (roll < 82) {
+        g_story_text += " Cracked flagstones hint at buried spikes.";
+        g_choice1 = "Dash across quickly";
+        g_choice2 = "Probe each stone first";
+        g_choice3 = "Walk the outer edge";
+        g_best_choice = 2;
+    } else if (roll < 92) {
+        g_story_text += " An old stairwell spirals down into black.";
+        g_choice1 = "Descend cautiously";
+        g_choice2 = "Light a torch first";
+        g_choice3 = "Listen at the top";
+        g_best_choice = 2;
+    } else {
+        g_story_text += " A silent shrine hums with faint power.";
+        g_choice1 = "Kneel and pray";
+        g_choice2 = "Touch the altar";
+        g_choice3 = "Loot the offering bowl";
+        g_best_choice = 1;
+    }
 }
 
-// ─── Save/Load ─────────────────────────────────────────────────
-void saveGame() {
-  File f = SPIFFS.open("/save.dat", FILE_WRITE);
-  if (f) {
-    f.write((uint8_t*)&g_player, sizeof(PlayerStats));
-    f.close();
-    g_combat_msg1 = "Game Saved!";
-  } else {
-    g_combat_msg1 = "Save Failed!";
-  }
+// Generates the next scene, applies its effects to the player,
+// and transitions to STORY_DISPLAY or GAME_OVER.
+void advanceStory() {
+    generateStory();
+
+    // Limit choice lengths to prevent UI overflowing
+    if (g_choice1.length() > 38) g_choice1 = g_choice1.substring(0, 35) + "...";
+    if (g_choice2.length() > 38) g_choice2 = g_choice2.substring(0, 35) + "...";
+    if (g_choice3.length() > 38) g_choice3 = g_choice3.substring(0, 35) + "...";
+
+    // Apply results
+    g_player.gold += g_gold_reward;
+    g_player.xp += g_xp_reward;
+    g_player.hp = constrain(g_player.hp + g_hp_change, 0, g_player.maxHp);
+
+    // Level Up checks
+    if (g_player.xp >= g_player.xpNext) {
+        g_player.level++;
+        g_player.xp -= g_player.xpNext;
+        g_player.xpNext = (int)(g_player.xpNext * 1.5f);
+        g_player.maxHp += 10;
+        g_player.hp = g_player.maxHp;
+    }
+
+    g_previous_story = g_story_text;
+
+    if (g_player.hp <= 0) {
+        g_mode = GameMode::GAME_OVER;
+    } else {
+        g_selected_choice = 0;
+        g_mode = GameMode::STORY_DISPLAY;
+        g_autoplay_timer = millis(); // Reset autoplay timer
+    }
 }
 
-void loadGame() {
-  File f = SPIFFS.open("/save.dat", FILE_READ);
-  if (f) {
-    f.read((uint8_t*)&g_player, sizeof(PlayerStats));
-    f.close();
-    generateMap();
-    g_mode = EXPLORING;
-  }
+// ─── Class and Monster ASCII Portraits ─────────────────────────
+void drawAsciiPortrait(const String& target, int x, int y, uint16_t color) {
+    canvas.setTextColor(color, COLOR_CYBER_BG);
+    canvas.setFont(&fonts::Font0);
+    canvas.setTextSize(1);
+    
+    if (target.equalsIgnoreCase("Goblin")) {
+        canvas.drawCenterString(" /\\_/\\ ", x + 42, y + 25);
+        canvas.drawCenterString("( o.o )", x + 42, y + 37);
+        canvas.drawCenterString(" > ^ < ", x + 42, y + 49);
+        canvas.drawCenterString("/  |  \\", x + 42, y + 61);
+    } 
+    else if (target.equalsIgnoreCase("Skeleton")) {
+        canvas.drawCenterString(" .---. ", x + 42, y + 25);
+        canvas.drawCenterString("| o o |", x + 42, y + 37);
+        canvas.drawCenterString(" \\ - / ", x + 42, y + 49);
+        canvas.drawCenterString("  | |  ", x + 42, y + 61);
+        canvas.drawCenterString(" -^-^- ", x + 42, y + 73);
+    } 
+    else if (target.equalsIgnoreCase("Orc")) {
+        canvas.drawCenterString(" (\\_/) ", x + 42, y + 25);
+        canvas.drawCenterString("( O O )", x + 42, y + 37);
+        canvas.drawCenterString("/|   |\\", x + 42, y + 49);
+        canvas.drawCenterString("\\|___|/", x + 42, y + 61);
+    } 
+    else if (target.equalsIgnoreCase("Slime")) {
+        canvas.drawCenterString("  ___  ", x + 42, y + 31);
+        canvas.drawCenterString(" (o o) ", x + 42, y + 43);
+        canvas.drawCenterString("(_____)", x + 42, y + 55);
+    } 
+    else if (target.equalsIgnoreCase("Dragon")) {
+        canvas.drawCenterString(" /\\_/\\ ", x + 42, y + 15);
+        canvas.drawCenterString("(=o_o=)", x + 42, y + 27);
+        canvas.drawCenterString("/ \\_/ \\", x + 42, y + 39);
+        canvas.drawCenterString("/     \\", x + 42, y + 51);
+        canvas.drawCenterString("/|| ||\\", x + 42, y + 63);
+    } 
+    else if (g_player.pClass == "Warrior") {
+        // Player Warrior Class
+        canvas.drawCenterString("  /|   ", x + 42, y + 20);
+        canvas.drawCenterString(" | |   ", x + 42, y + 32);
+        canvas.drawCenterString(" | |   ", x + 42, y + 44);
+        canvas.drawCenterString(" /_|_\\ ", x + 42, y + 56);
+        canvas.drawCenterString(" |===| ", x + 42, y + 68);
+        canvas.drawCenterString("  \\_/  ", x + 42, y + 80);
+    } 
+    else {
+        // Player Mage Class
+        canvas.drawCenterString("  /\\   ", x + 42, y + 20);
+        canvas.drawCenterString(" /  \\  ", x + 42, y + 32);
+        canvas.drawCenterString(" | o | ", x + 42, y + 44);
+        canvas.drawCenterString(" \\   / ", x + 42, y + 56);
+        canvas.drawCenterString("  | |  ", x + 42, y + 68);
+        canvas.drawCenterString("  ( )  ", x + 42, y + 80);
+    }
 }
 
-// ─── Combat System ─────────────────────────────────────────────
-void spawnEnemy() {
-  const char* names[] = {"Goblin", "Skeleton", "Orc", "Slime", "Bat"};
-  int type = esp_random() % 5;
-  g_enemy.name = names[type];
-  int mult = g_player.level;
-  g_enemy.maxHp = g_enemy.hp = 10 + esp_random() % (10 * mult);
-  g_enemy.str = 2 + esp_random() % (3 * mult);
-  g_enemy.def = 1 + esp_random() % (2 * mult);
-  g_enemy.xpReward = 20 + esp_random() % (10 * mult);
-  g_enemy.goldReward = 5 + esp_random() % (15 * mult);
+// ─── Input Press Helpers ───────────────────────────────────────
+bool isPressed(int pin) {
+    return digitalRead(pin) == LOW;
 }
 
-void startCombat() {
-  spawnEnemy();
-  g_mode = COMBAT;
-  g_combat_menu_idx = 0;
-  g_combat_msg1 = "A wild " + g_enemy.name + " appears!";
-  g_combat_msg2 = "";
+// ─── Draw Functions ────────────────────────────────────────────
+
+void drawHeader() {
+    canvas.fillRect(0, 0, 240, 14, 0x1803); // Translucent Dark Bar
+    canvas.drawFastHLine(0, 14, 240, COLOR_CYBER_FG);
+    
+    canvas.setFont(&fonts::Font0);
+    canvas.setTextSize(1);
+    canvas.setTextColor(0xFFFF);
+    canvas.drawString(g_player.pClass + " Lvl " + String(g_player.level), 6, 3);
+    
+    // Health bar representation
+    canvas.drawString("HP:" + String(g_player.hp) + "/" + String(g_player.maxHp), 95, 3);
+    canvas.drawString("G:" + String(g_player.gold), 170, 3);
+    
+    if (g_autoplay) {
+        canvas.setTextColor(COLOR_SUCCESS_FG);
+        canvas.drawRightString("[AUTO]", 234, 3);
+    } else {
+        canvas.setTextColor(COLOR_ALERT_FG);
+        canvas.drawRightString("[MANUAL]", 234, 3);
+    }
 }
 
-void levelUp() {
-  g_player.level++;
-  g_player.maxHp += 10;
-  g_player.hp = g_player.maxHp;
-  g_player.str += 2;
-  g_player.def += 1;
-  g_player.xp -= g_player.xpNext;
-  g_player.xpNext = (int)(g_player.xpNext * 1.5f);
-  g_combat_msg2 = "LEVEL UP! Now Level " + String(g_player.level);
+void drawWidescreenCard() {
+    int card_x = 150;
+    int card_y = 18;
+    int card_w = 84;
+    int card_h = 112;
+    
+    // Draw glowing border
+    canvas.drawRoundRect(card_x, card_y, card_w, card_h, 4, COLOR_ALERT_FG);
+    canvas.drawRoundRect(card_x + 1, card_y + 1, card_w - 2, card_h - 2, 4, 0x4108); // Dark glow effect
+    
+    // Label above ASCII inside card
+    canvas.setFont(&fonts::Font0);
+    canvas.setTextSize(1);
+    canvas.setTextColor(COLOR_CYBER_FG);
+    
+    String label = g_monster_name.isEmpty() ? g_player.pClass : g_monster_name;
+    if (label.length() > 10) label = label.substring(0, 9) + ".";
+    canvas.drawCenterString(label, card_x + 42, card_y + 6);
+    canvas.drawFastHLine(card_x + 6, card_y + 15, card_w - 12, COLOR_CYBER_FG);
+    
+    // Dynamic ASCII
+    uint16_t art_color = g_monster_name.isEmpty() ? COLOR_CYBER_FG : COLOR_SUCCESS_FG;
+    drawAsciiPortrait(g_monster_name.isEmpty() ? g_player.pClass : g_monster_name, card_x, card_y, art_color);
 }
-
-// ─── Input Helpers ─────────────────────────────────────────────
-bool readPressed(int pin) {
-  return digitalRead(pin) == LOW;
-}
-
-// ─── Drawing Functions ─────────────────────────────────────────
 
 void drawMainMenu() {
-  M5.Display.fillScreen(TFT_BLACK);
-  M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-  M5.Display.setTextSize(1);
-
-  M5.Display.setCursor(40, 10);
-  M5.Display.setTextColor(TFT_YELLOW);
-  M5.Display.print("SANCTUARY RPG");
-
-  M5.Display.setTextColor(TFT_WHITE);
-  const char* items[] = {"New Game", "Continue", "Save Game", "Load Game", "Quit"};
-  
-  for (int i = 0; i < g_menu_max; ++i) {
-    int y = 40 + i * 15;
-    if (i == g_menu_idx) {
-      M5.Display.fillRect(0, y - 2, 240, 14, 0x0410);
-      M5.Display.setTextColor(TFT_YELLOW, 0x0410);
-    } else {
-      M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
+    canvas.fillSprite(COLOR_CYBER_BG);
+    
+    canvas.setTextColor(COLOR_ALERT_FG);
+    canvas.setFont(&fonts::Font0);
+    canvas.setTextSize(2);
+    canvas.drawCenterString("SANCTUARY RPG", 120, 15);
+    
+    canvas.setTextSize(1);
+    canvas.setTextColor(0xFFFF);
+    canvas.drawCenterString("SELECT CHARACTER CLASS:", 120, 50);
+    
+    // Options
+    const char* items[] = {"Warrior", "Mage"};
+    for (int i = 0; i < 2; ++i) {
+        int y = 75 + i * 20;
+        if (i == g_selected_choice) {
+            canvas.fillRect(20, y - 2, 200, 14, 0x1803);
+            canvas.drawRect(20, y - 2, 200, 14, COLOR_CYBER_FG);
+            canvas.setTextColor(COLOR_SUCCESS_FG);
+            canvas.drawCenterString("> " + String(items[i]) + " <", 120, y);
+        } else {
+            canvas.setTextColor(0xFFFF);
+            canvas.drawCenterString(items[i], 120, y);
+        }
     }
-    M5.Display.setCursor(20, y);
-    M5.Display.print(items[i]);
-  }
-
-  M5.Display.setTextColor(TFT_DARKGREY);
-  M5.Display.setCursor(4, 125);
-  M5.Display.print("UP/DOWN: select  CENTER: choose");
+    
+    canvas.setTextColor(COLOR_CYBER_FG);
+    canvas.drawCenterString("A/D-Pad: Select  Center: Choose", 120, 120);
+    canvas.pushSprite(0, 0);
 }
 
-void drawExploring() {
-  M5.Display.fillScreen(TFT_BLACK);
-  M5.Display.setTextColor(TFT_WHITE, TFT_BLACK);
-  M5.Display.setTextSize(1);
-
-  // Status bar
-  M5.Display.setCursor(4, 4);
-  M5.Display.printf("Lvl%d HP:%d/%d Pts:%d Gold:%d",
-                    g_player.level, g_player.hp, g_player.maxHp,
-                    g_player.potions, g_player.gold);
-
-  // Map
-  M5.Display.setCursor(40, 20);
-  for (int y = 0; y < 10; ++y) {
-    for (int x = 0; x < 20; ++x) {
-      if (x == g_playerX && y == g_playerY) {
-        M5.Display.setTextColor(TFT_GREEN);
-        M5.Display.print('@');
-      } else {
-        char c = g_map[y][x];
-        if (c == '#') M5.Display.setTextColor(M5.Display.color565(80,80,80));
-        else if (c == 'G') M5.Display.setTextColor(TFT_YELLOW);
-        else if (c == 'P') M5.Display.setTextColor(TFT_CYAN);
-        else if (c == 'E') M5.Display.setTextColor(TFT_RED);
-        else if (c == '>') M5.Display.setTextColor(TFT_MAGENTA);
-        else M5.Display.setTextColor(M5.Display.color565(30,30,30));
-        M5.Display.print(c);
-      }
+void drawStoryDisplay() {
+    canvas.fillSprite(COLOR_CYBER_BG);
+    drawHeader();
+    
+    // Draw Widescreen graphic card
+    drawWidescreenCard();
+    
+    // Draw Story Narration (Wrap text cleanly)
+    canvas.setTextColor(COLOR_CYBER_FG);
+    canvas.setFont(&fonts::Font0);
+    canvas.setTextSize(1);
+    
+    // Custom wrap string routine to avoid breaking words
+    int text_x = 6;
+    int text_y = 18;
+    int max_width = 138;
+    
+    // We parse g_story_text into lines to draw
+    String remaining = g_story_text;
+    int line_h = 8;
+    int current_y = text_y;
+    
+    while (remaining.length() > 0 && current_y < 70) {
+        int char_count = canvas.textWidth(remaining) > max_width ? 26 : remaining.length();
+        if (char_count < (int)remaining.length()) {
+            // Backtrack to last space
+            int last_space = remaining.lastIndexOf(' ', char_count);
+            if (last_space > 0) char_count = last_space;
+        }
+        canvas.drawString(remaining.substring(0, char_count), text_x, current_y);
+        remaining = remaining.substring(char_count);
+        remaining.trim();
+        current_y += line_h;
     }
-    M5.Display.println();
-    M5.Display.setCursor(40, M5.Display.getCursorY());
-  }
-
-  if (g_combat_msg1.length() > 0) {
-    M5.Display.setTextColor(TFT_CYAN);
-    M5.Display.setCursor(4, 110);
-    M5.Display.print(g_combat_msg1);
-  }
-
-  M5.Display.setTextColor(TFT_DARKGREY);
-  M5.Display.setCursor(4, 125);
-  M5.Display.print("Move: DPAD   Menu: PWR");
+    
+    // Draw choices
+    const String choices[] = { g_choice1, g_choice2, g_choice3 };
+    int choice_y_start = 75;
+    
+    for (int i = 0; i < 3; ++i) {
+        int y = choice_y_start + i * 14;
+        if (i == g_selected_choice) {
+            // Draw glowing outline selector
+            canvas.fillRect(4, y - 2, 140, 13, 0x1803);
+            canvas.drawRect(4, y - 2, 140, 13, COLOR_ALERT_FG);
+            canvas.setTextColor(COLOR_SUCCESS_FG);
+            canvas.drawString("> " + choices[i], 6, y);
+        } else {
+            canvas.setTextColor(0xFFFF);
+            canvas.drawString(String(i+1) + ". " + choices[i], 6, y);
+        }
+    }
+    
+    // Autoplay countdown bar representation
+    if (g_autoplay) {
+        uint32_t elapsed = millis() - g_autoplay_timer;
+        if (elapsed < AUTOPLAY_DELAY_MS) {
+            int progress_w = (elapsed * 138) / AUTOPLAY_DELAY_MS;
+            canvas.fillRect(4, 120, progress_w, 2, COLOR_SUCCESS_FG);
+        }
+    }
+    
+    canvas.pushSprite(0, 0);
 }
 
-void drawCombat() {
-  M5.Display.fillScreen(TFT_BLACK);
-  M5.Display.setTextSize(1);
-  
-  M5.Display.setTextColor(TFT_RED);
-  M5.Display.setCursor(140, 20);
-  M5.Display.printf("%s", g_enemy.name.c_str());
-  M5.Display.setCursor(140, 35);
-  M5.Display.printf("HP: %d/%d", g_enemy.hp, g_enemy.maxHp);
-
-  M5.Display.setTextColor(TFT_GREEN);
-  M5.Display.setCursor(20, 20);
-  M5.Display.printf("Player Lvl %d", g_player.level);
-  M5.Display.setCursor(20, 35);
-  M5.Display.printf("HP: %d/%d", g_player.hp, g_player.maxHp);
-
-  M5.Display.setTextColor(TFT_WHITE);
-  M5.Display.setCursor(20, 60);
-  M5.Display.print(g_combat_msg1);
-  M5.Display.setCursor(20, 75);
-  M5.Display.print(g_combat_msg2);
-
-  const char* opts[] = {"Attack", "Heal", "Flee"};
-  for (int i = 0; i < 3; ++i) {
-    M5.Display.setTextColor(i == g_combat_menu_idx ? TFT_YELLOW : TFT_WHITE);
-    M5.Display.setCursor(40 + i * 60, 110);
-    M5.Display.printf("%s %s", i == g_combat_menu_idx ? ">" : "", opts[i]);
-  }
+void drawGameOver() {
+    canvas.fillSprite(TFT_BLACK);
+    canvas.setTextColor(COLOR_ALERT_FG);
+    canvas.setFont(&fonts::Font0);
+    canvas.setTextSize(2);
+    canvas.drawCenterString("GAME OVER", 120, 30);
+    
+    canvas.setTextSize(1);
+    canvas.setTextColor(0xFFFF);
+    canvas.drawCenterString("You have perished in the dungeon!", 120, 65);
+    
+    canvas.setTextColor(COLOR_CYBER_FG);
+    canvas.drawCenterString("Center/Button A: Return to Menu", 120, 95);
+    canvas.pushSprite(0, 0);
 }
 
 // ─── Input Handlers ────────────────────────────────────────────
 
 void handleMenuInput() {
-  static uint32_t lastInput = 0;
-  uint32_t now = millis();
-
-  if (now - lastInput < 200) return;
-
-  if (readPressed(kPinUp) || readPressed(kPinLeft)) {
-    g_menu_idx = (g_menu_idx - 1 + g_menu_max) % g_menu_max;
-    lastInput = now;
-  }
-  if (readPressed(kPinDown) || readPressed(kPinRight)) {
-    g_menu_idx = (g_menu_idx + 1) % g_menu_max;
-    lastInput = now;
-  }
-
-  if (readPressed(kPinCenter)) {
-    switch (g_menu_idx) {
-      case 0:  // New Game
-        generateMap();
-        g_mode = EXPLORING;
-        g_combat_msg1 = "Entered the dungeon...";
-        break;
-      case 1:  // Continue
-        g_mode = EXPLORING;
-        break;
-      case 2:  // Save Game
-        saveGame();
-        break;
-      case 3:  // Load Game
-        loadGame();
-        break;
-      case 4:  // Quit
-        g_running = false;
-        break;
-    }
-    lastInput = now;
-  }
-}
-
-void handleExploringInput() {
-  static uint32_t lastInput = 0;
-  uint32_t now = millis();
-  if (now - lastInput < 150) return;
-
-  int dx = 0, dy = 0;
-  if (readPressed(kPinUp)) dy = -1;
-  else if (readPressed(kPinDown)) dy = 1;
-  else if (readPressed(kPinLeft)) dx = -1;
-  else if (readPressed(kPinRight)) dx = 1;
-
-  if (dx != 0 || dy != 0) {
-    int nx = g_playerX + dx;
-    int ny = g_playerY + dy;
+    static uint32_t lastInput = 0;
+    uint32_t now = millis();
+    if (now - lastInput < 200) return;
     
-    char tile = g_map[ny][nx];
-    if (tile != '#') {
-      g_playerX = nx;
-      g_playerY = ny;
-      g_combat_msg1 = "";
-
-      if (tile == 'G') {
-        int g = 5 + esp_random() % 10;
-        g_player.gold += g;
-        g_combat_msg1 = "Found " + String(g) + " gold!";
-        g_map[ny][nx] = '.';
-      } else if (tile == 'P') {
-        g_player.potions++;
-        g_combat_msg1 = "Found a potion!";
-        g_map[ny][nx] = '.';
-      } else if (tile == 'E') {
-        g_map[ny][nx] = '.';
-        startCombat();
-      } else if (tile == '>') {
-        g_combat_msg1 = "Descending deeper...";
-        generateMap();
-      } else if (esp_random() % 100 < 8) { // random encounter
-        startCombat();
-      }
+    if (isPressed(kPinUp) || isPressed(kPinLeft)) {
+        g_selected_choice = (g_selected_choice - 1 + 2) % 2;
+        lastInput = now;
     }
-    lastInput = now;
-  }
+    if (isPressed(kPinDown) || isPressed(kPinRight)) {
+        g_selected_choice = (g_selected_choice + 1) % 2;
+        lastInput = now;
+    }
+    
+    if (isPressed(kPinCenter) || M5.BtnA.wasPressed()) {
+        g_player.pClass = (g_selected_choice == 0) ? "Warrior" : "Mage";
+        g_player.level = 1;
+        g_player.hp = (g_selected_choice == 0) ? 50 : 35;
+        g_player.maxHp = g_player.hp;
+        g_player.gold = 10;
+        g_player.xp = 0;
+        g_player.xpNext = 100;
+        
+        g_previous_story = "The adventurer steps bravely into the eerie, dark dungeon.";
+        g_selected_choice_text = "Cross the massive iron gate.";
+        g_last_choice_idx = 0; // opening scene always resolves well
 
-  if (M5.BtnPWR.wasPressed()) {
-    g_mode = MENU;
-  }
+        advanceStory();
+        lastInput = now;
+    }
 }
 
-void handleCombatInput() {
-  static uint32_t lastInput = 0;
-  uint32_t now = millis();
-  if (now - lastInput < 200) return;
+void handleStoryInput() {
+    static uint32_t lastInput = 0;
+    uint32_t now = millis();
+    
+    // Autoplay execution
+    if (g_autoplay) {
+        if (now - g_autoplay_timer >= AUTOPLAY_DELAY_MS) {
+            // Autoplay selects the absolute best choice
+            g_selected_choice = g_best_choice - 1; // 1-based index to 0-based
 
-  if (readPressed(kPinLeft)) {
-    g_combat_menu_idx = (g_combat_menu_idx - 1 + 3) % 3;
-    lastInput = now;
-  }
-  if (readPressed(kPinRight)) {
-    g_combat_menu_idx = (g_combat_menu_idx + 1) % 3;
-    lastInput = now;
-  }
+            // Get selected choice text
+            if (g_selected_choice == 0) g_selected_choice_text = g_choice1;
+            else if (g_selected_choice == 1) g_selected_choice_text = g_choice2;
+            else g_selected_choice_text = g_choice3;
+            g_last_choice_idx = g_selected_choice;
 
-  if (readPressed(kPinCenter)) {
-    bool enemyDead = false;
-    bool playerTurnDone = false;
-
-    if (g_combat_menu_idx == 0) { // Attack
-      int dmg = (g_player.str + g_player.weaponDmg) - g_enemy.def;
-      if (dmg < 1) dmg = 1;
-      // crit chance
-      if (esp_random() % 100 < 10) dmg *= 2; 
-      g_enemy.hp -= dmg;
-      g_combat_msg1 = "You hit " + g_enemy.name + " for " + String(dmg) + "!";
-      playerTurnDone = true;
-    } 
-    else if (g_combat_menu_idx == 1) { // Heal
-      if (g_player.potions > 0) {
-        g_player.potions--;
-        int heal = 15 + g_player.level * 5;
-        g_player.hp = std::min(g_player.maxHp, g_player.hp + heal);
-        g_combat_msg1 = "Healed " + String(heal) + " HP!";
-        playerTurnDone = true;
-      } else {
-        g_combat_msg1 = "No potions left!";
-      }
-    }
-    else if (g_combat_menu_idx == 2) { // Flee
-      if (esp_random() % 100 < 50) {
-        g_mode = EXPLORING;
-        g_combat_msg1 = "Fled successfully!";
-        lastInput = now;
+            advanceStory();
+            g_autoplay_timer = now;
+        }
         return;
-      } else {
-        g_combat_msg1 = "Failed to flee!";
-        playerTurnDone = true;
-      }
     }
+    
+    if (now - lastInput < 200) return;
+    
+    if (isPressed(kPinUp) || isPressed(kPinLeft)) {
+        g_selected_choice = (g_selected_choice - 1 + 3) % 3;
+        lastInput = now;
+    }
+    if (isPressed(kPinDown) || isPressed(kPinRight)) {
+        g_selected_choice = (g_selected_choice + 1) % 3;
+        lastInput = now;
+    }
+    
+    if (isPressed(kPinCenter) || M5.BtnA.wasPressed()) {
+        // Apply choice
+        if (g_selected_choice == 0) g_selected_choice_text = g_choice1;
+        else if (g_selected_choice == 1) g_selected_choice_text = g_choice2;
+        else g_selected_choice_text = g_choice3;
+        g_last_choice_idx = g_selected_choice;
 
-    if (playerTurnDone) {
-      if (g_enemy.hp <= 0) {
-        g_enemy.hp = 0;
-        g_player.xp += g_enemy.xpReward;
-        g_player.gold += g_enemy.goldReward;
-        g_combat_msg2 = "Victory! +" + String(g_enemy.xpReward) + "XP, +" + String(g_enemy.goldReward) + "G";
-        if (g_player.xp >= g_player.xpNext) {
-          levelUp();
-        }
-        g_mode = EXPLORING; // return on next update implicitly
-      } else {
-        int eDmg = g_enemy.str - g_player.def - g_player.armorDef;
-        if (eDmg < 1) eDmg = 1;
-        g_player.hp -= eDmg;
-        g_combat_msg2 = g_enemy.name + " hits you for " + String(eDmg) + "!";
-        if (g_player.hp <= 0) {
-          g_player.hp = 0;
-          g_mode = GAME_OVER;
-        }
-      }
+        advanceStory();
+        lastInput = now;
     }
-    lastInput = now;
-  }
+}
+
+void handleGameOverInput() {
+    static uint32_t lastInput = 0;
+    uint32_t now = millis();
+    if (now - lastInput < 200) return;
+    
+    if (isPressed(kPinCenter) || M5.BtnA.wasPressed() || M5.BtnB.wasPressed()) {
+        g_mode = GameMode::MENU;
+        g_selected_choice = 0;
+        lastInput = now;
+    }
 }
 
 }  // namespace
 
 void setup() {
-  auto cfg = M5.config();
-  M5.begin(cfg);
-  M5.Display.setRotation(3);
-  M5.Display.setBrightness(180);
-
-  Serial.begin(115200);
-  delay(200);
-
-  pinMode(kPinUp, INPUT_PULLUP);
-  pinMode(kPinDown, INPUT_PULLUP);
-  pinMode(kPinLeft, INPUT_PULLUP);
-  pinMode(kPinRight, INPUT_PULLUP);
-  pinMode(kPinCenter, INPUT_PULLUP);
-
-  if (!SPIFFS.begin(true)) {
-    M5.Display.fillScreen(TFT_BLACK);
-    M5.Display.setTextColor(TFT_RED);
-    M5.Display.setCursor(10, 60);
-    M5.Display.print("SPIFFS init failed!");
-    delay(3000);
-  }
+    auto cfg = M5.config();
+    cfg.internal_imu = false;
+    cfg.internal_rtc = false;
+    cfg.internal_mic = false;
+    cfg.internal_spk = false;
+    M5.begin(cfg);
+    
+    M5.Display.setBaseColor(TFT_BLACK);
+    M5.Display.setRotation(1); // 240x135 widescreen landscape
+    M5.Display.setBrightness(150);
+    
+    canvas.setPsram(true);
+    canvas.setColorDepth(8);
+    canvas.createSprite(240, 135);
+    
+    pinMode(kPinUp, INPUT_PULLUP);
+    pinMode(kPinDown, INPUT_PULLUP);
+    pinMode(kPinLeft, INPUT_PULLUP);
+    pinMode(kPinRight, INPUT_PULLUP);
+    pinMode(kPinCenter, INPUT_PULLUP);
+    
+    Serial.begin(115200);
+    randomSeed(esp_random());
 }
 
 void loop() {
-  M5.update();
+    M5.update();
+    
+    // Tapping Button B toggles Autoplay mode on/off
+    if (M5.BtnB.wasPressed()) {
+        g_autoplay = !g_autoplay;
+        g_autoplay_timer = millis(); // Reset timer on toggle
+    }
+    
+    switch (g_mode) {
+        case MENU:
+            handleMenuInput();
+            drawMainMenu();
+            break;
 
-  switch (g_mode) {
-    case MENU:
-      handleMenuInput();
-      drawMainMenu();
-      break;
-    case EXPLORING:
-      handleExploringInput();
-      drawExploring();
-      break;
-    case COMBAT:
-      handleCombatInput();
-      drawCombat();
-      break;
-    case INVENTORY:
-      // Simplified out for now
-      g_mode = EXPLORING;
-      break;
-    case GAME_OVER:
-      M5.Display.fillScreen(TFT_BLACK);
-      M5.Display.setTextColor(TFT_RED);
-      M5.Display.setTextSize(2);
-      M5.Display.setCursor(60, 60);
-      M5.Display.print("GAME OVER");
-      M5.Display.setTextSize(1);
-      M5.Display.setTextColor(TFT_WHITE);
-      M5.Display.setCursor(40, 100);
-      M5.Display.print("PWR to return to menu");
-      if (M5.BtnPWR.wasPressed()) g_mode = MENU;
-      break;
-  }
+        case STORY_DISPLAY:
+            handleStoryInput();
+            drawStoryDisplay();
+            break;
 
-  delay(20);
-  if (!g_running) {
-    M5.Display.fillScreen(TFT_BLACK);
-    M5.Display.setTextColor(TFT_GREEN);
-    M5.Display.setCursor(50, 60);
-    M5.Display.print("Goodbye!");
-    delay(2000);
-    ESP.restart();
-  }
+        case GAME_OVER:
+            handleGameOverInput();
+            drawGameOver();
+            break;
+    }
+    
+    delay(10);
 }

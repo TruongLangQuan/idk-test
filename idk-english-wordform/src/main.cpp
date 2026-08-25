@@ -423,7 +423,11 @@ void handleMenuSelect() {
 void setup() {
   auto cfg = M5.config();
   M5.begin(cfg);
+#if defined(STICKS3)
+  M5.Display.setRotation(1);
+#else
   M5.Display.setRotation(3);
+#endif
   M5.Display.setBrightness(180);
 
   g_status = "WiFi scan...";

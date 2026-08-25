@@ -24,13 +24,36 @@ int idk_nes_should_exit_flag(void);
 void idk_nes_set_last_error(const char* msg);
 }
 
+extern bool g_cardkb_up;
+extern bool g_cardkb_down;
+extern bool g_cardkb_left;
+extern bool g_cardkb_right;
+extern bool g_cardkb_a;
+extern bool g_cardkb_b;
+extern bool g_cardkb_start;
+extern bool g_cardkb_select;
+
 namespace {
 
-constexpr int kPinUp = 32;
-constexpr int kPinDown = 33;
-constexpr int kPinLeft = 25;
-constexpr int kPinRight = 26;
+#if defined(STICKS3)
+constexpr int kPinUp     = 1;
+constexpr int kPinDown   = 2;
+constexpr int kPinLeft   = 3;
+constexpr int kPinRight  = 8;
+constexpr int kPinCenter = 43;
+#elif defined(PCBFUN)
+constexpr int kPinUp     = 1;
+constexpr int kPinDown   = 2;
+constexpr int kPinLeft   = 3;
+constexpr int kPinRight  = 4;
+constexpr int kPinCenter = 5;
+#else
+constexpr int kPinUp     = 32;
+constexpr int kPinDown   = 33;
+constexpr int kPinLeft   = 25;
+constexpr int kPinRight  = 26;
 constexpr int kPinCenter = 0;
+#endif
 constexpr int kOutW = 240;
 constexpr int kOutH = 135;
 constexpr int kSrcW = 256;
@@ -64,14 +87,14 @@ void ensureMaps() {
 
 uint16_t readMask() {
   uint16_t mask = 0;
-  if (M5.BtnA.isPressed()) mask |= 0x01;       // A
-  if (M5.BtnB.isPressed()) mask |= 0x02;       // B
-  if (digitalRead(kPinCenter) == LOW) mask |= 0x04;  // Select
-  if (M5.BtnPWR.isPressed()) mask |= 0x08;     // Start
-  if (digitalRead(kPinUp) == LOW) mask |= 0x10;
-  if (digitalRead(kPinDown) == LOW) mask |= 0x20;
-  if (digitalRead(kPinLeft) == LOW) mask |= 0x40;
-  if (digitalRead(kPinRight) == LOW) mask |= 0x80;
+  if (M5.BtnA.isPressed() || g_cardkb_a) mask |= 0x01;       // A
+  if (M5.BtnB.isPressed() || g_cardkb_b) mask |= 0x02;       // B
+  if (digitalRead(kPinCenter) == LOW || g_cardkb_select) mask |= 0x04;  // Select
+  if (M5.BtnPWR.isPressed() || g_cardkb_start) mask |= 0x08;     // Start
+  if (digitalRead(kPinUp) == LOW || g_cardkb_up) mask |= 0x10;
+  if (digitalRead(kPinDown) == LOW || g_cardkb_down) mask |= 0x20;
+  if (digitalRead(kPinLeft) == LOW || g_cardkb_left) mask |= 0x40;
+  if (digitalRead(kPinRight) == LOW || g_cardkb_right) mask |= 0x80;
   return mask;
 }
 

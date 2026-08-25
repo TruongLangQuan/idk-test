@@ -9,3 +9,6 @@ data-pdf/
 .codex
 .gemini
 idk-ai/
+.agent
+.codegraph
+*.csv

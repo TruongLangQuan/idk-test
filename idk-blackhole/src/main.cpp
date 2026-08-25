@@ -92,7 +92,11 @@ static void drawDisk(float t) {
 void setup() {
   auto cfg = M5.config();
   M5.begin(cfg);
-  M5.Display.setRotation(3); // Left landscape
+#if defined(STICKS3)
+  M5.Display.setRotation(1);
+#else
+  M5.Display.setRotation(3);
+#endif // Left landscape
   M5.Display.setBrightness(180);
 
   g_w = M5.Display.width();

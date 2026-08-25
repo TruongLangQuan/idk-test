@@ -30,11 +30,25 @@ namespace {
 // ─── 5-way tactile switch GPIO mapping ──────────────────────────
 // Active-LOW with INPUT_PULLUP.
 // UP=32(Grove), DOWN=33(Grove), LEFT=25(header), RIGHT=26(header), CENTER=0(header)
-static constexpr int kPinUp = 32;
-static constexpr int kPinDown = 33;
-static constexpr int kPinLeft = 25;
-static constexpr int kPinRight = 26;
+#if defined(STICKS3)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 8;
+static constexpr int kPinCenter = 43;
+#elif defined(PCBFUN)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 4;
+static constexpr int kPinCenter = 5;
+#else
+static constexpr int kPinUp     = 32;
+static constexpr int kPinDown   = 33;
+static constexpr int kPinLeft   = 25;
+static constexpr int kPinRight  = 26;
 static constexpr int kPinCenter = 0;
+#endif
 
 struct ExtButton {
   int pin;
@@ -105,6 +119,9 @@ struct MoveList {
     }
   }
 };
+
+bool moveEquals(const Move& a, const Move& b);
+static int g_historyCount = 0;
 
 struct Undo {
   Move m;
@@ -1035,7 +1052,6 @@ bool parseAlgebraic(const char* s, BookMove& bm) {
 }
 
 static std::array<BookMove, 32> g_history;
-static int g_historyCount = 0;
 
 void recordMove(const Move& m) {
   if (g_historyCount < 32) {
@@ -1835,7 +1851,11 @@ void handleChessInput() {
 void setup() {
   auto cfg = M5.config();
   M5.begin(cfg);
+#if defined(STICKS3)
+  M5.Display.setRotation(1);
+#else
   M5.Display.setRotation(3);
+#endif
   M5.Display.setTextSize(1);
 
   // Configure 5-way tactile switch pins

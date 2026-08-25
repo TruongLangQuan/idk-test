@@ -378,11 +378,25 @@ bool keyboardInput(String& out, const String& title, bool mask_input, bool allow
   bool longPwrHandled = false;
 
   // 5-Way Pins (shared with main.cpp)
+#if defined(STICKS3)
+  static constexpr int kPinUp     = 1;
+  static constexpr int kPinDown   = 2;
+  static constexpr int kPinLeft   = 3;
+  static constexpr int kPinRight  = 8;
+  static constexpr int kPinCenter = 43;
+#elif defined(PCBFUN)
+  static constexpr int kPinUp     = 1;
+  static constexpr int kPinDown   = 2;
+  static constexpr int kPinLeft   = 3;
+  static constexpr int kPinRight  = 4;
+  static constexpr int kPinCenter = 5;
+#else
   static constexpr int kPinUp     = 32;
   static constexpr int kPinDown   = 33;
   static constexpr int kPinLeft   = 25;
   static constexpr int kPinRight  = 26;
   static constexpr int kPinCenter = 0;
+#endif
 
   auto isPrsd = [](int p) { return digitalRead(p) == LOW; };
   struct KeyEdge {

@@ -1123,7 +1123,11 @@ void setup()
 
 #ifdef M5STICKC_PLUS2
   M5.begin();
-  M5.Lcd.setRotation(3); // Landscape mode
+#if defined(STICKS3)
+  M5.Lcd.setRotation(1);
+#else
+  M5.Lcd.setRotation(3);
+#endif // Landscape mode
   
   // 90s Retro Splash Screen
   M5.Lcd.fillScreen(TFT_BLACK);

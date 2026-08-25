@@ -8,11 +8,25 @@
 using namespace idk;
 
 // ─── Constants & Pins ──────────────────────────────────────────
-static constexpr int kPinUp = 32;
-static constexpr int kPinDown = 33;
-static constexpr int kPinLeft = 25;
-static constexpr int kPinRight = 26;
+#if defined(STICKS3)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 8;
+static constexpr int kPinCenter = 43;
+#elif defined(PCBFUN)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 4;
+static constexpr int kPinCenter = 5;
+#else
+static constexpr int kPinUp     = 32;
+static constexpr int kPinDown   = 33;
+static constexpr int kPinLeft   = 25;
+static constexpr int kPinRight  = 26;
 static constexpr int kPinCenter = 0;
+#endif
 
 // ─── Global State ──────────────────────────────────────────────
 ASCIIRenderer renderer;
@@ -77,7 +91,11 @@ void setup() {
     cfg.internal_mic = false; // Disable MIC (G0 conflicts with SD SCK)
     cfg.internal_spk = false; // Disable SPK
     M5.begin(cfg);
+#if defined(STICKS3)
+    M5.Display.setRotation(1);
+#else
     M5.Display.setRotation(3);
+#endif
     
     pinMode(kPinUp, INPUT_PULLUP);
     pinMode(kPinDown, INPUT_PULLUP);

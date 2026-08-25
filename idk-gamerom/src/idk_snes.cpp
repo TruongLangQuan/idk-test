@@ -11,11 +11,25 @@ extern "C" {
 
 namespace {
 
-static constexpr int kPinUp = 32;
-static constexpr int kPinDown = 33;
-static constexpr int kPinLeft = 25;
-static constexpr int kPinRight = 26;
+#if defined(STICKS3)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 8;
+static constexpr int kPinCenter = 43;
+#elif defined(PCBFUN)
+static constexpr int kPinUp     = 1;
+static constexpr int kPinDown   = 2;
+static constexpr int kPinLeft   = 3;
+static constexpr int kPinRight  = 4;
+static constexpr int kPinCenter = 5;
+#else
+static constexpr int kPinUp     = 32;
+static constexpr int kPinDown   = 33;
+static constexpr int kPinLeft   = 25;
+static constexpr int kPinRight  = 26;
 static constexpr int kPinCenter = 0;
+#endif
 
 bool g_active = false;
 bool g_display_ready = false;
@@ -134,17 +148,34 @@ extern "C" void S9xDeinitDisplay(void) {
   g_display_ready = false;
 }
 
+extern bool g_cardkb_up;
+extern bool g_cardkb_down;
+extern bool g_cardkb_left;
+extern bool g_cardkb_right;
+extern bool g_cardkb_a;
+extern bool g_cardkb_b;
+extern bool g_cardkb_x;
+extern bool g_cardkb_y;
+extern bool g_cardkb_l;
+extern bool g_cardkb_r;
+extern bool g_cardkb_start;
+extern bool g_cardkb_select;
+
 extern "C" uint32_t S9xReadJoypad(int32_t port) {
   if (port != 0) return 0;
   uint32_t keys = 0;
-  if (digitalRead(kPinUp) == LOW) keys |= SNES_UP_MASK;
-  if (digitalRead(kPinDown) == LOW) keys |= SNES_DOWN_MASK;
-  if (digitalRead(kPinLeft) == LOW) keys |= SNES_LEFT_MASK;
-  if (digitalRead(kPinRight) == LOW) keys |= SNES_RIGHT_MASK;
-  if (digitalRead(kPinCenter) == LOW) keys |= SNES_SELECT_MASK;
-  if (M5.BtnPWR.isPressed()) keys |= SNES_START_MASK;
-  if (M5.BtnA.isPressed()) keys |= SNES_B_MASK;
-  if (M5.BtnB.isPressed()) keys |= SNES_A_MASK;
+  if (digitalRead(kPinUp) == LOW || g_cardkb_up) keys |= SNES_UP_MASK;
+  if (digitalRead(kPinDown) == LOW || g_cardkb_down) keys |= SNES_DOWN_MASK;
+  if (digitalRead(kPinLeft) == LOW || g_cardkb_left) keys |= SNES_LEFT_MASK;
+  if (digitalRead(kPinRight) == LOW || g_cardkb_right) keys |= SNES_RIGHT_MASK;
+  if (digitalRead(kPinCenter) == LOW || g_cardkb_select) keys |= SNES_SELECT_MASK;
+  if (M5.BtnPWR.isPressed() || g_cardkb_start) keys |= SNES_START_MASK;
+  if (M5.BtnA.isPressed() || g_cardkb_b) keys |= SNES_B_MASK;
+  if (M5.BtnB.isPressed() || g_cardkb_a) keys |= SNES_A_MASK;
+  if (g_cardkb_y) keys |= SNES_Y_MASK;
+  if (g_cardkb_x) keys |= SNES_X_MASK;
+  if (g_cardkb_l) keys |= SNES_TL_MASK;
+  if (g_cardkb_r) keys |= SNES_TR_MASK;
   if (M5.BtnA.isPressed() && digitalRead(kPinCenter) == LOW) keys |= SNES_Y_MASK;
   if (M5.BtnB.isPressed() && digitalRead(kPinCenter) == LOW) keys |= SNES_X_MASK;
   return keys;
@@ -191,6 +222,21 @@ bool idk_snes_begin(const ArduinoString& path, ArduinoString& error) {
 
   if (!LoadROM(nullptr)) {
     error = "SNES ROM init failed";
+    idk_snes_end();
+    return false;
+  }
+  if (Settings.SA1) {
+    error = "SA1 not supported";
+    idk_snes_end();
+    return false;
+  }
+  if (Settings.SDD1) {
+    error = "SDD1 not supported";
+    idk_snes_end();
+    return false;
+  }
+  if (Settings.SPC7110) {
+    error = "SPC7110 not supported";
     idk_snes_end();
     return false;
   }

@@ -6,7 +6,11 @@ PongGame pongGame;
 
 void PongGame::init() {
   // Landscape mode for Pong
+#if defined(STICKS3)
+  M5.Lcd.setRotation(1);
+#else
   M5.Lcd.setRotation(3);
+#endif
   M5.Lcd.fillScreen(COLOR_BLACK);
   
   // Initialize ball

@@ -1,6 +1,10 @@
 #pragma once
 
+#if __has_include(<M5GFX.h>)
 #include <M5GFX.h>
+#else
+#include <LovyanGFX.hpp>
+#endif
 #include <cstring>
 #include <lgfx/v1/misc/DataWrapper.hpp>
 

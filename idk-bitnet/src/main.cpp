@@ -122,7 +122,11 @@ void setup() {
     cfg.internal_mic = false; // Disable MIC (G0 conflicts with SD SCK)
     cfg.internal_spk = false; // Disable SPK
     M5.begin(cfg);
+#if defined(STICKS3)
+    M5.Display.setRotation(1);
+#else
     M5.Display.setRotation(3);
+#endif
     M5.Display.setBrightness(128);
 
     canvas.setPsram(true);

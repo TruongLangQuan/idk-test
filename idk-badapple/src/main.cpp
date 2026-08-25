@@ -1,130 +1,240 @@
 #include <M5Unified.h>
-#include <SPIFFS.h>
-#include <SD.h>
-#include <SPI.h>
+#include "badapple_video.h"
 
-// Hardware specific: M5StickC Plus 2 has shared Pin 14 for LCD_DC and SD_CS.
-// High-speed toggling can corrupt SD cards if not handled.
-static constexpr int kSD_CS = 14; 
+// Frame buffer to hold binarized pixels (120x68 = 8160 bytes)
+static uint8_t frame_buffer[BADAPPLE_WIDTH * BADAPPLE_HEIGHT];
 
-static constexpr int kCols = 48;
-static constexpr int kRows = 22;
-static constexpr int kCellW = 5;
-static constexpr int kCellH = 6;
-static constexpr int kFrameSize = 1056; // 48 * 22
+// Modes: 
+// 0: Real Video (Standard Black & White)
+// 1: Real Video (Cyberpunk - Neon Pink on Dark Purple)
+// 2: ASCII Art (Standard Black & White)
+// 3: ASCII Art (Matrix Green)
+static int current_mode = 0;
+static constexpr int MAX_MODES = 4;
 
-M5Canvas canvas(&M5.Display);
-uint32_t last_time = 0;
-const uint32_t frame_delay = 1000 / 8; // 8 FPS
-File videoFile;
-uint8_t frame_buffer[kFrameSize];
+// Display canvas for double buffering
+static M5Canvas canvas(&M5.Display);
 
-void setup() {
-    pinMode(14, OUTPUT);
-    digitalWrite(14, HIGH);
-    delay(100);
+// Timing variables
+static uint32_t last_frame_time = 0;
+static uint32_t hud_trigger_time = 0;
+static bool hud_visible = true;
 
-    // Safety: ensure Pin 14 is HIGH (SD deselected) as early as possible
-    pinMode(kSD_CS, OUTPUT);
-    digitalWrite(kSD_CS, HIGH);
-    delay(100);
+static int frame_index = 0;
+static bool is_playing = true;
 
-    auto cfg = M5.config();
-    cfg.internal_imu = true;
-    cfg.internal_rtc = true;
-    cfg.internal_mic = false; // Disable MIC (G0 conflicts with SD SCK)
-    cfg.internal_spk = false; // Disable SPK
-    M5.begin(cfg);
+// Custom colors (RGB565 format)
+static constexpr uint16_t COLOR_CYBER_BG = 0x080412; // Very dark indigo
+static constexpr uint16_t COLOR_CYBER_FG = 0xF81F;   // Neon Pink/Magenta
+static constexpr uint16_t COLOR_MATRIX_BG = 0x0000;  // Deep Black
+static constexpr uint16_t COLOR_MATRIX_FG = 0x37E2;  // High-contrast Neon/Matrix Green
 
-    M5.Display.setBaseColor(TFT_BLACK);
-    M5.Display.setRotation(3);
-    M5.Display.setBrightness(128);
-
-    canvas.setPsram(true);
-    canvas.setColorDepth(8);
-    canvas.createSprite(240, 135);
-    canvas.setFont(&fonts::Font0);
-    canvas.setTextSize(1);
+// Decode RLE compressed frame into 1-bit frame_buffer
+void decode_frame(int idx) {
+    if (idx < 0 || idx >= BADAPPLE_FRAMES) return;
     
-    // Initialize the global SPI bus exactly like idk-video
-    SPI.begin(0, 36, 26, 14);
-
-    bool videoLoaded = false;
-
-    // Try SD Card First (CS is Pin 14)
-    if (SD.begin(14, SPI, 15000000)) {
-        videoFile = SD.open("/badapple.bin", FILE_READ);
-        if (videoFile) {
-            videoLoaded = true;
-            Serial.println("Loaded from SD Card");
+    // Get byte offset for this frame
+    uint32_t start_offset = pgm_read_dword(&badapple_frame_offsets[idx]);
+    
+    int pixel_idx = 0;
+    int total_pixels = BADAPPLE_WIDTH * BADAPPLE_HEIGHT;
+    uint8_t color = 0; // Starts with Black
+    uint32_t rle_ptr = start_offset;
+    
+    while (pixel_idx < total_pixels) {
+        uint8_t run_len = pgm_read_byte(&badapple_rle[rle_ptr++]);
+        for (int i = 0; i < run_len && pixel_idx < total_pixels; i++) {
+            frame_buffer[pixel_idx++] = color;
         }
+        color = 1 - color; // Toggle color
     }
+}
 
-    // Fallback to SPIFFS
-    if (!videoLoaded) {
-        if (SPIFFS.begin(true)) {
-            videoFile = SPIFFS.open("/badapple.bin", FILE_READ);
-            if (videoFile) {
-                videoLoaded = true;
-                Serial.println("Loaded from SPIFFS");
+// Render functions
+void render_real_video(uint16_t bg_color, uint16_t fg_color) {
+    canvas.fillSprite(bg_color);
+    for (int y = 0; y < BADAPPLE_HEIGHT; y++) {
+        for (int x = 0; x < BADAPPLE_WIDTH; x++) {
+            if (frame_buffer[y * BADAPPLE_WIDTH + x] == 1) {
+                // Scale 2x to fill 240x136 perfectly
+                canvas.fillRect(x * 2, y * 2, 2, 2, fg_color);
             }
         }
     }
+}
 
-    if (!videoLoaded) {
-        canvas.fillSprite(TFT_BLACK);
-        canvas.setTextColor(TFT_RED);
-        canvas.drawString("badapple.bin not found!", 10, 60);
-        canvas.drawString("Checked SD & SPIFFS", 10, 75);
-        canvas.pushSprite(0, 0);
-        while(1) delay(100);
+void render_ascii_video(uint16_t bg_color, uint16_t fg_color) {
+    canvas.fillSprite(bg_color);
+    canvas.setTextColor(fg_color, bg_color);
+    canvas.setFont(&fonts::Font0);
+    canvas.setTextSize(1);
+    
+    const char* ascii_table = " .:-=+*#%@";
+    
+    // Downsample 120x68 frame to 40x16 character grid
+    for (int r = 0; r < 16; r++) {
+        for (int c = 0; c < 40; c++) {
+            int white_count = 0;
+            // Sum pixels in a 3x4 block
+            for (int dy = 0; dy < 4; dy++) {
+                for (int dx = 0; dx < 3; dx++) {
+                    int px = c * 3 + dx;
+                    int py = r * 4 + dy;
+                    if (frame_buffer[py * BADAPPLE_WIDTH + px] == 1) {
+                        white_count++;
+                    }
+                }
+            }
+            // Scale white_count (0-12) to density index (0-9)
+            int density_idx = (white_count * 9) / 12;
+            char ch = ascii_table[density_idx];
+            canvas.drawChar(ch, c * 6, r * 8 + 3); // Center vertically with +3 offset
+        }
     }
+}
 
-    last_time = millis();
+void draw_hud() {
+    uint32_t now = millis();
+    if (!hud_visible) return;
+    
+    // Fade out HUD after 2.5 seconds
+    if (now - hud_trigger_time > 2500) {
+        hud_visible = false;
+        return;
+    }
+    
+    // Draw a premium HUD overlay at the bottom
+    int hud_h = 24;
+    int hud_y = 135 - hud_h;
+    
+    // Draw translucent background (dark grey/blue)
+    canvas.fillRect(0, hud_y, 240, hud_h, 0x18E3); // 50% opacity greyish blue
+    canvas.drawFastHLine(0, hud_y, 240, 0x07FF);   // Cyberpunk Cyan border
+    
+    // Text labels
+    canvas.setTextColor(0x07FF, 0x18E3);
+    canvas.setFont(&fonts::Font0);
+    canvas.setTextSize(1);
+    
+    String mode_name = "";
+    switch (current_mode) {
+        case 0: mode_name = "RAW B&W"; break;
+        case 1: mode_name = "CYBERPUNK"; break;
+        case 2: mode_name = "ASCII MONO"; break;
+        case 3: mode_name = "ASCII MATRIX"; break;
+    }
+    
+    canvas.drawString("MODE: " + mode_name, 6, hud_y + 4);
+    
+    // Frame count & FPS
+    int elapsed_seconds = frame_index / BADAPPLE_FPS;
+    int total_seconds = BADAPPLE_FRAMES / BADAPPLE_FPS;
+    char time_str[32];
+    sprintf(time_str, "%02d:%02d/%02d:%02d", elapsed_seconds / 60, elapsed_seconds % 60, total_seconds / 60, total_seconds % 60);
+    canvas.drawRightString(time_str, 234, hud_y + 4);
+    
+    // Sleek progress bar
+    int bar_w = 228;
+    int bar_h = 3;
+    int bar_x = 6;
+    int bar_y = hud_y + 15;
+    
+    canvas.fillRect(bar_x, bar_y, bar_w, bar_h, 0x39E7); // Dark track
+    int progress_w = (frame_index * bar_w) / BADAPPLE_FRAMES;
+    canvas.fillRect(bar_x, bar_y, progress_w, bar_h, 0xF800); // Neon Pink bar
+}
+
+void setup() {
+    auto cfg = M5.config();
+    cfg.internal_imu = false;
+    cfg.internal_rtc = false;
+    cfg.internal_mic = false;
+    cfg.internal_spk = false;
+    M5.begin(cfg);
+    
+    M5.Display.setBaseColor(TFT_BLACK);
+    // 240x135 widescreen landscape
+    M5.Display.setRotation(1); 
+    M5.Display.setBrightness(128);
+    
+    canvas.setPsram(true);
+    canvas.setColorDepth(8); // 8-bit color for gorgeous rendering
+    canvas.createSprite(240, 135);
+    
+    // Show splash screen
+    canvas.fillSprite(TFT_BLACK);
+    canvas.setTextColor(0x07FF);
+    canvas.setFont(&fonts::Font0);
+    canvas.setTextSize(2);
+    canvas.drawCenterString("BAD APPLE", 120, 35);
+    canvas.setTextSize(1);
+    canvas.setTextColor(TFT_WHITE);
+    canvas.drawCenterString("ESP32-S3 High-Speed RLE", 120, 65);
+    canvas.setTextColor(0x39FF14);
+    canvas.drawCenterString("Locked 30 FPS", 120, 85);
+    canvas.pushSprite(0, 0);
+    
+    delay(2000);
+    
+    last_frame_time = millis();
+    hud_trigger_time = millis();
+    hud_visible = true;
 }
 
 void loop() {
     M5.update();
     
+    // Check buttons
+    // BtnA toggles mode
+    if (M5.BtnA.wasPressed()) {
+        current_mode = (current_mode + 1) % MAX_MODES;
+        hud_trigger_time = millis();
+        hud_visible = true;
+    }
+    
+    // BtnB pauses/plays
+    if (M5.BtnB.wasPressed()) {
+        is_playing = !is_playing;
+        hud_trigger_time = millis();
+        hud_visible = true;
+    }
+    
     uint32_t now = millis();
-    if (now - last_time >= frame_delay) {
-        last_time = now;
+    if (is_playing && (now - last_frame_time >= (1000 / BADAPPLE_FPS))) {
+        last_frame_time = now;
         
-        // Read next frame
-        if (videoFile.available() < kFrameSize) {
-            videoFile.seek(0); // Loop back to start
+        // Decode next frame
+        decode_frame(frame_index);
+        
+        // Render according to mode
+        switch (current_mode) {
+            case 0:
+                render_real_video(TFT_BLACK, TFT_WHITE);
+                break;
+            case 1:
+                render_real_video(COLOR_CYBER_BG, COLOR_CYBER_FG);
+                break;
+            case 2:
+                render_ascii_video(TFT_BLACK, TFT_WHITE);
+                break;
+            case 3:
+                render_ascii_video(COLOR_MATRIX_BG, COLOR_MATRIX_FG);
+                break;
         }
         
-        size_t bytesRead = 0;
-        while (bytesRead < kFrameSize) {
-            int r = videoFile.read(frame_buffer + bytesRead, kFrameSize - bytesRead);
-            if (r <= 0) break;
-            bytesRead += r;
-        }
+        // Draw HUD overlay
+        draw_hud();
         
-        canvas.startWrite();
-        canvas.fillSprite(TFT_BLACK);
-        
-        for (int r = 0; r < kRows; ++r) {
-            for (int c = 0; c < kCols; ++c) {
-                uint8_t ch = frame_buffer[r * kCols + c];
-                uint16_t color = TFT_WHITE;
-                
-                if (ch == ' ' || ch == '.') color = TFT_DARKGREY;
-                else if (ch == ':' || ch == '-') color = TFT_LIGHTGREY;
-                
-                canvas.setTextColor(color, TFT_BLACK);
-                canvas.drawChar(ch, c * kCellW, r * kCellH);
-            }
-        }
-        
-        canvas.endWrite();
+        // Push double-buffered canvas to display
         canvas.pushSprite(0, 0);
+        
+        // Advance frame
+        frame_index++;
+        if (frame_index >= BADAPPLE_FRAMES) {
+            frame_index = 0; // Loop back
+        }
     }
     
-    if (M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnPWR.wasPressed()) {
-        if (videoFile) videoFile.seek(0); // Reset
-    }
-    
+    // Small delay to prevent CPU choking
     delay(1);
 }

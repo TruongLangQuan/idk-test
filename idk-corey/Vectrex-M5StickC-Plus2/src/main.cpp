@@ -31,7 +31,11 @@ void setup()
 {
   // Initialize M5StickC Plus2
   M5.begin();
-  M5.Lcd.setRotation(3);  // Landscape 3
+#if defined(STICKS3)
+  M5.Lcd.setRotation(1);
+#else
+  M5.Lcd.setRotation(3);
+#endif  // Landscape 3
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setTextColor(GREEN);
   M5.Lcd.setTextSize(2);
