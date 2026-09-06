@@ -1,7 +1,0 @@
-/home/truonglangquan/idk-code/idk-test/miniusb-hid/build/_deps/picotool/picotool
-/home/truonglangquan/idk-code/idk-test/miniusb-hid/build/_deps/picotool/picotoolTargets.cmake
-/home/truonglangquan/idk-code/idk-test/miniusb-hid/build/_deps/picotool/picotoolTargets-release.cmake
-/home/truonglangquan/idk-code/idk-test/miniusb-hid/build/_deps/picotool/picotoolConfig.cmake
-/home/truonglangquan/idk-code/idk-test/miniusb-hid/build/_deps/picotool/picotoolConfigVersion.cmake
-/home/truonglangquan/idk-code/idk-test/miniusb-hid/build/_deps/picotool/enc_bootloader.elf
-/home/truonglangquan/idk-code/idk-test/miniusb-hid/build/_deps/picotool/enc_bootloader_mbedtls.elf

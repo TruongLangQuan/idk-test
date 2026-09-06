@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/truonglangquan/idk-code/idk-test/miniusb-hid/build_rp2040/_deps/picotool-build/enc_bootloader_mbedtls/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
