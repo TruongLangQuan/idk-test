@@ -1,92 +1,117 @@
-# idk-test
+# idk-test - Universal Firmware Repository
 
-Bộ firmware thử nghiệm cho nhiều board; mỗi thư mục là một project PlatformIO độc lập. Mỗi project đều có `README.md` riêng để xem chi tiết tính năng và điều khiển.
+This repository contains various firmware projects for different ESP32-based devices. The codebase has been organized into specific device folders to manage hardware variations and dependencies cleanly.
 
-## Danh sách firmware
+## 🗂️ Directory Structure
 
-| Project | Board/Env | Mô tả ngắn |
-| --- | --- | --- |
-| `idk-atom` | M5StickC / `firmware` | Hiệu ứng orbital nguyên tử |
-| `idk-bat` | Tenstar ESP32-S3 / `tenstar-esp32s3` | Battery monitor qua Serial |
-| `idk-biology` | M5StickC Plus2 / `m5stickc_plus2` | Công cụ sinh học (phiên mã/dịch mã/di truyền) |
-| `idk-blackhole` | M5StickC / `firmware` | Hiệu ứng hố đen |
-| `idk-chemistry` | M5StickC Plus2 / `m5stickc_plus2` | Bảng tuần hoàn + khối lượng mol + cân bằng PTHH |
-| `idk-chess` | M5StickC / `firmware` | Cờ vua offline + bot |
-| `idk-clock` | M5StickC / `firmware` | Đồng hồ NTP GMT+7 |
-| `idk-cyd` | CYD-2432S028 / `firmware` | UI cảm ứng: clock/gif/image |
-| `idk-dice` | M5StickC Plus2 / `m5stickc_plus2` | Lắc để tung 3 xúc xắc |
-| `idk-english-wordform` | M5StickC Plus2 / `m5stickc_plus2` | Tra wordform (offline + online POS) |
-| `idk-gif` | M5StickC / `firmware` | Trình phát GIF nhúng |
-| `idk-gif-s3` | ESP32-S3 + ST7789 / `esp32s3_114tft` | Trình phát GIF nhúng |
-| `idk-img` | M5StickC / `firmware` | Trình xem ảnh nhúng |
-| `idk-ir` | M5StickC / `firmware` | IR remote sender + search |
-| `idk-linux` | M5StickC / `firmware` | Fastfetch/CMatrix/Pipe |
-| `idk-maze` | M5StickC Plus2 / `m5stickc_plus2` | Mê cung 2D/3D điều khiển nghiêng |
-| `idk-math-num` | M5StickC Plus2 / `m5stickc_plus2` | Máy tính khoa học |
-| `idk-miner` | M5StickC Plus2 / `m5stickc_plus2` | Dashboard LTC/BTC |
-| `idk-physics` | M5StickC Plus2 / `m5stickc_plus2` | Công cụ vật lý cơ bản |
-| `idk-portal` | M5StickC / `firmware` | Captive portal AP + DNS |
-| `idk-subtitle` | ESP32-S3 + ST7789 / `esp32s3_114tft` | Màn hình phụ đề nhận UDP |
-| `idk-translator` | M5StickC Plus2 / `m5stickc_plus2` | Dịch EN↔VI + dictionary |
-| `idk-txt` | M5StickC / `firmware` | Trình xem text nhúng |
-| `idk-video` | M5StickC / `firmware` | MJPEG player + subtitle UDP |
-| `idk-audio` | M5StickC Plus2 / `m5stickc_plus2` | Phát WAV PCM qua buzzer/speaker |
-| `idk-mine` | Suite nhiều project | Xem `idk-mine/README.md` |
+- **`Core_System/`** - Shared libraries, build tools, and common core code.
+- **`Docs/`** - Project documentation, tasks, workflows, and hardware maps.
+- **`Scripts/`** - Python scripts for patching, testing, and processing video/assets.
+- **`Outputs/`** - Compiled binaries, output videos, and logs.
 
-## Targets
+### 📱 Device Families
 
-- M5StickC series (board `m5stick-c`, 240x135): `idk-gif`, `idk-txt`, `idk-img`, `idk-chess`, `idk-clock`, `idk-ir`, `idk-blackhole`, `idk-atom`, `idk-video`, `idk-portal`, `idk-linux`
-- M5StickC Plus2 (`m5stickc_plus2`): `idk-miner`, `idk-translator`, `idk-math-num`, `idk-chemistry`, `idk-biology`, `idk-physics`, `idk-english-wordform`, `idk-dice`, `idk-audio`, `idk-maze`
-- CYD-2432S028 (ESP32 + ILI9341 320x240): `idk-cyd`
-- ESP32-S3 devkit + ST7789 135x240: `idk-gif-s3`, `idk-subtitle`
-- Tenstar ESP32-S3: `idk-bat` (pinout tương tự `idk-subtitle`)
-- Suite đa project: `idk-mine`
+### [Device_CYD](./Device_CYD)
+- `CYD_Firmware`
+- `idk-cyd`
 
-## Build và flash
+### [Device_ESP32S3_Generic](./Device_ESP32S3_Generic)
+- `idk-gif-s3`
+- `idk-s3-coop-receiver`
+- `idk-s3-ssh`
+- `idk-s3-test`
 
-Mỗi project có `platformio.ini` riêng. Cú pháp chung:
+### [Device_M5Stick](./Device_M5Stick)
+- `.agent`
+- `.agents`
+- `.codex`
+- `.gemini`
+- `docs`
+- `firmware-pcbfun`
+- `firmware-sticks3`
+- `idk-5way-test`
+- `idk-ai`
+- `idk-ascii-doom`
+- `idk-ascii-idk`
+- `idk-ascii-screensaver`
+- `idk-atom`
+- `idk-audio`
+- `idk-badapple`
+- `idk-bat`
+- `idk-biology`
+- `idk-bitnet`
+- `idk-blackhole`
+- `idk-block-builder-3d`
+- `idk-browser`
+- `idk-cardkb`
+- `idk-chemistry`
+- `idk-chess`
+- `idk-clock`
+- `idk-dice`
+- `idk-draw`
+- `idk-english-wordform`
+- `idk-gamerom`
+- `idk-geogen-2d`
+- `idk-geogen-multidim`
+- `idk-geometry-dash`
+- `idk-gif`
+- `idk-img`
+- `idk-ir`
+- `idk-linux`
+- `idk-m5-test`
+- `idk-math`
+- `idk-maze`
+- `idk-mine`
+- `idk-miner`
+- `idk-motion-ascii`
+- `idk-physics`
+- `idk-portal`
+- `idk-sanctuaryrpg`
+- `idk-screensaver`
+- `idk-subtitle`
+- `idk-translator`
+- `idk-txt`
+- `idk-video`
+- `idk-worldgen`
+- `idk-worldgen-2d`
+- `miniusb-hid`
+
+### [Device_Seeed_XIAO](./Device_Seeed_XIAO)
+- `idk-s3-147-hid`
+- `idk-s3-lcd-147-test`
+- `idk-s3-sd-5way`
+- `idk-seeed-s3-test`
+
+### [Device_Tenstar](./Device_Tenstar)
+- `idk-tenstar-remote`
+- `idk-ts-ascii`
+- `idk-ts-badusb`
+- `idk-ts-desktop`
+- `idk-ts-doom`
+- `idk-ts-gameboy`
+- `idk-ts-test`
+
+### [Device_Waveshare_1.47](./Device_Waveshare_1.47)
+- `Launcher-ws-1.47`
+- `firmware-ws-s3`
+- `idk-backrooms-ws-s3`
+- `idk-badapple-ws-s3`
+- `idk-blackhole-ws-s3`
+- `idk-blender-ws-s3`
+- `idk-casio-ws-s3`
+- `idk-ir-ws-1.47`
+- `idk-video-ws-1.47`
+- `idk-ws-e32s3-1.47-5wts-k12`
+- `idk-ws-s3-doom`
+
+## 🛠️ Building & Flashing
+
+Each firmware is an independent PlatformIO project. To build and flash:
 
 ```bash
-cd /home/truonglangquan/idk-code/idk-test/<project>
-pio run -e <env>
-pio run -e <env> -t upload
+cd Device_Name/Project_Name
+pio run -e firmware -t upload
 pio device monitor -b 115200
 ```
 
-Env thường gặp:
-
-- `firmware`: hầu hết project M5StickC
-- `m5stickc_plus2`: các project M5StickC Plus2
-- `esp32s3_114tft`: `idk-gif-s3`
-- `tenstar-esp32s3`: `idk-bat`
-
-Filesystem (nếu có):
-
-```bash
-pio run -e <env> -t uploadfs
-```
-
-## Asset pipeline
-
-Nguồn assets dùng chung:
-
-- `gifs`: `/home/truonglangquan/idk-code/data/gifs`
-- `img`: `/home/truonglangquan/idk-code/data/img`
-- `txt`: `/home/truonglangquan/idk-code/data/txt`
-- `ir`: `/home/truonglangquan/idk-code/data/ir`
-
-Dùng tool compile assets:
-
-```bash
-cd /home/truonglangquan/idk-code/idk-test
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r tools/requirements.txt
-python3 tools/asset_compiler.py all  # mặc định xoay ngang trái
-```
-
-Tool sẽ:
-
-- resize/fit `img`, `gif` về 240x135
-- compile `img`, `gif`, `txt`, `ir` thành header C++ built-in (`PROGMEM`)
-- export ảnh đã chuẩn hóa ra `.png` hoặc `.bmp` nếu yêu cầu
+*Note: All `platformio.ini` files have been automatically configured to resolve dependencies from the `Core_System/shared` and `Core_System/tools` folders.*

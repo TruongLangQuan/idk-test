@@ -1,0 +1,65 @@
+# Device_M5Stick Firmware Collection
+
+This folder contains all firmware projects specifically configured for the **M5Stick** hardware.
+
+## Projects
+
+- **`.agent`**: [Open Project](./.agent)
+- **`.agents`**: [Open Project](./.agents)
+- **`.codex`**: [Open Project](./.codex)
+- **`.gemini`**: [Open Project](./.gemini)
+- **`docs`**: [Open Project](./docs)
+- **`firmware-pcbfun`**: [Open Project](./firmware-pcbfun)
+- **`firmware-sticks3`**: [Open Project](./firmware-sticks3)
+- **`idk-5way-test`**: [Open Project](./idk-5way-test)
+- **`idk-ai`**: [Open Project](./idk-ai)
+- **`idk-ascii-doom`**: [Open Project](./idk-ascii-doom)
+- **`idk-ascii-idk`**: [Open Project](./idk-ascii-idk)
+- **`idk-ascii-screensaver`**: [Open Project](./idk-ascii-screensaver)
+- **`idk-atom`**: [Open Project](./idk-atom)
+- **`idk-audio`**: [Open Project](./idk-audio)
+- **`idk-badapple`**: [Open Project](./idk-badapple)
+- **`idk-bat`**: [Open Project](./idk-bat)
+- **`idk-biology`**: [Open Project](./idk-biology)
+- **`idk-bitnet`**: [Open Project](./idk-bitnet)
+- **`idk-blackhole`**: [Open Project](./idk-blackhole)
+- **`idk-block-builder-3d`**: [Open Project](./idk-block-builder-3d)
+- **`idk-browser`**: [Open Project](./idk-browser)
+- **`idk-cardkb`**: [Open Project](./idk-cardkb)
+- **`idk-chemistry`**: [Open Project](./idk-chemistry)
+- **`idk-chess`**: [Open Project](./idk-chess)
+- **`idk-clock`**: [Open Project](./idk-clock)
+- **`idk-dice`**: [Open Project](./idk-dice)
+- **`idk-draw`**: [Open Project](./idk-draw)
+- **`idk-english-wordform`**: [Open Project](./idk-english-wordform)
+- **`idk-gamerom`**: [Open Project](./idk-gamerom)
+- **`idk-geogen-2d`**: [Open Project](./idk-geogen-2d)
+- **`idk-geogen-multidim`**: [Open Project](./idk-geogen-multidim)
+- **`idk-geometry-dash`**: [Open Project](./idk-geometry-dash)
+- **`idk-gif`**: [Open Project](./idk-gif)
+- **`idk-img`**: [Open Project](./idk-img)
+- **`idk-ir`**: [Open Project](./idk-ir)
+- **`idk-linux`**: [Open Project](./idk-linux)
+- **`idk-m5-test`**: [Open Project](./idk-m5-test)
+- **`idk-math`**: [Open Project](./idk-math)
+- **`idk-maze`**: [Open Project](./idk-maze)
+- **`idk-mine`**: [Open Project](./idk-mine)
+- **`idk-miner`**: [Open Project](./idk-miner)
+- **`idk-motion-ascii`**: [Open Project](./idk-motion-ascii)
+- **`idk-physics`**: [Open Project](./idk-physics)
+- **`idk-portal`**: [Open Project](./idk-portal)
+- **`idk-sanctuaryrpg`**: [Open Project](./idk-sanctuaryrpg)
+- **`idk-screensaver`**: [Open Project](./idk-screensaver)
+- **`idk-subtitle`**: [Open Project](./idk-subtitle)
+- **`idk-translator`**: [Open Project](./idk-translator)
+- **`idk-txt`**: [Open Project](./idk-txt)
+- **`idk-video`**: [Open Project](./idk-video)
+- **`idk-worldgen`**: [Open Project](./idk-worldgen)
+- **`idk-worldgen-2d`**: [Open Project](./idk-worldgen-2d)
+- **`miniusb-hid`**: [Open Project](./miniusb-hid)
+
+## Build Instructions
+```bash
+cd <project-name>
+pio run -t upload
+```
